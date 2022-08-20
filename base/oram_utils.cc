@@ -174,8 +174,8 @@ void PrintStash(const partition_oram::p_oram_stash_t& stash) {
   logger->debug("Stash:");
 
   for (size_t i = 0; i < stash.size(); ++i) {
-    logger->debug("Block {}: type : {}", stash[i].header.block_id,
-                  (int)stash[i].header.type);
+    logger->debug("Block {}: type : {}, data: {}", stash[i].header.block_id,
+                  (int)stash[i].header.type, stash[i].data[0]);
   }
 }
 
@@ -213,8 +213,6 @@ void EncryptBlock(partition_oram::oram_block_t* const block,
                             block->header.iv, &enc);
   CheckStatus(status, "Failed to encrypt data!");
 
-  logger->debug("encrypted data: {}", spdlog::to_hex(enc));
-
   // Third, let us split the mac tag to the header.
   memcpy(block->header.mac_tag, enc.data() + enc.size() - 16, 16);
 
@@ -235,10 +233,6 @@ void DecryptBlock(partition_oram::oram_block_t* const block,
 
   // Third, let us copy the mac tag to the buffer.
   memcpy(enc_data + DEFAULT_ORAM_DATA_SIZE, block->header.mac_tag, 16);
-
-  logger->debug("encrypted data: {}",
-                spdlog::to_hex(std::string((const char*)enc_data,
-                                           DEFAULT_ORAM_DATA_SIZE + 16)));
 
   // Fourth, let us decrypt the data.
   std::string dec;

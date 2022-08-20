@@ -127,24 +127,23 @@ int Client::InitOram(void) {
 int Client::TestOram(void) {
   logger->info("[+] Tesing Path ORAM...");
 
-  // for (size_t i = 0; i < block_num_ >> 1; i++) {
-  //   oram_block_t block;
-  //   block.header.block_id = i;
-  //   block.header.type = BlockType::kNormal;
-  //   block.data[0] = 255 - i;
+  for (size_t i = 0; i < block_num_ >> 1; i++) {
+    oram_block_t block;
+    block.header.block_id = i;
+    block.header.type = BlockType::kNormal;
+    block.data[0] = 255 - i;
 
-  //   Status s;
-  //   if ((s = controller_->Access(Operation::kWrite, i, &block, false)) !=
-  //       Status::kOK) {
-  //     logger->error("[-] Error: {}", kErrorList.at(s));
-  //     abort();
-  //   }
+    Status s;
+    if ((s = controller_->Access(Operation::kWrite, i, &block, false)) !=
+        Status::kOK) {
+      logger->error("[-] Error: {}", kErrorList.at(s));
+      abort();
+    }
 
-  //   logger->info("[+] Write {}, {}", block.header.block_id, block.data[0]);
-  // }
+    logger->info("[+] Write {}, {}", block.header.block_id, block.data[0]);
+  }
 
-  for (int j = 0; j <= 10; j++) 
-{  for (size_t i = 0; i < block_num_ >> 1; i++) {
+  for (size_t i = 0; i < block_num_ >> 1; i++) {
     oram_block_t block;
     memset(&block, 0, ORAM_BLOCK_SIZE);
 
@@ -156,7 +155,7 @@ int Client::TestOram(void) {
     }
 
     logger->info("[+] Read {}, {}", block.header.block_id, block.data[0]);
-  }}
+  }
 
   logger->info("[-] End testing Path ORAM.");
   return 0;
