@@ -8,6 +8,7 @@ The code is constructed upon some important libraries:
 * Google's `abseil` library for some advanced tools for C++ (If you build gRPC from source, then libabseil is automatically installed on your computer).
 * `spdlog` for logging.
 * `Libsodium` for cryptographic tools.
+* `lz4` for compression. (Can be installed via `sudo apt install liblz4-dev`)
 
 Important: all the source files must be compiled in C++17! Otherwise you will encounter `undefined reference` error (when linking against abseil-cpp). To enable CXX17, pass the following argument when you invoke `cmake`.
 
