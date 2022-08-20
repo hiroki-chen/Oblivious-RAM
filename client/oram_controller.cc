@@ -16,12 +16,12 @@
  */
 #include "oram_controller.h"
 
-#include <algorithm>
-#include <cmath>
-#include <chrono>
-
-#include <spdlog/spdlog.h>
 #include <spdlog/fmt/bin_to_hex.h>
+#include <spdlog/spdlog.h>
+
+#include <algorithm>
+#include <chrono>
+#include <cmath>
 
 #include "base/oram_crypto.h"
 #include "base/oram_utils.h"
@@ -41,9 +41,10 @@ std::unique_ptr<OramController> OramController::GetInstance() {
 size_t OramController::counter_ = 0;
 
 PathOramController::PathOramController(uint32_t id, uint32_t block_num,
-                                       uint32_t bucket_size)
+                                       uint32_t bucket_size, bool standalone)
     : id_(id),
       bucket_size_(bucket_size),
+      standalone_(standalone),
       network_time_(0us),
       network_communication_(0ul) {
   const size_t bucket_num = std::ceil(block_num * 1.0 / bucket_size);
@@ -140,10 +141,7 @@ Status PathOramController::FillWithData(const std::vector<oram_block_t>& data) {
   // The data are organized level by level, and for best performance, we
   // initialize the ORAM tree from the leaf to the root. In other words, we
   // **GREEDILY** fill the buckets from the leaf to the root.
-
-  logger->debug("Fill With Data to Path ORAM id {}", id_);
   oram_utils::PrintStash(data);
-  logger->debug("---------------------------------");
 
   size_t p_data = 0;
   for (int i = tree_level_; i >= 0; i--) {
@@ -244,6 +242,8 @@ Status PathOramController::ReadBucket(uint32_t path, uint32_t level,
 
 Status PathOramController::WriteBucket(uint32_t path, uint32_t level,
                                        const p_oram_bucket_t& bucket) {
+  logger->debug("[+] Writing bucket at path {}, level {}", path, level);
+
   grpc::ClientContext context;
   WritePathRequest request;
   WritePathResponse response;
@@ -380,12 +380,15 @@ Status PathOramController::Access(Operation op_type, uint32_t address,
 
   // Update the block.
   if (op_type == Operation::kWrite) {
-    memcpy(&(*iter), data, ORAM_BLOCK_SIZE);
+    memcpy(iter->data, data->data, DEFAULT_ORAM_DATA_SIZE);
   } else {
     memcpy(data, &(*iter), ORAM_BLOCK_SIZE);
-    // For Partition ORAM. => READ AND REMOVE.
-    stash_.erase(iter);
-    position_map_.erase(address);
+
+    if (!standalone_) {
+      // For Partition ORAM. => READ AND REMOVE.
+      stash_.erase(iter);
+      position_map_.erase(address);
+    }
   }
 
   // STEP 10-15: Write the path.
@@ -564,8 +567,8 @@ Status OramController::Run(uint32_t block_num, uint32_t bucket_size) {
 
   for (size_t i = 0; i < squared; i++) {
     // We create the PathORAM controller for each slot.
-    path_oram_controllers_.emplace_back(
-        std::make_unique<PathOramController>(i, partition_size_, bucket_size));
+    path_oram_controllers_.emplace_back(std::make_unique<PathOramController>(
+        i, partition_size_, bucket_size, false));
     path_oram_controllers_.back()->SetStub(stub_);
 
     // Then invoke the intialization procedure.

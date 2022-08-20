@@ -3,7 +3,7 @@ find_package(protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 set(PROTO_FILES messages.proto)
 
-add_library(messages ${PROTO_FILES})
+add_library(messages SHARED ${PROTO_FILES})
 target_link_libraries(messages PUBLIC protobuf::libprotobuf gRPC::grpc gRPC::grpc++)
 
 target_include_directories(messages PUBLIC ${CMAKE_CURRENT_BINARY_DIR})

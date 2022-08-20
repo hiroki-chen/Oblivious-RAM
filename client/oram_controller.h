@@ -17,22 +17,26 @@
 #ifndef PARTITION_ORAM_CLIENT_ORAM_CONTROLLER_H_
 #define PARTITION_ORAM_CLIENT_ORAM_CONTROLLER_H_
 
+#include <grpc++/grpc++.h>
+
 #include <chrono>
 #include <memory>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include <grpc++/grpc++.h>
-
-#include "base/oram_defs.h"
 #include "base/oram_crypto.h"
+#include "base/oram_defs.h"
 #include "protos/messages.grpc.pb.h"
 
 namespace partition_oram {
 // This class is the implementation of the ORAM controller for Path ORAM.
 class PathOramController {
   friend class OramController;
+
+  // Whether this pathoram conroller is a standalone controller
+  // or embedded with other controllers, say PartitionORAM controller.
+  bool standalone_;
 
   uint32_t id_;
   // ORAM parameters.
@@ -66,7 +70,8 @@ class PathOramController {
   // ==================== End private methods ==================== //
 
  public:
-  PathOramController(uint32_t id, uint32_t block_num, uint32_t bucket_size);
+  PathOramController(uint32_t id, uint32_t block_num, uint32_t bucket_size,
+                     bool standalone = true);
 
   void SetStub(std::shared_ptr<server::Stub> stub) { stub_ = stub; }
 
@@ -80,7 +85,9 @@ class PathOramController {
   uint32_t GetTreeLevel(void) const { return tree_level_; }
   size_t ReportClientStorage(void) const;
   size_t ReportNetworkCommunication(void) const;
-  std::chrono::microseconds ReportNetworkingTime(void) const { return network_time_; }
+  std::chrono::microseconds ReportNetworkingTime(void) const {
+    return network_time_;
+  }
 
   virtual ~PathOramController() {
     stub_.reset();
@@ -106,7 +113,6 @@ class OramController {
   std::shared_ptr<oram_crypto::Cryptor> cryptor_;
   // Stub
   std::shared_ptr<server::Stub> stub_;
-
 
   OramController() {}
 

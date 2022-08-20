@@ -58,14 +58,19 @@ Status OramServerStorage::ReadPath(uint32_t level, uint32_t path,
     return Status::kObjectNotFound;
   } else {
     std::for_each(iter->second.begin(), iter->second.end(),
-                  [&out_bucket](const std::string& data) {
-                    // Decompress the data.
-                    oram_block_t block;
-                    oram_utils::DataDecompress(
-                        reinterpret_cast<const uint8_t*>(data.data()),
-                        data.size(), reinterpret_cast<uint8_t*>(&block));
+                  [&out_bucket](std::string& data) {
+                    if (!data.empty()) {
+                      // Decompress the data.
+                      oram_block_t block;
+                      oram_utils::DataDecompress(
+                          reinterpret_cast<const uint8_t*>(data.data()),
+                          data.size(), reinterpret_cast<uint8_t*>(&block));
 
-                    out_bucket->emplace_back(block);
+                      out_bucket->emplace_back(block);
+
+                      // Clear the data.
+                      data.clear();
+                    }
                   });
 
     return Status::kOK;
@@ -106,7 +111,6 @@ Status OramServerStorage::AccurateWritePath(uint32_t level, uint32_t offset,
     // Not found.
     return Status::kObjectNotFound;
   } else {
-    return Status::kOK;
     iter->second.clear();
 
     for (size_t i = 0; i < in_bucket.size(); i++) {
