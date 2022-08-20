@@ -17,16 +17,15 @@
 #ifndef PARTITION_ORAM_CLIENT_ORAM_CLIENT_H_
 #define PARTITION_ORAM_CLIENT_ORAM_CLIENT_H_
 
-#include <string>
-#include <memory>
-
 #include <grpc++/grpc++.h>
 
-#include "oram_controller.h"
+#include <memory>
+#include <string>
 
+#include "base/oram_crypto.h"
+#include "oram_controller.h"
 #include "protos/messages.grpc.pb.h"
 #include "protos/messages.pb.h"
-#include "base/oram_crypto.h"
 
 namespace partition_oram {
 class Client {
@@ -39,7 +38,7 @@ class Client {
 
   std::shared_ptr<server::Stub> stub_;
 
-  std::unique_ptr<OramController> controller_;
+  std::unique_ptr<PartitionOramController> controller_;
 
   std::shared_ptr<oram_crypto::Cryptor> cryptor_;
 

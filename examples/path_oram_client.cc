@@ -120,6 +120,8 @@ int Client::InitOram(void) {
     const size_t tree_size = (POW2(level + 1) - 1) * bucket_size_;
     controller_->FillWithData(
         oram_utils::SampleRandomBucket(block_num_, tree_size, 0ul));
+    // Read from file.
+    // controller_->FromFile("../data/data.txt");
     return 0;
   }
 }
