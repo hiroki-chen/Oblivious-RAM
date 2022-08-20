@@ -16,8 +16,8 @@
  */
 #include "oram_client.h"
 
-#include <spdlog/spdlog.h>
 #include <spdlog/fmt/bin_to_hex.h>
+#include <spdlog/spdlog.h>
 
 #include "base/oram_utils.h"
 
@@ -42,7 +42,7 @@ void Client::Run(void) {
 
   // Initialize the cryptor and controller.
   cryptor_ = oram_crypto::Cryptor::GetInstance();
-  controller_ = OramController::GetInstance();
+  controller_ = PartitionOramController::GetInstance();
   // The stub can be shared between multiple objects.
   controller_->SetStub(stub_);
   controller_->SetBucketSize(bucket_size_);

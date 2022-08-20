@@ -33,18 +33,24 @@ using std::chrono_literals::operator""us;
 namespace partition_oram {
 // The ownership of ORAM main controller cannot be multiple.
 // This cannot be shared.
-std::unique_ptr<OramController> OramController::GetInstance() {
-  static std::unique_ptr<OramController> instance(new OramController());
+std::unique_ptr<PartitionOramController>
+PartitionOramController::GetInstance() {
+  static std::unique_ptr<PartitionOramController> instance(
+      new PartitionOramController());
   return std::move(instance);
 }
 
-size_t OramController::counter_ = 0;
+size_t PartitionOramController::counter_ = 0;
+
+OramController::OramController(uint32_t id, bool standalone)
+    : id_(id), standalone_(standalone) {
+  cryptor_ = oram_crypto::Cryptor::GetInstance();
+}
 
 PathOramController::PathOramController(uint32_t id, uint32_t block_num,
                                        uint32_t bucket_size, bool standalone)
-    : id_(id),
+    : OramController(id, standalone),
       bucket_size_(bucket_size),
-      standalone_(standalone),
       network_time_(0us),
       network_communication_(0ul) {
   const size_t bucket_num = std::ceil(block_num * 1.0 / bucket_size);
@@ -56,7 +62,6 @@ PathOramController::PathOramController(uint32_t id, uint32_t block_num,
       "PathORAM Config:\n"
       "id: {}, number_of_leafs: {}, bucket_size: {}, tree_height: {}\n",
       id_, number_of_leafs_, bucket_size_, tree_level_);
-  cryptor_ = oram_crypto::Cryptor::GetInstance();
 }
 
 size_t PathOramController::ReportClientStorage(void) const {
@@ -132,6 +137,23 @@ Status PathOramController::InitOram(void) {
   }
 
   return Status::kOK;
+}
+
+Status PathOramController::FromFile(const std::string& file_path) {
+  const std::vector<std::string> data =
+      std::move(oram_utils::ReadDataFromFile(file_path));
+
+  p_oram_bucket_t blocks;
+  for (size_t i = 0; i < data.size(); i++) {
+    oram_block_t block;
+    block.header.block_id = i;
+    block.header.type = BlockType::kNormal;
+    memcpy(block.data, data[i].data(),
+           std::min(DEFAULT_ORAM_DATA_SIZE, (int)data[i].size()));
+    blocks.emplace_back(block);
+  }
+
+  return FillWithData(blocks);
 }
 
 // The input vector of blocks should be sorted by their path id.
@@ -424,8 +446,8 @@ Status PathOramController::Access(Operation op_type, uint32_t address,
 // identified by u, and returns the old value of the block u.
 //
 // For readability, we rename u to address denoting the block's identifier.
-Status OramController::Access(Operation op_type, uint32_t address,
-                              oram_block_t* const data) {
+Status PartitionOramController::Access(Operation op_type, uint32_t address,
+                                       oram_block_t* const data) {
   auto begin_access = std::chrono::high_resolution_clock::now();
   // A temporary buffer that holds the data.
   oram_block_t block;
@@ -498,7 +520,7 @@ Status OramController::Access(Operation op_type, uint32_t address,
   return Status::kOK;
 }
 
-Status OramController::Evict(uint32_t id) {
+Status PartitionOramController::Evict(uint32_t id) {
   logger->debug("Evicting slot {}", id);
   PathOramController* const controller = path_oram_controllers_[id].get();
   if (slots_[id].empty()) {
@@ -517,7 +539,7 @@ Status OramController::Evict(uint32_t id) {
 
 // RandomEvict samples \nu \in \mathbb{N} random slots (with replacement) to
 // evict from.
-Status OramController::RandomEvict(void) {
+Status PartitionOramController::RandomEvict(void) {
   // For simplicity, we use uniform random sampling.
   for (size_t i = 0; i < nu_; i++) {
     uint32_t id;
@@ -536,7 +558,7 @@ Status OramController::RandomEvict(void) {
 // prescribed dis- tribution D(ν) and sequentially scans num slots to evict
 // from. RandomEvict samples ν ∈ N random slots (with replacement) to evict
 // from.
-Status OramController::SequentialEvict(void) {
+Status PartitionOramController::SequentialEvict(void) {
   size_t evict_num;
   oram_utils::CheckStatus(
       oram_crypto::Cryptor::UniformRandom(0, path_oram_controllers_.size() - 1,
@@ -553,7 +575,7 @@ Status OramController::SequentialEvict(void) {
   return Status::kOK;
 }
 
-Status OramController::Run(uint32_t block_num, uint32_t bucket_size) {
+Status PartitionOramController::Run(uint32_t block_num, uint32_t bucket_size) {
   logger->info("[+] The Partition Oram Controller is running...");
   // Determine the size of each sub-ORAM and the number of slot number.
   const size_t squared = std::ceil(std::sqrt(block_num));
@@ -581,8 +603,8 @@ Status OramController::Run(uint32_t block_num, uint32_t bucket_size) {
   return Status::kOK;
 }
 
-Status OramController::ProcessSlot(const std::vector<oram_block_t>& data,
-                                   uint32_t slot_id) {
+Status PartitionOramController::ProcessSlot(
+    const std::vector<oram_block_t>& data, uint32_t slot_id) {
   // Initialize the position map.
   std::for_each(data.begin(), data.end(), [&](const oram_block_t& block) {
     if (block.header.type == BlockType::kNormal) {
@@ -593,7 +615,8 @@ Status OramController::ProcessSlot(const std::vector<oram_block_t>& data,
   return Status::kOK;
 }
 
-Status OramController::FillWithData(const std::vector<oram_block_t>& data) {
+Status PartitionOramController::FillWithData(
+    const std::vector<oram_block_t>& data) {
   const size_t level = path_oram_controllers_.front()->GetTreeLevel();
   const size_t tree_size = (POW2(level + 1) - 1) * bucket_size_;
   // Check if the data size is consistent with the block number (note that this
@@ -627,7 +650,7 @@ Status OramController::FillWithData(const std::vector<oram_block_t>& data) {
   return Status::kOK;
 }
 
-Status OramController::TestPathOram(uint32_t controller_id) {
+Status PartitionOramController::TestPathOram(uint32_t controller_id) {
   if (controller_id >= path_oram_controllers_.size()) {
     logger->error("The controller id is out of range.");
     return Status::kOutOfRange;
@@ -682,7 +705,7 @@ Status OramController::TestPathOram(uint32_t controller_id) {
   return Status::kOK;
 }
 
-Status OramController::TestPartitionOram(void) {
+Status PartitionOramController::TestPartitionOram(void) {
   std::vector<oram_block_t> blocks;
   const size_t level = path_oram_controllers_.front()->GetTreeLevel();
   const size_t tree_size = (POW2(level + 1) - 1) * bucket_size_;
@@ -743,7 +766,7 @@ Status OramController::TestPartitionOram(void) {
   return Status::kOK;
 }
 
-size_t OramController::ReportClientStorage(void) const {
+size_t PartitionOramController::ReportClientStorage(void) const {
   size_t client_storage = 0;
 
   std::for_each(
@@ -757,7 +780,8 @@ size_t OramController::ReportClientStorage(void) const {
   return client_storage;
 }
 
-std::chrono::microseconds OramController::ReportNetworkingTime(void) const {
+std::chrono::microseconds PartitionOramController::ReportNetworkingTime(
+    void) const {
   std::chrono::microseconds ans = 0us;
 
   for (const auto& controller : path_oram_controllers_) {
@@ -767,7 +791,7 @@ std::chrono::microseconds OramController::ReportNetworkingTime(void) const {
   return ans;
 }
 
-size_t OramController::ReportNetworkCommunication(void) const {
+size_t PartitionOramController::ReportNetworkCommunication(void) const {
   size_t ans = 0;
 
   for (const auto& controller : path_oram_controllers_) {

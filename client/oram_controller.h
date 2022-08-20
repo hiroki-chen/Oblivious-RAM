@@ -30,13 +30,41 @@
 #include "protos/messages.grpc.pb.h"
 
 namespace partition_oram {
-// This class is the implementation of the ORAM controller for Path ORAM.
-class PathOramController {
-  friend class OramController;
-
+class OramController {
+ protected:
+  uint32_t id_;
   // Whether this pathoram conroller is a standalone controller
   // or embedded with other controllers, say PartitionORAM controller.
   bool standalone_;
+
+  // An object used to call some methods of ORAM storage on the cloud.
+  std::shared_ptr<server::Stub> stub_;
+  // Cryptography manager.
+  std::shared_ptr<oram_crypto::Cryptor> cryptor_;
+
+ public:
+  OramController(uint32_t id, bool standalone);
+
+  virtual Status InitOram(void) = 0;
+  virtual Status FillWithData(const std::vector<oram_block_t>& data) = 0;
+  virtual Status Access(Operation op_type, uint32_t address,
+                        oram_block_t* const data, bool dummy) = 0;
+  virtual Status FromFile(const std::string& file_path) = 0;
+
+  virtual uint32_t GetId(void) const { return id_; }
+  virtual bool IsStandAlone(void) const { return standalone_; }
+  virtual void SetStub(std::shared_ptr<server::Stub> stub) { stub_ = stub; }
+
+  virtual ~OramController() {
+    // Because they are shared pointers, we cannot directly drop them.
+    stub_.reset();
+    cryptor_.reset();
+  }
+};
+
+// This class is the implementation of the ORAM controller for Path ORAM.
+class PathOramController : public OramController {
+  friend class PartitionOramController;
 
   uint32_t id_;
   // ORAM parameters.
@@ -48,10 +76,6 @@ class PathOramController {
   // The stash should be tied to the slots of Partition ORAM, so we use
   // pointers to manipulate the stash.
   p_oram_stash_t stash_;
-  // An object used to call some methods of ORAM storage on the cloud.
-  std::shared_ptr<server::Stub> stub_;
-  // Cryptography manager.
-  std::shared_ptr<oram_crypto::Cryptor> cryptor_;
   // Networking time.
   std::chrono::microseconds network_time_;
   // Networking communication.
@@ -73,14 +97,13 @@ class PathOramController {
   PathOramController(uint32_t id, uint32_t block_num, uint32_t bucket_size,
                      bool standalone = true);
 
-  void SetStub(std::shared_ptr<server::Stub> stub) { stub_ = stub; }
-
-  Status InitOram(void);
-  Status FillWithData(const std::vector<oram_block_t>& data);
+  virtual Status InitOram(void) override;
+  virtual Status FillWithData(const std::vector<oram_block_t>& data) override;
 
   // The meanings of parameters are explained in Stefanov et al.'s paper.
-  Status Access(Operation op_type, uint32_t address, oram_block_t* const data,
-                bool dummy);
+  virtual Status Access(Operation op_type, uint32_t address,
+                        oram_block_t* const data, bool dummy) override;
+  virtual Status FromFile(const std::string& file_path) override;
 
   uint32_t GetTreeLevel(void) const { return tree_level_; }
   size_t ReportClientStorage(void) const;
@@ -88,15 +111,10 @@ class PathOramController {
   std::chrono::microseconds ReportNetworkingTime(void) const {
     return network_time_;
   }
-
-  virtual ~PathOramController() {
-    stub_.reset();
-    cryptor_.reset();
-  }
 };
 
 // This class is the implementation of the ORAM controller for Partition ORAM.
-class OramController {
+class PartitionOramController {
   size_t partition_size_;
   size_t bucket_size_;
   size_t nu_;
@@ -114,7 +132,7 @@ class OramController {
   // Stub
   std::shared_ptr<server::Stub> stub_;
 
-  OramController() {}
+  PartitionOramController() {}
 
   // ==================== Begin private methods ==================== //
   Status Evict(uint32_t id);
@@ -125,7 +143,7 @@ class OramController {
   // ==================== End private methods ==================== //
 
  public:
-  static std::unique_ptr<OramController> GetInstance();
+  static std::unique_ptr<PartitionOramController> GetInstance();
 
   void SetStub(std::shared_ptr<server::Stub> stub) { stub_ = stub; }
   void SetBucketSize(size_t bucket_size) { bucket_size_ = bucket_size; }
@@ -150,7 +168,7 @@ class OramController {
     path_oram_controllers_.clear();
   }
 
-  virtual ~OramController() {}
+  virtual ~PartitionOramController() {}
 };
 }  // namespace partition_oram
 
