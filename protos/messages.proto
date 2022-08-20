@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package partition_oram;
+
+import "google/protobuf/empty.proto";
+
+// The Oram interface is the interface that must be implemented by
+// any ORAM implementation. It is used to interact with the ORAM.
+service server {
+  // Initialize the ORAM by sending the client's configurations.
+  rpc InitOram(InitOramRequest) returns (google.protobuf.Empty) {}
+
+  rpc PrintOramTree(PrintOramTreeRequest) returns (google.protobuf.Empty) {}
+
+  rpc ReadPath(ReadPathRequest) returns (ReadPathResponse) {}
+
+  rpc WritePath(WritePathRequest) returns (WritePathResponse) {}
+
+  rpc CloseConnection(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+
+  // ============ Key Exchange Using Diffie-Hellman ============ //
+  // For evaluating the performance when encryption is introduced, 
+  // we do not verify the public key sent from the client, i.e., 
+  // we assume that there is no man-in-the-middle attacker :)
+  rpc KeyExchange(KeyExchangeRequest) returns (KeyExchangeResponse) {}
+
+  rpc SendHello(HelloMessage) returns (google.protobuf.Empty) {}
+
+  rpc ReportServerInformation(google.protobuf.Empty) 
+    returns (google.protobuf.Empty) {}
+
+  rpc ResetServer(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+}
+
+enum Type {
+  kSequential = 0;
+  kRandom = 1;
+  kInit = 2;
+  kNormal = 3;
+}
+
+message PrintOramTreeRequest {
+  uint32 id = 1;
+}
+
+message HelloMessage {
+  bytes content = 1;
+  bytes iv = 2;
+}
+
+message KeyExchangeRequest {
+  bytes public_key_client = 1;
+};
+
+message KeyExchangeResponse {
+  bytes public_key_server = 1;
+};
+
+message InitOramRequest {
+  uint32 id = 1;
+  uint32 bucket_size = 2;
+  uint32 bucket_num = 3;
+}
+
+message ReadPathRequest {
+  uint32 id = 1;
+  uint32 path = 2;
+  uint32 level = 3;
+}
+
+message ReadPathResponse {
+  repeated bytes bucket = 1;
+}
+
+message WritePathRequest {
+  uint32 id = 1;
+  // Whether this write operation is triggered by an eviction operation.
+  uint32 path = 2;
+  uint32 level = 3;
+  repeated bytes bucket = 4;
+  optional Type type = 5;
+  optional uint32 offset = 6;
+}
+
+message WritePathResponse {
+
+}
