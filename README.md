@@ -21,9 +21,11 @@ $ cmake -DCMAKE_CXX_STANDARD=17 <arguments>
 All the compiled binaries locate under `./build/bin` directory. Sample usage of the binaries is given as follows.
 
 ```shell
-$ ./bin/server --address 0.0.0.0 --port 1234 --key_path ../key/server.key --crt_path ../key/server.crt --log_level 1
-$ ./bin/client --address 127.0.0.1 --port 1234 --crt_path ../key/server.crt --block_num 65535 --bucket_size 4
+$ ./bin/server --address 0.0.0.0 --port 1234 --key_path ../key/sslcred.key --crt_path ../key/sslcred.crt --log_level 2
+$ ./bin/client --address localhost --port 1234 --crt_path ../key/sslcred.crt --block_num 65535 --bucket_size 4
 ```
+
+If you are using domain other than `localhost`. You may need to re-generate the SSL certificate and key by `openssl`.
 
 # Use the PathORAM only.
 
