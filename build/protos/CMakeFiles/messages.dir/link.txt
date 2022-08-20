@@ -1,2 +1,0 @@
-/usr/bin/ar qc libmessages.a CMakeFiles/messages.dir/messages.pb.cc.o CMakeFiles/messages.dir/messages.grpc.pb.cc.o
-/usr/bin/ranlib libmessages.a

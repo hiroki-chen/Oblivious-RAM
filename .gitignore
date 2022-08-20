@@ -1,0 +1,10 @@
+build
+out
+backup
+test
+data
+
+*.o
+*.so
+*.d
+*.out

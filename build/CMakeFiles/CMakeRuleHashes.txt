@@ -1,3 +1,0 @@
-# Hashes of file build rules.
-9bd18709b9ba2846334d70139a7bd835 protos/messages.grpc.pb.h
-5a731c5879b90b697980902ce2a29c10 protos/messages.pb.h

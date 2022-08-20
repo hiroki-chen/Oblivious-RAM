@@ -1,2 +1,0 @@
-/usr/bin/ar qc libbase.a CMakeFiles/base.dir/oram_crypto.cc.o CMakeFiles/base.dir/oram_utils.cc.o
-/usr/bin/ranlib libbase.a
