@@ -68,3 +68,6 @@ cd ./build;
 ```
 
 The output will be sent to the file in the `./build` directory with the current timestamp.
+
+# About the secret key negotiation.
+In fact, there is no need to negotiate a session key with the server, here the purpose of doing so is solely for the convenience of debugging and illustration of how to use `libsodium`. A session key will allow the server to decrypt the block on the cloud, and we can check if there is anything wrong.
