@@ -41,9 +41,10 @@ std::unique_ptr<OramController> OramController::GetInstance() {
 size_t OramController::counter_ = 0;
 
 PathOramController::PathOramController(uint32_t id, uint32_t block_num,
-                                       uint32_t bucket_size)
+                                       uint32_t bucket_size, bool standalone)
     : id_(id),
       bucket_size_(bucket_size),
+      standalone_(standalone),
       network_time_(0us),
       network_communication_(0ul) {
   const size_t bucket_num = std::ceil(block_num * 1.0 / bucket_size);
@@ -140,10 +141,7 @@ Status PathOramController::FillWithData(const std::vector<oram_block_t>& data) {
   // The data are organized level by level, and for best performance, we
   // initialize the ORAM tree from the leaf to the root. In other words, we
   // **GREEDILY** fill the buckets from the leaf to the root.
-
-  logger->debug("Fill With Data to Path ORAM id {}", id_);
   oram_utils::PrintStash(data);
-  logger->debug("---------------------------------");
 
   size_t p_data = 0;
   for (int i = tree_level_; i >= 0; i--) {
@@ -332,7 +330,6 @@ Status PathOramController::Access(Operation op_type, uint32_t address,
       // Insert the block to the stash.
       stash_.emplace_back(*data);
     } else {
-      logger->debug("[++] New path : {}", x);
       uint32_t prev = position_map_[address];
       // Use x as the block's path.
       position_map_[address] = x;
@@ -368,7 +365,6 @@ Status PathOramController::Access(Operation op_type, uint32_t address,
       auto iter = std::find_if(stash_.begin(), stash_.end(),
                                BlockEqual(block.header.block_id));
       if (iter == stash_.end() && block.header.type == BlockType::kNormal) {
-        logger->debug("[ADD] Added {}, {}", block.header.block_id, block.data[0]);
         stash_.emplace_back(block);
       }
     }
@@ -382,22 +378,18 @@ Status PathOramController::Access(Operation op_type, uint32_t address,
   logger->debug("------------------------------------------------------");
   PANIC_IF(iter == stash_.end(), "Failed to find the block in the stash.");
 
-  logger->debug("[!!] Now we are operating on id {}, data {}",
-                iter->header.block_id, iter->data[0]);
-
   // Update the block.
   if (op_type == Operation::kWrite) {
     memcpy(iter->data, data->data, DEFAULT_ORAM_DATA_SIZE);
   } else {
     memcpy(data, &(*iter), ORAM_BLOCK_SIZE);
-    // For Partition ORAM. => READ AND REMOVE.
-    // stash_.erase(iter);
-    // position_map_.erase(address);
-  }
 
-  logger->debug("-------------------------AFTER------------------");
-  oram_utils::PrintStash(stash_);
-  logger->debug("------------------------------------------------------");
+    if (!standalone_) {
+      // For Partition ORAM. => READ AND REMOVE.
+      stash_.erase(iter);
+      position_map_.erase(address);
+    }
+  }
 
   // STEP 10-15: Write the path.
   //
@@ -575,8 +567,8 @@ Status OramController::Run(uint32_t block_num, uint32_t bucket_size) {
 
   for (size_t i = 0; i < squared; i++) {
     // We create the PathORAM controller for each slot.
-    path_oram_controllers_.emplace_back(
-        std::make_unique<PathOramController>(i, partition_size_, bucket_size));
+    path_oram_controllers_.emplace_back(std::make_unique<PathOramController>(
+        i, partition_size_, bucket_size, false));
     path_oram_controllers_.back()->SetStub(stub_);
 
     // Then invoke the intialization procedure.
