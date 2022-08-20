@@ -33,7 +33,7 @@ using namespace partition_oram;
 
 // Create the instance
 const std::unique_ptr<PathOramController> path_oram_controller = 
-	std::make_unique<PathOramController>(id, block_num, bucket_size));
+  std::make_unique<PathOramController>(id, block_num, bucket_size));
 	
 // Create the gRPC stub and pass it to the controller.
 path_oram_controller->SetStub(stub_);
@@ -41,7 +41,7 @@ path_oram_controller->SetStub(stub_);
 // Initialize the oram.
 Status status = path_oram_controller->InitOram();
 if (status != Status::kOK) {
-	logger->error("Unexpected error: {}", kErrorList[status]);
+  logger->error("Unexpected error: {}", kErrorList[status]);
 }
 
 // Fill data. Assume you have created a vector of oram_block_t.
