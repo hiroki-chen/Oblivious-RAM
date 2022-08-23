@@ -39,6 +39,9 @@ ABSL_FLAG(uint32_t, bucket_size, 4,
 // Log setting
 ABSL_FLAG(int, log_level, spdlog::level::info, "The level of the log.");
 
+// Disable debugging.
+ABSL_FLAG(bool, disable_debugging, true, "Hide secret on the server.");
+
 // Start experiment series.
 ABSL_FLAG(bool, start_experiment, false, "Start experiment series.");
 

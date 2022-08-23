@@ -58,7 +58,7 @@ partition_oram::Status Cryptor::Encrypt(const uint8_t* message, size_t length,
                                         uint8_t* const iv,
                                         std::string* const out) {
   CryptoPrelogue();
-  PANIC_IF(!is_negotiated, "Cryptor is not negotiated.");
+  PANIC_IF(!is_setup, "Cryptor is not yet correctly set up.");
 
   // Fill in the IV.
   out->resize(crypto_aead_aes256gcm_ABYTES + length);
@@ -76,7 +76,7 @@ partition_oram::Status Cryptor::Decrypt(const uint8_t* message, size_t length,
                                         const uint8_t* iv,
                                         std::string* const out) {
   CryptoPrelogue();
-  PANIC_IF(!is_negotiated, "Cryptor is not negotiated.");
+  PANIC_IF(!is_setup, "Cryptor is not yet correctly set up.");
 
   if (length < crypto_aead_aes256gcm_ABYTES) {
     logger->error("The length of the message is too short.");
@@ -156,7 +156,7 @@ partition_oram::Status Cryptor::SampleSessionKey(const std::string& peer_pk,
   }
 
   if (ret == 0) {
-    is_negotiated = true;
+    is_setup = true;
     return partition_oram::Status::kOK;
   } else {
     return partition_oram::Status::kInvalidOperation;
@@ -216,5 +216,16 @@ partition_oram::Status Cryptor::RandomBytes(uint8_t* const out, size_t length) {
 
   randombytes_buf(out, length);
   return partition_oram::Status::kOK;
+}
+
+void Cryptor::NoNeedForSessionKey(void) {
+  // There is no need to sample a session key with the server for debugging.
+  is_setup = true;
+
+  // Sample a random ephermal key.
+  partition_oram::Status status =
+      RandomBytes(session_key_rx_, ORAM_CRYPTO_KEY_SIZE);
+  PANIC_IF(status != partition_oram::Status::kOK,
+           "Cannot sample ephermeral key.");
 }
 }  // namespace oram_crypto

@@ -52,7 +52,7 @@ void Client::Run(void) {
   std::string test_str = "Hello, world!";
   std::string hash;
   cryptor_->Digest((uint8_t*)test_str.data(), test_str.size(), &hash);
-  logger->info("The hash of {} is {}.", test_str, spdlog::to_hex(hash));
+  logger->debug("The hash of {} is {}.", test_str, spdlog::to_hex(hash));
 }
 
 int Client::StartKeyExchange(void) {

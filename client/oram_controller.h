@@ -72,6 +72,9 @@ class PathOramController : public OramController {
   uint32_t tree_level_;
   uint8_t bucket_size_;
 
+  // stash size.
+  size_t stash_size_;
+
   p_oram_position_t position_map_;
   // The stash should be tied to the slots of Partition ORAM, so we use
   // pointers to manipulate the stash.
@@ -107,6 +110,7 @@ class PathOramController : public OramController {
 
   uint32_t GetTreeLevel(void) const { return tree_level_; }
   size_t ReportClientStorage(void) const;
+  size_t ReportStashSize(void) const { return stash_size_; }
   size_t ReportNetworkCommunication(void) const;
   std::chrono::microseconds ReportNetworkingTime(void) const {
     return network_time_;

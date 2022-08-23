@@ -50,7 +50,7 @@ class Client {
         block_num_(block_num) {}
 
   void Run(void);
-  int StartKeyExchange(void);
+  int StartKeyExchange(bool disable_debugging=true);
   int CloseConnection(void);
   int InitOram(void);
   int TestOram(void);

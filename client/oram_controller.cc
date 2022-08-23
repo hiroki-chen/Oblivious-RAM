@@ -52,7 +52,8 @@ PathOramController::PathOramController(uint32_t id, uint32_t block_num,
     : OramController(id, standalone),
       bucket_size_(bucket_size),
       network_time_(0us),
-      network_communication_(0ul) {
+      network_communication_(0ul),
+      stash_size_(0ul) {
   const size_t bucket_num = std::ceil(block_num * 1.0 / bucket_size);
   // Note that the level starts from 0.
   tree_level_ = std::ceil(LOG_BASE(bucket_num + 1, 2)) - 1;
@@ -347,16 +348,10 @@ Status PathOramController::Access(Operation op_type, uint32_t address,
       "UniformRandom error");
 
   if (!dummy) {
-    if (position_map_.find(address) == position_map_.end()) {
-      position_map_[address] = x;
-      // Insert the block to the stash.
-      stash_.emplace_back(*data);
-    } else {
-      uint32_t prev = position_map_[address];
-      // Use x as the block's path.
-      position_map_[address] = x;
-      x = prev;
-    }
+    uint32_t prev = position_map_[address];
+    // Use x as the block's path.
+    position_map_[address] = x;
+    x = prev;
   }
 
   // Step 3-5: Read the whole path from the server into the stash.
@@ -399,6 +394,9 @@ Status PathOramController::Access(Operation op_type, uint32_t address,
   oram_utils::PrintStash(stash_);
   logger->debug("------------------------------------------------------");
   PANIC_IF(iter == stash_.end(), "Failed to find the block in the stash.");
+
+  // FIXME: Not sure if this is accurate.
+  stash_size_ = std::max(stash_size_, stash_.size());
 
   // Update the block.
   if (op_type == Operation::kWrite) {

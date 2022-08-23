@@ -16,14 +16,14 @@
  */
 #include "oram_utils.h"
 
+#include <lz4.h>
+#include <spdlog/fmt/bin_to_hex.h>
+#include <spdlog/spdlog.h>
+
 #include <cstdarg>
 #include <cstring>
 #include <fstream>
 #include <sstream>
-
-#include <spdlog/spdlog.h>
-#include <spdlog/fmt/bin_to_hex.h>
-#include <lz4.h>
 
 #include "oram_crypto.h"
 
@@ -140,6 +140,11 @@ partition_oram::p_oram_bucket_t SampleRandomBucket(size_t size,
 
     bucket.emplace_back(block);
   }
+
+  // Do a shuffle.
+  PANIC_IF(oram_crypto::Cryptor::RandomShuffle<partition_oram::oram_block_t>(
+               bucket) != partition_oram::Status::kOK,
+           "Random shuffle failed due to internal error.");
 
   return bucket;
 }

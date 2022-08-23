@@ -16,6 +16,7 @@
  */
 #include "path_oram_client.h"
 
+#include <absl/flags/flag.h>
 #include <spdlog/fmt/bin_to_hex.h>
 #include <spdlog/spdlog.h>
 
@@ -50,10 +51,15 @@ void Client::Run(void) {
   std::string test_str = "Hello, world!";
   std::string hash;
   cryptor_->Digest((uint8_t*)test_str.data(), test_str.size(), &hash);
-  logger->info("The hash of {} is {}.", test_str, spdlog::to_hex(hash));
+  logger->debug("The hash of {} is {}.", test_str, spdlog::to_hex(hash));
 }
 
-int Client::StartKeyExchange(void) {
+int Client::StartKeyExchange(bool disable_debugging) {
+  if (disable_debugging) {
+    cryptor_->NoNeedForSessionKey();
+    return 0;
+  }
+
   cryptor_->SampleKeyPair();
   auto key_pair = std::move(cryptor_->GetKeyPair());
 
@@ -160,5 +166,6 @@ int Client::TestOram(void) {
   }
 
   logger->info("[-] End testing Path ORAM.");
+  logger->info("[-] Peak stash: {}", controller_->ReportStashSize());
   return 0;
 }

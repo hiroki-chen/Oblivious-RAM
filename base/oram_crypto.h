@@ -17,11 +17,11 @@
 #ifndef PARTITION_ORAM_BASE_ORAM_CRYPTO_H_
 #define PARTITION_ORAM_BASE_ORAM_CRYPTO_H_
 
-#include <string>
-#include <memory>
-#include <utility>
-
 #include <sodium.h>
+
+#include <memory>
+#include <string>
+#include <utility>
 
 #include "oram_defs.h"
 
@@ -42,7 +42,7 @@ class Cryptor {
   uint8_t secret_key_[crypto_kx_SECRETKEYBYTES];
 
   bool is_initialized = false;
-  bool is_negotiated = false;
+  bool is_setup = false;
 
   Cryptor();
 
@@ -85,6 +85,8 @@ class Cryptor {
 
   std::pair<std::string, std::string> GetKeyPair(void);
   std::pair<std::string, std::string> GetSessionKeyPair(void);
+
+  void NoNeedForSessionKey(void);
 
   virtual ~Cryptor();
 };
