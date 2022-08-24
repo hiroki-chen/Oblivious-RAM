@@ -14,44 +14,71 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef PARTITION_ORAM_SERVER_ORAM_STORAGE_H_
-#define PARTITION_ORAM_SERVER_ORAM_STORAGE_H_
+#ifndef ORAM_IMPL_SERVER_ORAM_STORAGE_H_
+#define ORAM_IMPL_SERVER_ORAM_STORAGE_H_
 
-#include <cstdint>
-#include <cstddef>
 #include <cmath>
+#include <cstddef>
+#include <cstdint>
 #include <unordered_map>
 
 #include "base/oram_defs.h"
 #include "protos/messages.pb.h"
 
-namespace partition_oram {
-class OramServerStorage {
-  server_storage_t storage_;
-  // The id corresponding to each slot.
-  uint32_t id_;
-  // How many buckets are in the storage.
-  size_t capacity_;
+namespace oram_impl {
+class BaseOramServerStorage {
+ protected:
+  // The id.
+  const uint32_t id_;
+  // How many buckets / blocks it can hold.
+  const size_t capacity_;
+  // The type.
+  OramStorageType oram_storage_type_;
+
+ public:
+  BaseOramServerStorage(uint32_t id, size_t capacity,
+                        OramStorageType oram_storage_type)
+      : id_(id), capacity_(capacity), oram_storage_type_(oram_storage_type) {}
+
+  virtual uint32_t GetId(void) const { return id_; }
+  virtual size_t GetCapacity(void) const { return capacity_; }
+  virtual OramStorageType GetOramStorageType(void) const {
+    return oram_storage_type_;
+  }
+};
+
+class FlatOramServerStorage : public BaseOramServerStorage {
+  server_flat_storage_t storage_;
+
+ public:
+  FlatOramServerStorage(uint32_t id, size_t capacity)
+      : BaseOramServerStorage(id, capacity, OramStorageType::kFlatStorage) {}
+
+  server_flat_storage_t GetStorage(void) { return storage_; }
+};
+
+class TreeOramServerStorage : public BaseOramServerStorage {
+  server_tree_storage_t storage_;
   // The level of the oram tree.
   uint32_t level_;
   // The size of each bucket.
   size_t bucket_size_;
 
  public:
-  OramServerStorage(uint32_t id, size_t capacity, size_t bucket_size);
+  TreeOramServerStorage(uint32_t id, size_t capacity, size_t bucket_size);
 
-  Status ReadPath(uint32_t level, uint32_t path,
-                  p_oram_bucket_t* const out_bucket);
-  Status WritePath(uint32_t level, uint32_t path,
-                   const p_oram_bucket_t& in_bucket);
-  Status AccurateWritePath(uint32_t level, uint32_t offset,
-                           const p_oram_bucket_t& in_bucket,
-                           partition_oram::Type type);
+  OramStatus ReadPath(uint32_t level, uint32_t path,
+                      p_oram_bucket_t* const out_bucket);
+  OramStatus WritePath(uint32_t level, uint32_t path,
+                       const p_oram_bucket_t& in_bucket);
+  OramStatus AccurateWritePath(uint32_t level, uint32_t offset,
+                               const p_oram_bucket_t& in_bucket,
+                               oram_impl::Type type);
 
-  server_storage_t get_storage(void) const { return storage_; }
+  server_tree_storage_t GetStorage(void) const { return storage_; }
 
   float ReportStorage(void) const;
 };
-}  // namespace partition_oram
+}  // namespace oram_impl
 
-#endif  // PARTITION_ORAM_SERVER_ORAM_STORAGE_H_
+#endif  // ORAM_IMPL_SERVER_ORAM_STORAGE_H_

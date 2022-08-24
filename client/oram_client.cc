@@ -23,7 +23,7 @@
 
 extern std::shared_ptr<spdlog::logger> logger;
 
-namespace partition_oram {
+namespace oram_impl {
 void Client::Run(void) {
   logger->info("Client started, and the address is given as {}:{}.",
                server_address_, server_port_);
@@ -75,9 +75,9 @@ int Client::StartKeyExchange(void) {
                spdlog::to_hex(public_key_server));
 
   // Sample the session key based on the server's public key.
-  Status oram_status;
+  OramStatus oram_status;
   if ((oram_status = cryptor_->SampleSessionKey(response.public_key_server(),
-                                                0)) != Status::kOK) {
+                                                0)) != OramStatus::kOK) {
     logger->error("Failed to sample session key! Error: {}",
                   kErrorList.at(oram_status));
     return -1;
@@ -153,9 +153,9 @@ int Client::CloseConnection(void) {
 
 int Client::InitOram(void) {
   // Initialize the oram via the controller.
-  Status oram_status;
+  OramStatus oram_status;
   if ((oram_status = controller_->Run(block_num_, bucket_size_)) !=
-      Status::kOK) {
+      OramStatus::kOK) {
     logger->error("Failed to initialize the oram! Error: {}",
                   kErrorList.at(oram_status));
     return -1;
@@ -170,4 +170,4 @@ int Client::TestOram(void) {
   controller_->TestPartitionOram();
   return 0;
 }
-}  // namespace partition_oram
+}  // namespace oram_impl

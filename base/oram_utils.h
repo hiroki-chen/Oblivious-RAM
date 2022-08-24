@@ -14,15 +14,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef PARTITION_ORAM_BASE_ORAM_UTILS_H_
-#define PARTITION_ORAM_BASE_ORAM_UTILS_H_
+#ifndef ORAM_IMPL_BASE_ORAM_UTILS_H_
+#define ORAM_IMPL_BASE_ORAM_UTILS_H_
 
 #include <cassert>
-#include <string>
 #include <sstream>
+#include <string>
 
-#include "oram_defs.h"
 #include "oram_crypto.h"
+#include "oram_defs.h"
 
 #define ASSERT_MSG(x) !(std::cerr << "Assertion failed: " << x << std::endl)
 #define PANIC_IF(cond, message) assert(!(cond) || ASSERT_MSG(message))
@@ -43,43 +43,42 @@ std::string StrCat(const std::string& s, Args&&... args) {
 std::vector<std::string> ReadDataFromFile(const std::string& path);
 
 std::vector<std::string> SerializeToStringVector(
-    const partition_oram::p_oram_bucket_t& bucket);
+    const oram_impl::p_oram_bucket_t& bucket);
 
-partition_oram::p_oram_bucket_t DeserializeFromStringVector(
+oram_impl::p_oram_bucket_t DeserializeFromStringVector(
     const std::vector<std::string>& data);
 
-partition_oram::p_oram_bucket_t SampleRandomBucket(size_t size,
-                                                   size_t tree_size,
-                                                   size_t initial_offset);
+oram_impl::p_oram_bucket_t SampleRandomBucket(size_t size, size_t tree_size,
+                                              size_t initial_offset);
 
 void SafeFree(void* ptr);
 
 void SafeFreeAll(size_t ptr_num, ...);
 
 void ConvertToBlock(const std::string& data,
-                    partition_oram::oram_block_t* const block);
+                    oram_impl::oram_block_t* const block);
 
-void ConvertToString(const partition_oram::oram_block_t* const block,
+void ConvertToString(const oram_impl::oram_block_t* const block,
                      std::string* const data);
 
-void CheckStatus(partition_oram::Status status, const std::string& reason);
+void CheckStatus(oram_impl::OramStatus status, const std::string& reason);
 
-void PadStash(partition_oram::p_oram_stash_t* const stash,
-              const size_t bucket_size);
+void PadStash(oram_impl::p_oram_stash_t* const stash, const size_t bucket_size);
 
-void PrintStash(const partition_oram::p_oram_stash_t& stash);
+void PrintStash(const oram_impl::p_oram_stash_t& stash);
 
-void PrintOramTree(const partition_oram::server_storage_t& storage);
+void PrintOramTree(const oram_impl::server_tree_storage_t& storage);
 
-void EncryptBlock(partition_oram::oram_block_t* const block,
+void EncryptBlock(oram_impl::oram_block_t* const block,
                   oram_crypto::Cryptor* const cryptor);
 
-void DecryptBlock(partition_oram::oram_block_t* const block,
+void DecryptBlock(oram_impl::oram_block_t* const block,
                   oram_crypto::Cryptor* const cryptor);
 
 size_t DataCompress(const uint8_t* data, size_t data_size, uint8_t* const out);
 
-size_t DataDecompress(const uint8_t* data, size_t data_size, uint8_t* const out);
+size_t DataDecompress(const uint8_t* data, size_t data_size,
+                      uint8_t* const out);
 }  // namespace oram_utils
 
-#endif  // PARTITION_ORAM_BASE_ORAM_UTILS_H_
+#endif  // ORAM_IMPL_BASE_ORAM_UTILS_H_

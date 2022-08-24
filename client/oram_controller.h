@@ -14,13 +14,14 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef PARTITION_ORAM_CLIENT_ORAM_CONTROLLER_H_
-#define PARTITION_ORAM_CLIENT_ORAM_CONTROLLER_H_
+#ifndef ORAM_IMPL_CLIENT_ORAM_CONTROLLER_H_
+#define ORAM_IMPL_CLIENT_ORAM_CONTROLLER_H_
 
 #include <grpc++/grpc++.h>
 
 #include <chrono>
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -29,13 +30,15 @@
 #include "base/oram_defs.h"
 #include "protos/messages.grpc.pb.h"
 
-namespace partition_oram {
+namespace oram_impl {
 class OramController {
  protected:
-  uint32_t id_;
+  const uint32_t id_;
   // Whether this pathoram conroller is a standalone controller
   // or embedded with other controllers, say PartitionORAM controller.
-  bool standalone_;
+  const bool standalone_;
+  // Oram type.
+  const OramType oram_type_;
 
   // An object used to call some methods of ORAM storage on the cloud.
   std::shared_ptr<server::Stub> stub_;
@@ -43,15 +46,18 @@ class OramController {
   std::shared_ptr<oram_crypto::Cryptor> cryptor_;
 
  public:
-  OramController(uint32_t id, bool standalone);
+  OramController(uint32_t id, bool standalone, OramType oram_type);
 
-  virtual Status InitOram(void) = 0;
-  virtual Status FillWithData(const std::vector<oram_block_t>& data) = 0;
-  virtual Status Access(Operation op_type, uint32_t address,
-                        oram_block_t* const data, bool dummy) = 0;
-  virtual Status FromFile(const std::string& file_path) = 0;
+  virtual OramStatus InitOram(void) = 0;
+  virtual OramStatus FillWithData(const std::vector<oram_block_t>& data) = 0;
+  virtual OramStatus Access(Operation op_type, uint32_t address,
+                            oram_block_t* const data) = 0;
+  virtual OramStatus FromFile(const std::string& file_path) {
+    UNIMPLEMENTED_FUNC;
+  }
 
   virtual uint32_t GetId(void) const { return id_; }
+  virtual OramType GetOramType(void) const { return oram_type_; }
   virtual bool IsStandAlone(void) const { return standalone_; }
   virtual void SetStub(std::shared_ptr<server::Stub> stub) { stub_ = stub; }
 
@@ -60,6 +66,14 @@ class OramController {
     stub_.reset();
     cryptor_.reset();
   }
+};
+
+// A trivial solution for ORAM. It only has educational meaning. Do not use it
+// in any productive environment.
+class LinearOramController : public OramController {
+ public:
+  LinearOramController(uint32_t id, bool standalone)
+      : OramController(id, standalone, OramType::kLinearOram) {}
 };
 
 // This class is the implementation of the ORAM controller for Path ORAM.
@@ -85,28 +99,34 @@ class PathOramController : public OramController {
   size_t network_communication_;
 
   // ==================== Begin private methods ==================== //
-  Status ReadBucket(uint32_t path, uint32_t level,
-                    p_oram_bucket_t* const bucket);
-  Status WriteBucket(uint32_t path, uint32_t level,
-                     const p_oram_bucket_t& bucket);
-  Status AccurateWriteBucket(uint32_t level, uint32_t offset,
-                             const p_oram_bucket_t& bucket);
-  Status PrintOramTree(void);
+  OramStatus ReadBucket(uint32_t path, uint32_t level,
+                        p_oram_bucket_t* const bucket);
+  OramStatus WriteBucket(uint32_t path, uint32_t level,
+                         const p_oram_bucket_t& bucket);
+  OramStatus AccurateWriteBucket(uint32_t level, uint32_t offset,
+                                 const p_oram_bucket_t& bucket);
+  OramStatus PrintOramTree(void);
 
   p_oram_stash_t FindSubsetOf(uint32_t current_path);
   // ==================== End private methods ==================== //
+ protected:
+  OramStatus InternalAccess(Operation op_type, uint32_t address,
+                            oram_block_t* const data, bool dummy = false);
 
  public:
   PathOramController(uint32_t id, uint32_t block_num, uint32_t bucket_size,
                      bool standalone = true);
 
-  virtual Status InitOram(void) override;
-  virtual Status FillWithData(const std::vector<oram_block_t>& data) override;
+  virtual OramStatus InitOram(void) override;
+  virtual OramStatus FillWithData(
+      const std::vector<oram_block_t>& data) override;
 
   // The meanings of parameters are explained in Stefanov et al.'s paper.
-  virtual Status Access(Operation op_type, uint32_t address,
-                        oram_block_t* const data, bool dummy) override;
-  virtual Status FromFile(const std::string& file_path) override;
+  virtual OramStatus Access(Operation op_type, uint32_t address,
+                            oram_block_t* const data) override {
+    return InternalAccess(op_type, address, data, false);
+  }
+  virtual OramStatus FromFile(const std::string& file_path) override;
 
   uint32_t GetTreeLevel(void) const { return tree_level_; }
   size_t ReportClientStorage(void) const;
@@ -118,7 +138,7 @@ class PathOramController : public OramController {
 };
 
 // This class is the implementation of the ORAM controller for Partition ORAM.
-class PartitionOramController {
+class PartitionOramController : public OramController {
   size_t partition_size_;
   size_t bucket_size_;
   size_t nu_;
@@ -130,36 +150,38 @@ class PartitionOramController {
   pp_oram_slot_t slots_;
   // Controllers for each slot: [slot_id] -> [controller_1, controller_2, ...,
   //                                          controller_n].
+  // TODO: Currently this is pathoram controller.
   std::vector<std::unique_ptr<PathOramController>> path_oram_controllers_;
-  // Cryptography manager.
-  std::shared_ptr<oram_crypto::Cryptor> cryptor_;
-  // Stub
-  std::shared_ptr<server::Stub> stub_;
 
-  PartitionOramController() {}
+  PartitionOramController(uint32_t id = 0ul)
+      : OramController(id, true, OramType::kPartitionOram) {}
 
   // ==================== Begin private methods ==================== //
-  Status Evict(uint32_t id);
-  Status SequentialEvict(void);
-  Status RandomEvict(void);
+  OramStatus Evict(uint32_t id);
+  OramStatus SequentialEvict(void);
+  OramStatus RandomEvict(void);
 
-  Status ProcessSlot(const std::vector<oram_block_t>& data, uint32_t slot_id);
+  OramStatus ProcessSlot(const std::vector<oram_block_t>& data,
+                         uint32_t slot_id);
   // ==================== End private methods ==================== //
 
  public:
   static std::unique_ptr<PartitionOramController> GetInstance();
 
-  void SetStub(std::shared_ptr<server::Stub> stub) { stub_ = stub; }
   void SetBucketSize(size_t bucket_size) { bucket_size_ = bucket_size; }
   void SetNu(size_t nu) { nu_ = nu; }
 
-  Status Access(Operation op_type, uint32_t address, oram_block_t* const data);
-  Status Run(uint32_t block_num, uint32_t bucket_size);
-  Status FillWithData(const std::vector<oram_block_t>& data);
+  virtual OramStatus Access(Operation op_type, uint32_t address,
+                            oram_block_t* const data) override;
 
+  virtual OramStatus FillWithData(
+      const std::vector<oram_block_t>& data) override;
+  virtual OramStatus InitOram(void) override;
+
+  OramStatus Run(uint32_t block_num, uint32_t bucket_size);
   // A reserved interface for testing one of the PathORAM controllers.
-  Status TestPathOram(uint32_t controller_id);
-  Status TestPartitionOram(void);
+  OramStatus TestPathOram(uint32_t controller_id);
+  OramStatus TestPartitionOram(void);
 
   size_t ReportClientStorage(void) const;
   size_t ReportNetworkCommunication(void) const;
@@ -174,6 +196,6 @@ class PartitionOramController {
 
   virtual ~PartitionOramController() {}
 };
-}  // namespace partition_oram
+}  // namespace oram_impl
 
-#endif  // PARTITION_ORAM_CLIENT_ORAM_CONTROLLER_H_
+#endif  // ORAM_IMPL_CLIENT_ORAM_CONTROLLER_H_

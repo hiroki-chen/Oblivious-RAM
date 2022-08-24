@@ -16,18 +16,19 @@
  */
 #include "oram_storage.h"
 
-#include <cmath>
-
 #include <spdlog/logger.h>
+
+#include <cmath>
 
 #include "base/oram_utils.h"
 
 extern std::shared_ptr<spdlog::logger> logger;
 
-namespace partition_oram {
-OramServerStorage::OramServerStorage(uint32_t id, size_t capacity,
-                                     size_t bucket_size)
-    : id_(id), capacity_(capacity), bucket_size_(bucket_size) {
+namespace oram_impl {
+TreeOramServerStorage::TreeOramServerStorage(uint32_t id, size_t capacity,
+                                             size_t bucket_size)
+    : BaseOramServerStorage(id, capacity, OramStorageType::kTreeStorage),
+      bucket_size_(bucket_size) {
   level_ = std::ceil(LOG_BASE(capacity_ + 1, 2)) - 1;
 
   logger->debug("level = {}, capacity = {}", level_, capacity);
@@ -44,8 +45,8 @@ OramServerStorage::OramServerStorage(uint32_t id, size_t capacity,
   }
 }
 
-Status OramServerStorage::ReadPath(uint32_t level, uint32_t path,
-                                   p_oram_bucket_t* const out_bucket) {
+OramStatus TreeOramServerStorage::ReadPath(uint32_t level, uint32_t path,
+                                           p_oram_bucket_t* const out_bucket) {
   // The offset should be calculated by the level and path.
   const uint32_t offset = std::floor(path * 1. / POW2(level_ - level));
   const server_storage_tag_t tag = std::make_pair(level, offset);
@@ -55,7 +56,7 @@ Status OramServerStorage::ReadPath(uint32_t level, uint32_t path,
   if (iter == storage_.end()) {
     logger->error("OramServerStorage::ReadPath: Cannot find the bucket.");
     // Not found.
-    return Status::kObjectNotFound;
+    return OramStatus::kObjectNotFound;
   } else {
     std::for_each(iter->second.begin(), iter->second.end(),
                   [&out_bucket](std::string& data) {
@@ -73,28 +74,27 @@ Status OramServerStorage::ReadPath(uint32_t level, uint32_t path,
                     }
                   });
 
-    return Status::kOK;
+    return OramStatus::kOK;
   }
 }
 
-Status OramServerStorage::WritePath(uint32_t level, uint32_t path,
-                                    const p_oram_bucket_t& in_bucket) {
+OramStatus TreeOramServerStorage::WritePath(uint32_t level, uint32_t path,
+                                            const p_oram_bucket_t& in_bucket) {
   const uint32_t offset = std::floor(path * 1. / POW2(level_ - level));
 
-  return AccurateWritePath(level, offset, in_bucket,
-                           partition_oram::Type::kNormal);
+  return AccurateWritePath(level, offset, in_bucket, oram_impl::Type::kNormal);
 }
 
-Status OramServerStorage::AccurateWritePath(uint32_t level, uint32_t offset,
-                                            const p_oram_bucket_t& in_bucket,
-                                            partition_oram::Type type) {
+OramStatus TreeOramServerStorage::AccurateWritePath(
+    uint32_t level, uint32_t offset, const p_oram_bucket_t& in_bucket,
+    oram_impl::Type type) {
   logger->info("Write offset {} at level {}. ", offset, level);
   const server_storage_tag_t tag = std::make_pair(level, offset);
 
   auto iter = storage_.find(tag);
   uint8_t buf[DEFAULT_COMPRESSED_BUF_SIZE];
 
-  if (type == partition_oram::Type::kInit) {
+  if (type == oram_impl::Type::kInit) {
     for (size_t i = 0; i < in_bucket.size(); i++) {
       const size_t compressed_size = oram_utils::DataCompress(
           (uint8_t*)(&in_bucket[i]), ORAM_BLOCK_SIZE, buf);
@@ -103,13 +103,13 @@ Status OramServerStorage::AccurateWritePath(uint32_t level, uint32_t offset,
           std::string(reinterpret_cast<const char*>(buf), compressed_size));
     }
 
-    return Status::kOK;
+    return OramStatus::kOK;
   }
 
-  if (iter == storage_.end() && type == partition_oram::Type::kNormal) {
+  if (iter == storage_.end() && type == oram_impl::Type::kNormal) {
     logger->error("OramServerStorage::WritePath: Cannot find the bucket.");
     // Not found.
-    return Status::kObjectNotFound;
+    return OramStatus::kObjectNotFound;
   } else {
     iter->second.clear();
 
@@ -121,11 +121,11 @@ Status OramServerStorage::AccurateWritePath(uint32_t level, uint32_t offset,
           std::string(reinterpret_cast<const char*>(buf), compressed_size));
     }
 
-    return Status::kOK;
+    return OramStatus::kOK;
   }
 }
 
-float OramServerStorage::ReportStorage(void) const {
+float TreeOramServerStorage::ReportStorage(void) const {
   // Calculate the overall size of the storage in Megabytes.
   uint64_t storage_size = 0;
   for (const auto& iter : storage_) {
@@ -134,4 +134,4 @@ float OramServerStorage::ReportStorage(void) const {
 
   return storage_size * 1. / POW2(20);
 }
-}  // namespace partition_oram
+}  // namespace oram_impl

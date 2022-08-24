@@ -30,7 +30,7 @@ extern std::shared_ptr<spdlog::logger> logger;
 
 using std::chrono_literals::operator""us;
 
-namespace partition_oram {
+namespace oram_impl {
 // The ownership of ORAM main controller cannot be multiple.
 // This cannot be shared.
 std::unique_ptr<PartitionOramController>
@@ -42,14 +42,14 @@ PartitionOramController::GetInstance() {
 
 size_t PartitionOramController::counter_ = 0;
 
-OramController::OramController(uint32_t id, bool standalone)
-    : id_(id), standalone_(standalone) {
+OramController::OramController(uint32_t id, bool standalone, OramType oram_type)
+    : id_(id), standalone_(standalone), oram_type_(oram_type) {
   cryptor_ = oram_crypto::Cryptor::GetInstance();
 }
 
 PathOramController::PathOramController(uint32_t id, uint32_t block_num,
                                        uint32_t bucket_size, bool standalone)
-    : OramController(id, standalone),
+    : OramController(id, standalone, OramType::kPathOram),
       bucket_size_(bucket_size),
       network_time_(0us),
       network_communication_(0ul),
@@ -76,7 +76,7 @@ size_t PathOramController::ReportNetworkCommunication(void) const {
   return network_communication_ * ORAM_BLOCK_SIZE;
 }
 
-Status PathOramController::PrintOramTree(void) {
+OramStatus PathOramController::PrintOramTree(void) {
   grpc::ClientContext context;
   PrintOramTreeRequest request;
   google::protobuf::Empty empty;
@@ -86,14 +86,14 @@ Status PathOramController::PrintOramTree(void) {
 
   if (!status.ok()) {
     logger->error("PrintOramTree failed: {}", status.error_message());
-    return Status::kServerError;
+    return OramStatus::kServerError;
   }
 
-  return Status::kOK;
+  return OramStatus::kOK;
 }
 
-Status PathOramController::AccurateWriteBucket(uint32_t level, uint32_t offset,
-                                               const p_oram_bucket_t& bucket) {
+OramStatus PathOramController::AccurateWriteBucket(
+    uint32_t level, uint32_t offset, const p_oram_bucket_t& bucket) {
   grpc::ClientContext context;
   WritePathRequest request;
   WritePathResponse response;
@@ -116,13 +116,13 @@ Status PathOramController::AccurateWriteBucket(uint32_t level, uint32_t offset,
   grpc::Status status = stub_->WritePath(&context, request, &response);
 
   if (!status.ok()) {
-    return Status::kServerError;
+    return OramStatus::kServerError;
   }
 
-  return Status::kOK;
+  return OramStatus::kOK;
 }
 
-Status PathOramController::InitOram(void) {
+OramStatus PathOramController::InitOram(void) {
   grpc::ClientContext context;
   InitOramRequest request;
   google::protobuf::Empty empty;
@@ -134,13 +134,13 @@ Status PathOramController::InitOram(void) {
   grpc::Status status = stub_->InitOram(&context, request, &empty);
   if (!status.ok()) {
     logger->error("InitOram failed: {}", status.error_message());
-    return Status::kServerError;
+    return OramStatus::kServerError;
   }
 
-  return Status::kOK;
+  return OramStatus::kOK;
 }
 
-Status PathOramController::FromFile(const std::string& file_path) {
+OramStatus PathOramController::FromFile(const std::string& file_path) {
   const std::vector<std::string> data =
       std::move(oram_utils::ReadDataFromFile(file_path));
 
@@ -158,7 +158,8 @@ Status PathOramController::FromFile(const std::string& file_path) {
 }
 
 // The input vector of blocks should be sorted by their path id.
-Status PathOramController::FillWithData(const std::vector<oram_block_t>& data) {
+OramStatus PathOramController::FillWithData(
+    const std::vector<oram_block_t>& data) {
   // We organize all the data into buckets and then directly write them to the
   // server by invoking the WritePath method provided by the gRPC framework.
   // The data are organized level by level, and for best performance, we
@@ -216,13 +217,13 @@ Status PathOramController::FillWithData(const std::vector<oram_block_t>& data) {
 
   request.set_id(id_);
 
-  return Status::kOK;
+  return OramStatus::kOK;
 }
 
-Status PathOramController::ReadBucket(uint32_t path, uint32_t level,
-                                      p_oram_bucket_t* const bucket) {
+OramStatus PathOramController::ReadBucket(uint32_t path, uint32_t level,
+                                          p_oram_bucket_t* const bucket) {
   if (path >= number_of_leafs_ || level > tree_level_) {
-    return Status::kInvalidArgument;
+    return OramStatus::kInvalidArgument;
   }
 
   grpc::ClientContext context;
@@ -242,7 +243,7 @@ Status PathOramController::ReadBucket(uint32_t path, uint32_t level,
       std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
 
   if (!status.ok()) {
-    return Status::kServerError;
+    return OramStatus::kServerError;
   }
 
   const size_t bucket_size = response.bucket_size();
@@ -260,11 +261,11 @@ Status PathOramController::ReadBucket(uint32_t path, uint32_t level,
 
   network_communication_ += response.bucket_size();
 
-  return Status::kOK;
+  return OramStatus::kOK;
 }
 
-Status PathOramController::WriteBucket(uint32_t path, uint32_t level,
-                                       const p_oram_bucket_t& bucket) {
+OramStatus PathOramController::WriteBucket(uint32_t path, uint32_t level,
+                                           const p_oram_bucket_t& bucket) {
   logger->debug("[+] Writing bucket at path {}, level {}", path, level);
 
   grpc::ClientContext context;
@@ -296,10 +297,10 @@ Status PathOramController::WriteBucket(uint32_t path, uint32_t level,
       std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
 
   if (!status.ok()) {
-    return Status::kServerError;
+    return OramStatus::kServerError;
   }
 
-  return Status::kOK;
+  return OramStatus::kOK;
 }
 
 p_oram_stash_t PathOramController::FindSubsetOf(uint32_t current_path) {
@@ -329,8 +330,10 @@ p_oram_stash_t PathOramController::FindSubsetOf(uint32_t current_path) {
 // adapt the following function. This must be very carefully implemented because
 // we may need to re-adjust the size of the Path ORAM so that it can hold as
 // many blocks as each slot in the Partition ORAM needs.
-Status PathOramController::Access(Operation op_type, uint32_t address,
-                                  oram_block_t* const data, bool dummy) {
+OramStatus PathOramController::InternalAccess(Operation op_type,
+                                              uint32_t address,
+                                              oram_block_t* const data,
+                                              bool dummy) {
   logger->debug("ORAM ID: {}, Accessing address {}, op_type {}, dummy {} ", id_,
                 address, (int)op_type, dummy);
   // First we do a sanity check.
@@ -359,7 +362,7 @@ Status PathOramController::Access(Operation op_type, uint32_t address,
 
   for (size_t i = 0; i <= tree_level_; i++) {
     p_oram_bucket_t bucket_this_level;
-    Status status = ReadBucket(x, i, &bucket_this_level);
+    OramStatus status = ReadBucket(x, i, &bucket_this_level);
     oram_utils::CheckStatus(status,
                             oram_utils::StrCat("Failed to read bucket: ", x));
     bucket_this_path.emplace_back(bucket_this_level);
@@ -367,7 +370,7 @@ Status PathOramController::Access(Operation op_type, uint32_t address,
 
   if (dummy) {
     // Invoke a dummy read operation and everything is done here.
-    return Status::kOK;
+    return OramStatus::kOK;
   }
 
   // Read all the blocks into the stash.
@@ -429,11 +432,11 @@ Status PathOramController::Access(Operation op_type, uint32_t address,
     // pad S' with dummy blocks. Expire all blocks in S that are in S'. Write
     // them back.
     p_oram_stash_t subset = std::move(FindSubsetOf(x));
-    Status status = WriteBucket(x, i - 1, subset);
+    OramStatus status = WriteBucket(x, i - 1, subset);
     oram_utils::CheckStatus(status, "Failed to write bucket.");
   }
 
-  return Status::kOK;
+  return OramStatus::kOK;
 }
 
 // @ ref Towards Practical Oblivious RAM's access algorithm.
@@ -444,14 +447,14 @@ Status PathOramController::Access(Operation op_type, uint32_t address,
 // identified by u, and returns the old value of the block u.
 //
 // For readability, we rename u to address denoting the block's identifier.
-Status PartitionOramController::Access(Operation op_type, uint32_t address,
-                                       oram_block_t* const data) {
+OramStatus PartitionOramController::Access(Operation op_type, uint32_t address,
+                                           oram_block_t* const data) {
   auto begin_access = std::chrono::high_resolution_clock::now();
   // A temporary buffer that holds the data.
   oram_block_t block;
   // Sample a new random slot id for this block.
   uint32_t new_slot_id;
-  Status status = oram_crypto::Cryptor::UniformRandom(
+  OramStatus status = oram_crypto::Cryptor::UniformRandom(
       0, path_oram_controllers_.size() - 1, &new_slot_id);
   oram_utils::CheckStatus(status, "Failed to sample a new slot id.");
 
@@ -472,11 +475,11 @@ Status PartitionOramController::Access(Operation op_type, uint32_t address,
                            BlockEqual(address));
   if (iter == slots_[slot_id].end()) {
     // Read the block from the PathORAM controller.
-    status = controller->Access(op_type, address, &block, false);
+    status = controller->InternalAccess(op_type, address, &block, false);
   } else {
     // Invoke a dummy read.
-    Status status =
-        controller->Access(Operation::kRead, address, nullptr, true);
+    OramStatus status =
+        controller->InternalAccess(Operation::kRead, address, nullptr, true);
     oram_utils::CheckStatus(status, "Cannot perform fake read!");
     // Read the block directly from the slot.
     block = *iter;
@@ -515,48 +518,48 @@ Status PartitionOramController::Access(Operation op_type, uint32_t address,
                    end_evict - begin_evict)
                    .count());
 
-  return Status::kOK;
+  return OramStatus::kOK;
 }
 
-Status PartitionOramController::Evict(uint32_t id) {
+OramStatus PartitionOramController::Evict(uint32_t id) {
   logger->debug("Evicting slot {}", id);
   PathOramController* const controller = path_oram_controllers_[id].get();
   if (slots_[id].empty()) {
     // Perform a fake write.
-    return controller->Access(Operation::kWrite, 0, nullptr, true);
+    return controller->InternalAccess(Operation::kWrite, 0, nullptr, true);
   } else {
     logger->debug("---------------EVICT------------------");
     oram_utils::PrintStash(slots_[id]);
     logger->debug("---------------EVICT------------------");
     oram_block_t block = slots_[id].back();
     slots_[id].pop_back();
-    return controller->Access(Operation::kWrite, block.header.block_id, &block,
-                              false);
+    return controller->InternalAccess(Operation::kWrite, block.header.block_id,
+                                      &block, false);
   }
 }
 
 // RandomEvict samples \nu \in \mathbb{N} random slots (with replacement) to
 // evict from.
-Status PartitionOramController::RandomEvict(void) {
+OramStatus PartitionOramController::RandomEvict(void) {
   // For simplicity, we use uniform random sampling.
   for (size_t i = 0; i < nu_; i++) {
     uint32_t id;
     oram_utils::CheckStatus(oram_crypto::Cryptor::UniformRandom(
                                 0, path_oram_controllers_.size() - 1, &id),
                             "Failed to sample a new slot id.");
-    if (Evict(id) != Status::kOK) {
-      return Status::kInvalidOperation;
+    if (Evict(id) != OramStatus::kOK) {
+      return OramStatus::kInvalidOperation;
     }
   }
 
-  return Status::kOK;
+  return OramStatus::kOK;
 }
 
 // SequentialEvict determines the number of blocks to evict num based on a
 // prescribed dis- tribution D(ν) and sequentially scans num slots to evict
 // from. RandomEvict samples ν ∈ N random slots (with replacement) to evict
 // from.
-Status PartitionOramController::SequentialEvict(void) {
+OramStatus PartitionOramController::SequentialEvict(void) {
   size_t evict_num;
   oram_utils::CheckStatus(
       oram_crypto::Cryptor::UniformRandom(0, path_oram_controllers_.size() - 1,
@@ -565,43 +568,49 @@ Status PartitionOramController::SequentialEvict(void) {
   for (size_t i = 0; i < evict_num; i++) {
     // cnt is a global counter for the sequential scan.
     counter_ = (counter_ + 1) % partition_size_;
-    if (Evict(counter_) != Status::kOK) {
-      return Status::kInvalidOperation;
+    if (Evict(counter_) != OramStatus::kOK) {
+      return OramStatus::kInvalidOperation;
     }
   }
 
-  return Status::kOK;
+  return OramStatus::kOK;
 }
 
-Status PartitionOramController::Run(uint32_t block_num, uint32_t bucket_size) {
+OramStatus PartitionOramController::Run(uint32_t block_num,
+                                        uint32_t bucket_size) {
   logger->info("[+] The Partition Oram Controller is running...");
   // Determine the size of each sub-ORAM and the number of slot number.
   const size_t squared = std::ceil(std::sqrt(block_num));
   partition_size_ = std::ceil(squared * (1));
   block_num_ = block_num;
+  bucket_size_ = bucket_size;
 
   logger->debug("The Partition ORAM's config: partition_size = {} ",
                 partition_size_);
   // Initialize all the slots.
   slots_.resize(squared);
 
-  for (size_t i = 0; i < squared; i++) {
+  return InitOram();
+}
+
+OramStatus PartitionOramController::InitOram(void) {
+  for (size_t i = 0; i < slots_.size(); i++) {
     // We create the PathORAM controller for each slot.
     path_oram_controllers_.emplace_back(std::make_unique<PathOramController>(
-        i, partition_size_, bucket_size, false));
+        i, partition_size_, bucket_size_, false));
     path_oram_controllers_.back()->SetStub(stub_);
 
     // Then invoke the intialization procedure.
-    Status status = path_oram_controllers_.back()->InitOram();
-    if (status != Status::kOK) {
+    OramStatus status = path_oram_controllers_.back()->InitOram();
+    if (status != OramStatus::kOK) {
       return status;
     }
   }
 
-  return Status::kOK;
+  return OramStatus::kOK;
 }
 
-Status PartitionOramController::ProcessSlot(
+OramStatus PartitionOramController::ProcessSlot(
     const std::vector<oram_block_t>& data, uint32_t slot_id) {
   // Initialize the position map.
   std::for_each(data.begin(), data.end(), [&](const oram_block_t& block) {
@@ -610,17 +619,17 @@ Status PartitionOramController::ProcessSlot(
     }
   });
 
-  return Status::kOK;
+  return OramStatus::kOK;
 }
 
-Status PartitionOramController::FillWithData(
+OramStatus PartitionOramController::FillWithData(
     const std::vector<oram_block_t>& data) {
   const size_t level = path_oram_controllers_.front()->GetTreeLevel();
   const size_t tree_size = (POW2(level + 1) - 1) * bucket_size_;
   // Check if the data size is consistent with the block number (note that this
   // includes dummy blocks).
   if (data.size() != tree_size * path_oram_controllers_.size()) {
-    return Status::kInvalidArgument;
+    return OramStatus::kInvalidArgument;
   }
 
   // Send the data vector to each PathORAM controller.
@@ -629,7 +638,7 @@ Status PartitionOramController::FillWithData(
     // Slice the data vector.
     const std::vector<oram_block_t> cur_data(
         data.begin() + i * tree_size, data.begin() + (i + 1) * tree_size);
-    Status status = ProcessSlot(cur_data, i);
+    OramStatus status = ProcessSlot(cur_data, i);
     oram_utils::CheckStatus(status, "Failed to process slot!");
 
     // Initialize the Path Oram.
@@ -645,13 +654,13 @@ Status PartitionOramController::FillWithData(
       std::chrono::duration_cast<std::chrono::microseconds>(end - begin)
           .count());
 
-  return Status::kOK;
+  return OramStatus::kOK;
 }
 
-Status PartitionOramController::TestPathOram(uint32_t controller_id) {
+OramStatus PartitionOramController::TestPathOram(uint32_t controller_id) {
   if (controller_id >= path_oram_controllers_.size()) {
     logger->error("The controller id is out of range.");
-    return Status::kOutOfRange;
+    return OramStatus::kOutOfRange;
   }
 
   PathOramController* const controller =
@@ -669,7 +678,8 @@ Status PartitionOramController::TestPathOram(uint32_t controller_id) {
 
   for (size_t i = 0; i < partition_size_; i++) {
     oram_block_t block;
-    Status status = controller->Access(Operation::kRead, i, &block, false);
+    OramStatus status =
+        controller->InternalAccess(Operation::kRead, i, &block, false);
     oram_utils::CheckStatus(status, "Failed to read block.");
 
     logger->debug("[+] Read block {}: {}", block.header.block_id,
@@ -681,13 +691,15 @@ Status PartitionOramController::TestPathOram(uint32_t controller_id) {
     block.header.block_id = i;
     block.header.type = BlockType::kNormal;
     block.data[0] = partition_size_ - i;
-    Status status = controller->Access(Operation::kWrite, i, &block, false);
+    OramStatus status =
+        controller->InternalAccess(Operation::kWrite, i, &block, false);
     oram_utils::CheckStatus(status, "Failed to write block.");
   }
 
   for (size_t i = 0; i < partition_size_; i++) {
     oram_block_t block;
-    Status status = controller->Access(Operation::kRead, i, &block, false);
+    OramStatus status =
+        controller->InternalAccess(Operation::kRead, i, &block, false);
     oram_utils::CheckStatus(status, "Failed to read block.");
 
     logger->debug("[+] Read block {}: {}", block.header.block_id,
@@ -700,10 +712,10 @@ Status PartitionOramController::TestPathOram(uint32_t controller_id) {
       std::chrono::duration_cast<std::chrono::milliseconds>(end - begin)
           .count());
 
-  return Status::kOK;
+  return OramStatus::kOK;
 }
 
-Status PartitionOramController::TestPartitionOram(void) {
+OramStatus PartitionOramController::TestPartitionOram(void) {
   std::vector<oram_block_t> blocks;
   const size_t level = path_oram_controllers_.front()->GetTreeLevel();
   const size_t tree_size = (POW2(level + 1) - 1) * bucket_size_;
@@ -719,7 +731,7 @@ Status PartitionOramController::TestPartitionOram(void) {
   }
 
   // Initialize the Partition ORAM.
-  Status status = FillWithData(blocks);
+  OramStatus status = FillWithData(blocks);
   oram_utils::CheckStatus(status,
                           "Failed to fill the data into the Partition ORAM.");
 
@@ -733,7 +745,7 @@ Status PartitionOramController::TestPartitionOram(void) {
   for (size_t i = 0; i < 10; i++) {
     oram_block_t block;
     logger->debug("[+] Reading {} ...", i);
-    Status status = Access(Operation::kRead, i, &block);
+    OramStatus status = Access(Operation::kRead, i, &block);
     oram_utils::CheckStatus(status, "Cannot access partition ORAM!");
 
     PANIC_IF((block.data[0] != i), "Failed to read the correct block.");
@@ -761,7 +773,7 @@ Status PartitionOramController::TestPartitionOram(void) {
       "us. \nClient computation time is: {} us.",
       (end_to_end / 10).count(), (client_time / 10).count());
 
-  return Status::kOK;
+  return OramStatus::kOK;
 }
 
 size_t PartitionOramController::ReportClientStorage(void) const {
@@ -799,4 +811,4 @@ size_t PartitionOramController::ReportNetworkCommunication(void) const {
   return ans;
 }
 
-}  // namespace partition_oram
+}  // namespace oram_impl

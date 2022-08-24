@@ -16,17 +16,17 @@
  */
 #include "oram_server.h"
 
+#include <spdlog/fmt/bin_to_hex.h>
+
 #include <atomic>
 #include <thread>
 
-#include <spdlog/fmt/bin_to_hex.h>
-
-#include "base/oram_utils.h"
 #include "base/oram_defs.h"
+#include "base/oram_utils.h"
 
 std::atomic_bool server_running;
 
-namespace partition_oram {
+namespace oram_impl {
 
 grpc::Status PartitionORAMService::InitOram(grpc::ServerContext* context,
                                             const InitOramRequest* request,
@@ -52,16 +52,16 @@ grpc::Status PartitionORAMService::InitOram(grpc::ServerContext* context,
 
   // Create a new storage and initialize it.
   storages_.emplace_back(
-      std::make_unique<OramServerStorage>(id, bucket_num, bucket_size));
+      std::make_unique<TreeOramServerStorage>(id, bucket_num, bucket_size));
 
   logger->info("PathORAM id: {} successfully created.", id);
 
   return grpc::Status::OK;
 }
 
-grpc::Status PartitionORAMService::ResetServer(grpc::ServerContext* context,
-                         const google::protobuf::Empty* request,
-                         google::protobuf::Empty* response) {
+grpc::Status PartitionORAMService::ResetServer(
+    grpc::ServerContext* context, const google::protobuf::Empty* request,
+    google::protobuf::Empty* response) {
   logger->info("From peer: {}, Reset server.", context->peer());
 
   storages_.clear();
@@ -84,7 +84,7 @@ grpc::Status PartitionORAMService::PrintOramTree(
     return grpc::Status(grpc::StatusCode::NOT_FOUND, error_message);
   }
 
-  oram_utils::PrintOramTree(std::move(storages_[id]->get_storage()));
+  oram_utils::PrintOramTree(std::move(storages_[id]->GetStorage()));
 
   return grpc::Status::OK;
 }
@@ -110,7 +110,7 @@ grpc::Status PartitionORAMService::ReadPath(grpc::ServerContext* context,
   auto begin = std::chrono::high_resolution_clock::now();
 
   p_oram_bucket_t bucket;
-  if (storages_[id]->ReadPath(level, path, &bucket) != Status::kOK) {
+  if (storages_[id]->ReadPath(level, path, &bucket) != OramStatus::kOK) {
     const std::string error_message =
         oram_utils::StrCat("Failed to read path: ", path, " in level: ", level,
                            " in PathORAM id: ", id);
@@ -162,12 +162,12 @@ grpc::Status PartitionORAMService::WritePath(grpc::ServerContext* context,
   oram_utils::PrintStash(bucket);
 
   // Write the path.
-  Status status =
+  OramStatus status =
       type == Type::kInit
           ? storages_[id]->AccurateWritePath(level, offset, bucket, type)
           : storages_[id]->WritePath(level, path, bucket);
 
-  if (status != Status::kOK) {
+  if (status != OramStatus::kOK) {
     const std::string error_message =
         oram_utils::StrCat("Failed to write path: ", path, " in level: ", level,
                            " in PathORAM id: ", id);
@@ -182,15 +182,15 @@ grpc::Status PartitionORAMService::KeyExchange(
     KeyExchangeResponse* response) {
   const std::string public_key_client = request->public_key_client();
 
-  Status status;
-  if ((status = cryptor_->SampleKeyPair()) != Status::kOK) {
+  OramStatus status;
+  if ((status = cryptor_->SampleKeyPair()) != OramStatus::kOK) {
     const std::string error_message = oram_utils::StrCat(
         "Failed to sample key pair! Error: ", kErrorList.at(status));
     return grpc::Status(grpc::StatusCode::INTERNAL, error_message);
   }
 
   if ((status = cryptor_->SampleSessionKey(public_key_client, 1)) !=
-      Status::kOK) {
+      OramStatus::kOK) {
     const std::string error_message = oram_utils::StrCat(
         "Failed to sample session key! Error: ", kErrorList.at(status));
     return grpc::Status(grpc::StatusCode::INTERNAL, error_message);
@@ -221,14 +221,14 @@ grpc::Status PartitionORAMService::SendHello(grpc::ServerContext* context,
   const std::string encrypted_message = request->content();
   const std::string iv = request->iv();
   std::string message;
-  Status status;
+  OramStatus status;
 
   logger->info("Received encrypted message: {}.",
                spdlog::to_hex(encrypted_message));
 
   if ((status = cryptor_->Decrypt((uint8_t*)encrypted_message.data(),
                                   encrypted_message.size(), (uint8_t*)iv.data(),
-                                  &message)) != Status::kOK) {
+                                  &message)) != OramStatus::kOK) {
     const std::string error_message = oram_utils::StrCat(
         "Failed to verify Hello message! Error: ", kErrorList.at(status));
     return grpc::Status(grpc::StatusCode::INTERNAL, error_message);
@@ -312,4 +312,4 @@ void ServerRunner::Run(void) {
 
   server->Wait();
 }
-}  // namespace partition_oram
+}  // namespace oram_impl
