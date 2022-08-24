@@ -14,8 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef PARTITION_ORAM_BASE_ORAM_CRYPTO_H_
-#define PARTITION_ORAM_BASE_ORAM_CRYPTO_H_
+#ifndef ORAM_IMPL_BASE_ORAM_CRYPTO_H_
+#define ORAM_IMPL_BASE_ORAM_CRYPTO_H_
 
 #include <sodium.h>
 
@@ -51,37 +51,36 @@ class Cryptor {
  public:
   // Use Fisher-Yates shuffle to generate a random permutation.
   template <typename Tp>
-  static partition_oram::Status RandomShuffle(std::vector<Tp>& array) {
+  static oram_impl::OramStatus RandomShuffle(std::vector<Tp>& array) {
     if (array.empty()) {
-      return partition_oram::Status::kInvalidArgument;
+      return oram_impl::OramStatus::kInvalidArgument;
     }
 
     for (size_t i = array.size() - 1; i > 0; --i) {
       uint32_t j;
-      if (Cryptor::UniformRandom(0, i, &j) != partition_oram::Status::kOK) {
-        return partition_oram::Status::kUnknownError;
+      if (Cryptor::UniformRandom(0, i, &j) != oram_impl::OramStatus::kOK) {
+        return oram_impl::OramStatus::kUnknownError;
       }
       std::swap(array[i], array[j]);
     }
 
-    return partition_oram::Status::kOK;
+    return oram_impl::OramStatus::kOK;
   }
 
   static std::shared_ptr<Cryptor> GetInstance(void);
 
-  static partition_oram::Status UniformRandom(uint32_t min, uint32_t max,
-                                              uint32_t* const out);
-  static partition_oram::Status RandomBytes(uint8_t* const out, size_t size);
+  static oram_impl::OramStatus UniformRandom(uint32_t min, uint32_t max,
+                                             uint32_t* const out);
+  static oram_impl::OramStatus RandomBytes(uint8_t* const out, size_t size);
 
-  partition_oram::Status Encrypt(const uint8_t* message, size_t length,
-                                 uint8_t* const iv, std::string* const out);
-  partition_oram::Status Decrypt(const uint8_t* message, size_t length,
-                                 const uint8_t* iv, std::string* const out);
-  partition_oram::Status Digest(const uint8_t* message, size_t length,
-                                std::string* const out);
-  partition_oram::Status SampleKeyPair(void);
-  partition_oram::Status SampleSessionKey(const std::string& peer_pk,
-                                          bool type);
+  oram_impl::OramStatus Encrypt(const uint8_t* message, size_t length,
+                                uint8_t* const iv, std::string* const out);
+  oram_impl::OramStatus Decrypt(const uint8_t* message, size_t length,
+                                const uint8_t* iv, std::string* const out);
+  oram_impl::OramStatus Digest(const uint8_t* message, size_t length,
+                               std::string* const out);
+  oram_impl::OramStatus SampleKeyPair(void);
+  oram_impl::OramStatus SampleSessionKey(const std::string& peer_pk, bool type);
 
   std::pair<std::string, std::string> GetKeyPair(void);
   std::pair<std::string, std::string> GetSessionKeyPair(void);
@@ -92,4 +91,4 @@ class Cryptor {
 };
 }  // namespace oram_crypto
 
-#endif  // PARTITION_ORAM_BASE_ORAM_CRYPTO_H_
+#endif  // ORAM_IMPL_BASE_ORAM_CRYPTO_H_

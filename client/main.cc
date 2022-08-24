@@ -14,15 +14,14 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include <memory>
-
-#include <signal.h>
-#include <execinfo.h>
-
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
-#include <spdlog/spdlog.h>
+#include <execinfo.h>
+#include <signal.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+
+#include <memory>
 
 #include "oram_client.h"
 
@@ -76,8 +75,8 @@ int main(int argc, char** argv) {
       static_cast<spdlog::level::level_enum>(absl::GetFlag(FLAGS_log_level)));
   spdlog::flush_every(std::chrono::seconds(3));
 
-  std::unique_ptr<partition_oram::Client> client =
-      std::make_unique<partition_oram::Client>(
+  std::unique_ptr<oram_impl::Client> client =
+      std::make_unique<oram_impl::Client>(
           absl::GetFlag(FLAGS_address), absl::GetFlag(FLAGS_port),
           absl::GetFlag(FLAGS_crt_path), absl::GetFlag(FLAGS_bucket_size),
           absl::GetFlag(FLAGS_block_num));

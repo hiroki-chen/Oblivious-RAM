@@ -79,9 +79,9 @@ int Client::StartKeyExchange(bool disable_debugging) {
                spdlog::to_hex(public_key_server));
 
   // Sample the session key based on the server's public key.
-  Status oram_status;
+  OramStatus oram_status;
   if ((oram_status = cryptor_->SampleSessionKey(response.public_key_server(),
-                                                0)) != Status::kOK) {
+                                                0)) != OramStatus::kOK) {
     logger->error("Failed to sample session key! Error: {}",
                   kErrorList.at(oram_status));
     return -1;
@@ -113,9 +113,9 @@ int Client::CloseConnection(void) {
 
 int Client::InitOram(void) {
   // Initialize the oram via the controller.
-  Status oram_status;
+  OramStatus oram_status;
 
-  if ((oram_status = controller_->InitOram()) != Status::kOK) {
+  if ((oram_status = controller_->InitOram()) != OramStatus::kOK) {
     logger->error("Failed to initialize the oram! Error: {}",
                   kErrorList.at(oram_status));
     return -1;
@@ -141,9 +141,9 @@ int Client::TestOram(void) {
     block.header.type = BlockType::kNormal;
     block.data[0] = 255 - i;
 
-    Status s;
-    if ((s = controller_->Access(Operation::kWrite, i, &block, false)) !=
-        Status::kOK) {
+    OramStatus s;
+    if ((s = controller_->Access(Operation::kWrite, i, &block)) !=
+        OramStatus::kOK) {
       logger->error("[-] Error: {}", kErrorList.at(s));
       abort();
     }
@@ -155,9 +155,9 @@ int Client::TestOram(void) {
     oram_block_t block;
     memset(&block, 0, ORAM_BLOCK_SIZE);
 
-    Status s;
-    if ((s = controller_->Access(Operation::kRead, i, &block, false)) !=
-        Status::kOK) {
+    OramStatus s;
+    if ((s = controller_->Access(Operation::kRead, i, &block)) !=
+        OramStatus::kOK) {
       logger->error("[-] Error: {}", kErrorList.at(s));
       abort();
     }

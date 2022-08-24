@@ -14,21 +14,20 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "oram_server.h"
-
-#include <stdio.h>
-#include <execinfo.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <memory>
-
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
-#include <spdlog/spdlog.h>
+#include <execinfo.h>
+#include <signal.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include <memory>
 
 #include "base/oram_utils.h"
+#include "oram_server.h"
 
 // Configurations for the server.
 ABSL_FLAG(std::string, address, "0.0.0.0", "The server's IP address.");
@@ -71,8 +70,8 @@ int main(int argc, char* argv[]) {
       static_cast<spdlog::level::level_enum>(absl::GetFlag(FLAGS_log_level)));
   spdlog::flush_every(std::chrono::seconds(3));
 
-  std::unique_ptr<partition_oram::ServerRunner> server_runner =
-      std::make_unique<partition_oram::ServerRunner>(
+  std::unique_ptr<oram_impl::ServerRunner> server_runner =
+      std::make_unique<oram_impl::ServerRunner>(
           absl::GetFlag(FLAGS_address), absl::GetFlag(FLAGS_port),
           absl::GetFlag(FLAGS_key_path), absl::GetFlag(FLAGS_crt_path));
   server_runner->Run();

@@ -54,9 +54,9 @@ void Cryptor::CryptoPrelogue(void) {
 }
 
 // The encryption algorithm also uses AES-GCM mode to encrypt the message.
-partition_oram::Status Cryptor::Encrypt(const uint8_t* message, size_t length,
-                                        uint8_t* const iv,
-                                        std::string* const out) {
+oram_impl::OramStatus Cryptor::Encrypt(const uint8_t* message, size_t length,
+                                       uint8_t* const iv,
+                                       std::string* const out) {
   CryptoPrelogue();
   PANIC_IF(!is_setup, "Cryptor is not yet correctly set up.");
 
@@ -68,19 +68,19 @@ partition_oram::Status Cryptor::Encrypt(const uint8_t* message, size_t length,
       (uint8_t*)out->data(), &ciphertext_len, message, length, nullptr, 0, NULL,
       iv, session_key_rx_);
 
-  return ret == 0 ? partition_oram::Status::kOK
-                  : partition_oram::Status::kInvalidOperation;
+  return ret == 0 ? oram_impl::OramStatus::kOK
+                  : oram_impl::OramStatus::kInvalidOperation;
 }
 
-partition_oram::Status Cryptor::Decrypt(const uint8_t* message, size_t length,
-                                        const uint8_t* iv,
-                                        std::string* const out) {
+oram_impl::OramStatus Cryptor::Decrypt(const uint8_t* message, size_t length,
+                                       const uint8_t* iv,
+                                       std::string* const out) {
   CryptoPrelogue();
   PANIC_IF(!is_setup, "Cryptor is not yet correctly set up.");
 
   if (length < crypto_aead_aes256gcm_ABYTES) {
     logger->error("The length of the message is too short.");
-    return partition_oram::Status::kInvalidArgument;
+    return oram_impl::OramStatus::kInvalidArgument;
   }
 
   // The message consists of the GCM MAC tag, the nonce, ant the
@@ -97,12 +97,12 @@ partition_oram::Status Cryptor::Decrypt(const uint8_t* message, size_t length,
 
   // Free the memory.
   oram_utils::SafeFree(decrypted);
-  return ret == 0 ? partition_oram::Status::kOK
-                  : partition_oram::Status::kInvalidOperation;
+  return ret == 0 ? oram_impl::OramStatus::kOK
+                  : oram_impl::OramStatus::kInvalidOperation;
 }
 
-partition_oram::Status Cryptor::Digest(const uint8_t* message, size_t length,
-                                       std::string* const out) {
+oram_impl::OramStatus Cryptor::Digest(const uint8_t* message, size_t length,
+                                      std::string* const out) {
   uint8_t* const digest = (uint8_t*)malloc(crypto_hash_sha256_BYTES);
   uint8_t* const message_with_nonce =
       (uint8_t*)malloc(length + ORAM_CRYPTO_RANDOM_SIZE);
@@ -116,27 +116,27 @@ partition_oram::Status Cryptor::Digest(const uint8_t* message, size_t length,
 
   // Free the memory.
   oram_utils::SafeFreeAll(2, digest, message_with_nonce);
-  return ret == 0 ? partition_oram::Status::kOK
-                  : partition_oram::Status::kInvalidOperation;
+  return ret == 0 ? oram_impl::OramStatus::kOK
+                  : oram_impl::OramStatus::kInvalidOperation;
 }
 
-partition_oram::Status Cryptor::SampleKeyPair(void) {
+oram_impl::OramStatus Cryptor::SampleKeyPair(void) {
   CryptoPrelogue();
 
   // Generate a key pair.
   int ret = crypto_kx_keypair(public_key_, secret_key_);
-  return ret == 0 ? partition_oram::Status::kOK
-                  : partition_oram::Status::kInvalidOperation;
+  return ret == 0 ? oram_impl::OramStatus::kOK
+                  : oram_impl::OramStatus::kInvalidOperation;
 }
 
-partition_oram::Status Cryptor::SampleSessionKey(const std::string& peer_pk,
-                                                 bool type) {
+oram_impl::OramStatus Cryptor::SampleSessionKey(const std::string& peer_pk,
+                                                bool type) {
   CryptoPrelogue();
 
   // Check the length of the peer's public key.
   if (peer_pk.length() != crypto_kx_PUBLICKEYBYTES) {
     logger->error("The length of the peer's public key is not correct.");
-    return partition_oram::Status::kInvalidArgument;
+    return oram_impl::OramStatus::kInvalidArgument;
   }
 
   // Generate a session key. Prerequisite after this point: the peer's public
@@ -157,9 +157,9 @@ partition_oram::Status Cryptor::SampleSessionKey(const std::string& peer_pk,
 
   if (ret == 0) {
     is_setup = true;
-    return partition_oram::Status::kOK;
+    return oram_impl::OramStatus::kOK;
   } else {
-    return partition_oram::Status::kInvalidOperation;
+    return oram_impl::OramStatus::kInvalidOperation;
   }
 }
 
@@ -181,11 +181,11 @@ std::pair<std::string, std::string> Cryptor::GetSessionKeyPair(void) {
   return key_pair;
 }
 
-partition_oram::Status Cryptor::UniformRandom(uint32_t min, uint32_t max,
-                                              uint32_t* const out) {
+oram_impl::OramStatus Cryptor::UniformRandom(uint32_t min, uint32_t max,
+                                             uint32_t* const out) {
   if (min > max) {
     logger->error("The minimum value is greater than the maximum value.");
-    return partition_oram::Status::kInvalidArgument;
+    return oram_impl::OramStatus::kInvalidArgument;
   }
 
   // @ref Chromium's base/rand_util.cc for the implementation.
@@ -205,17 +205,17 @@ partition_oram::Status Cryptor::UniformRandom(uint32_t min, uint32_t max,
 
   value = value % range + min;
   *out = value;
-  return partition_oram::Status::kOK;
+  return oram_impl::OramStatus::kOK;
 }
 
-partition_oram::Status Cryptor::RandomBytes(uint8_t* const out, size_t length) {
+oram_impl::OramStatus Cryptor::RandomBytes(uint8_t* const out, size_t length) {
   if (length == 0) {
     logger->error("The length of the output buffer is zero.");
-    return partition_oram::Status::kInvalidArgument;
+    return oram_impl::OramStatus::kInvalidArgument;
   }
 
   randombytes_buf(out, length);
-  return partition_oram::Status::kOK;
+  return oram_impl::OramStatus::kOK;
 }
 
 void Cryptor::NoNeedForSessionKey(void) {
@@ -223,9 +223,8 @@ void Cryptor::NoNeedForSessionKey(void) {
   is_setup = true;
 
   // Sample a random ephermal key.
-  partition_oram::Status status =
+  oram_impl::OramStatus status =
       RandomBytes(session_key_rx_, ORAM_CRYPTO_KEY_SIZE);
-  PANIC_IF(status != partition_oram::Status::kOK,
-           "Cannot sample ephermeral key.");
+  oram_utils::CheckStatus(status, "Cannot sample ephermeral key.");
 }
 }  // namespace oram_crypto

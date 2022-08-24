@@ -14,30 +14,30 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef PARTITION_ORAM_SERVER_ORAM_SERVER_H_
-#define PARTITION_ORAM_SERVER_ORAM_SERVER_H_
-
-#include <string>
-#include <memory>
-#include <vector>
+#ifndef ORAM_IMPL_SERVER_ORAM_SERVER_H_
+#define ORAM_IMPL_SERVER_ORAM_SERVER_H_
 
 #include <grpc++/grpc++.h>
 #include <spdlog/spdlog.h>
 
-#include "oram_storage.h"
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/oram_crypto.h"
+#include "oram_storage.h"
 #include "protos/messages.grpc.pb.h"
 #include "protos/messages.pb.h"
 
 extern std::shared_ptr<spdlog::logger> logger;
 
-namespace partition_oram {
+namespace oram_impl {
 class PartitionORAMService final : public server::Service {
  private:
   friend class ServerRunner;
 
   std::shared_ptr<oram_crypto::Cryptor> cryptor_;
-  std::vector<std::unique_ptr<OramServerStorage>> storages_;
+  std::vector<std::unique_ptr<TreeOramServerStorage>> storages_;
 
  public:
   grpc::Status InitOram(grpc::ServerContext* context,
@@ -94,6 +94,6 @@ class ServerRunner {
 
   void Run(void);
 };
-}  // namespace partition_oram
+}  // namespace oram_impl
 
-#endif  // PARTITION_ORAM_SERVER_ORAM_SERVER_H_
+#endif  // ORAM_IMPL_SERVER_ORAM_SERVER_H_

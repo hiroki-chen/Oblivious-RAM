@@ -80,35 +80,35 @@ void SafeFreeAll(size_t ptr_num, ...) {
 }
 
 void ConvertToBlock(const std::string& data,
-                    partition_oram::oram_block_t* const block) {
+                    oram_impl::oram_block_t* const block) {
   PANIC_IF(data.size() != ORAM_BLOCK_SIZE, "Invalid data size");
 
   memcpy(block, data.data(), ORAM_BLOCK_SIZE);
 }
 
-void ConvertToString(const partition_oram::oram_block_t* const block,
+void ConvertToString(const oram_impl::oram_block_t* const block,
                      std::string* const data) {
   data->resize(ORAM_BLOCK_SIZE);
   memcpy(data->data(), (void*)block, ORAM_BLOCK_SIZE);
 }
 
-void CheckStatus(partition_oram::Status status, const std::string& reason) {
-  if (status != partition_oram::Status::kOK) {
-    logger->error("{}: {}", partition_oram::kErrorList.at(status), reason);
+void CheckStatus(oram_impl::OramStatus status, const std::string& reason) {
+  if (status != oram_impl::OramStatus::kOK) {
+    logger->error("{}: {}", oram_impl::kErrorList.at(status), reason);
     abort();
   }
 }
 
-void PadStash(partition_oram::p_oram_stash_t* const stash,
+void PadStash(oram_impl::p_oram_stash_t* const stash,
               const size_t bucket_size) {
   const size_t stash_size = stash->size();
   if (stash_size < bucket_size) {
     for (size_t i = stash_size; i < bucket_size; ++i) {
-      partition_oram::oram_block_t dummy;
+      oram_impl::oram_block_t dummy;
 
       if (oram_crypto::Cryptor::RandomBytes((uint8_t*)(&dummy),
                                             ORAM_BLOCK_SIZE) !=
-          partition_oram::Status::kOK) {
+          oram_impl::OramStatus::kOK) {
         logger->error("Failed to generate random bytes");
         abort();
       }
@@ -118,22 +118,21 @@ void PadStash(partition_oram::p_oram_stash_t* const stash,
   }
 }
 
-partition_oram::p_oram_bucket_t SampleRandomBucket(size_t size,
-                                                   size_t tree_size,
-                                                   size_t initial_offset) {
+oram_impl::p_oram_bucket_t SampleRandomBucket(size_t size, size_t tree_size,
+                                              size_t initial_offset) {
   size >>= 1;
-  partition_oram::p_oram_bucket_t bucket;
+  oram_impl::p_oram_bucket_t bucket;
 
   for (size_t i = 0; i < tree_size; ++i) {
-    partition_oram::oram_block_t block;
+    oram_impl::oram_block_t block;
     block.header.block_id = i + initial_offset;
-    block.header.type = i < size ? partition_oram::BlockType::kNormal
-                                 : partition_oram::BlockType::kDummy;
+    block.header.type =
+        i < size ? oram_impl::BlockType::kNormal : oram_impl::BlockType::kDummy;
     block.data[0] = i + initial_offset;
 
     if (oram_crypto::Cryptor::RandomBytes(block.data + 1,
                                           DEFAULT_ORAM_DATA_SIZE - 1) !=
-        partition_oram::Status::kOK) {
+        oram_impl::OramStatus::kOK) {
       logger->error("Failed to generate random bytes");
       abort();
     }
@@ -142,15 +141,15 @@ partition_oram::p_oram_bucket_t SampleRandomBucket(size_t size,
   }
 
   // Do a shuffle.
-  PANIC_IF(oram_crypto::Cryptor::RandomShuffle<partition_oram::oram_block_t>(
-               bucket) != partition_oram::Status::kOK,
-           "Random shuffle failed due to internal error.");
+  CheckStatus(
+      oram_crypto::Cryptor::RandomShuffle<oram_impl::oram_block_t>(bucket),
+      "Random shuffle failed due to internal error.");
 
   return bucket;
 }
 
 std::vector<std::string> SerializeToStringVector(
-    const partition_oram::p_oram_bucket_t& bucket) {
+    const oram_impl::p_oram_bucket_t& bucket) {
   std::vector<std::string> ans;
 
   for (size_t i = 0; i < bucket.size(); ++i) {
@@ -162,12 +161,12 @@ std::vector<std::string> SerializeToStringVector(
   return ans;
 }
 
-partition_oram::p_oram_bucket_t DeserializeFromStringVector(
+oram_impl::p_oram_bucket_t DeserializeFromStringVector(
     const std::vector<std::string>& data) {
-  partition_oram::p_oram_bucket_t ans;
+  oram_impl::p_oram_bucket_t ans;
 
   for (size_t i = 0; i < data.size(); ++i) {
-    partition_oram::oram_block_t block;
+    oram_impl::oram_block_t block;
     ConvertToBlock(data[i], &block);
     ans.emplace_back(block);
   }
@@ -175,7 +174,7 @@ partition_oram::p_oram_bucket_t DeserializeFromStringVector(
   return ans;
 }
 
-void PrintStash(const partition_oram::p_oram_stash_t& stash) {
+void PrintStash(const oram_impl::p_oram_stash_t& stash) {
   logger->debug("Stash:");
 
   for (size_t i = 0; i < stash.size(); ++i) {
@@ -184,7 +183,7 @@ void PrintStash(const partition_oram::p_oram_stash_t& stash) {
   }
 }
 
-void PrintOramTree(const partition_oram::server_storage_t& storage) {
+void PrintOramTree(const oram_impl::server_tree_storage_t& storage) {
   logger->debug("The size of the ORAM tree is {}", storage.size());
 
   for (auto iter = storage.begin(); iter != storage.end(); ++iter) {
@@ -192,7 +191,7 @@ void PrintOramTree(const partition_oram::server_storage_t& storage) {
 
     for (const auto& block : iter->second) {
       // Decompress the storage.
-      partition_oram::oram_block_t decompressed_block;
+      oram_impl::oram_block_t decompressed_block;
       DataDecompress(reinterpret_cast<const uint8_t*>(block.data()),
                      block.size(),
                      reinterpret_cast<uint8_t*>(&decompressed_block));
@@ -203,13 +202,13 @@ void PrintOramTree(const partition_oram::server_storage_t& storage) {
   }
 }
 
-void EncryptBlock(partition_oram::oram_block_t* const block,
+void EncryptBlock(oram_impl::oram_block_t* const block,
                   oram_crypto::Cryptor* const cryptor) {
-  if (block->header.type != partition_oram::BlockType::kNormal) {
+  if (block->header.type != oram_impl::BlockType::kNormal) {
     return;
   }
   // First let us generate the iv.
-  partition_oram::Status status = cryptor->RandomBytes(block->header.iv, 12);
+  oram_impl::OramStatus status = cryptor->RandomBytes(block->header.iv, 12);
   CheckStatus(status, "Failed to generate iv!");
 
   // Second prepare the buffer.
@@ -225,9 +224,9 @@ void EncryptBlock(partition_oram::oram_block_t* const block,
   memcpy(block->data, enc.data(), enc.size() - 16);
 }
 
-void DecryptBlock(partition_oram::oram_block_t* const block,
+void DecryptBlock(oram_impl::oram_block_t* const block,
                   oram_crypto::Cryptor* const cryptor) {
-  if (block->header.type != partition_oram::BlockType::kNormal) {
+  if (block->header.type != oram_impl::BlockType::kNormal) {
     return;
   }
   // First, let us prepare the buffer.
@@ -241,7 +240,7 @@ void DecryptBlock(partition_oram::oram_block_t* const block,
 
   // Fourth, let us decrypt the data.
   std::string dec;
-  partition_oram::Status status = cryptor->Decrypt(
+  oram_impl::OramStatus status = cryptor->Decrypt(
       enc_data, DEFAULT_ORAM_DATA_SIZE + 16, block->header.iv, &dec);
   CheckStatus(status, "Failed to decrypt data!");
 

@@ -14,8 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef PARTITION_ORAM_CLIENT_ORAM_CLIENT_H_
-#define PARTITION_ORAM_CLIENT_ORAM_CLIENT_H_
+#ifndef ORAM_IMPL_CLIENT_ORAM_CLIENT_H_
+#define ORAM_IMPL_CLIENT_ORAM_CLIENT_H_
 
 #include <grpc++/grpc++.h>
 
@@ -27,7 +27,7 @@
 #include "protos/messages.grpc.pb.h"
 #include "protos/messages.pb.h"
 
-namespace partition_oram {
+namespace oram_impl {
 class Client {
   std::string server_address_;
   std::string server_port_;
@@ -68,6 +68,6 @@ class Client {
 
   virtual ~Client() {}
 };
-}  // namespace partition_oram
+}  // namespace oram_impl
 
-#endif  // PARTITION_ORAM_CLIENT_ORAM_CLIENT_H_
+#endif  // ORAM_IMPL_CLIENT_ORAM_CLIENT_H_
