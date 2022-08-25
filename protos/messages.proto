@@ -6,15 +6,21 @@ import "google/protobuf/empty.proto";
 
 // The Oram interface is the interface that must be implemented by
 // any ORAM implementation. It is used to interact with the ORAM.
-service server {
+service oram_server {
   // Initialize the ORAM by sending the client's configurations.
-  rpc InitOram(InitOramRequest) returns (google.protobuf.Empty) {}
+  rpc InitTreeOram(InitTreeOramRequest) returns (google.protobuf.Empty) {}
+
+  rpc InitFlatOram(InitFlatOramRequest) returns (google.protobuf.Empty) {}
 
   rpc PrintOramTree(PrintOramTreeRequest) returns (google.protobuf.Empty) {}
 
   rpc ReadPath(ReadPathRequest) returns (ReadPathResponse) {}
 
   rpc WritePath(WritePathRequest) returns (WritePathResponse) {}
+
+  rpc ReadFlatMemory(ReadFlatRequest) returns (FlatVectorMessage) {}
+
+  rpc WriteFlatMemory(FlatVectorMessage) returns (google.protobuf.Empty) {}
 
   rpc CloseConnection(google.protobuf.Empty) returns (google.protobuf.Empty) {}
 
@@ -56,10 +62,26 @@ message KeyExchangeResponse {
   bytes public_key_server = 1;
 };
 
-message InitOramRequest {
+message InitFlatOramRequest {
+  uint32 id = 1;
+  uint32 capacity = 2;
+  uint32 block_size = 3;
+}
+
+message FlatVectorMessage {
+  uint32 id = 1;
+  bytes content = 2;
+}
+
+message InitTreeOramRequest {
   uint32 id = 1;
   uint32 bucket_size = 2;
   uint32 bucket_num = 3;
+  uint32 block_size = 4;
+}
+
+message ReadFlatRequest {
+  uint32 id = 1;
 }
 
 message ReadPathRequest {

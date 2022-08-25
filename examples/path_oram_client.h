@@ -34,7 +34,7 @@ class Client {
   uint32_t bucket_size_;
   uint32_t block_num_;
 
-  std::shared_ptr<server::Stub> stub_;
+  std::shared_ptr<oram_server::Stub> stub_;
 
   std::unique_ptr<PathOramController> controller_;
 

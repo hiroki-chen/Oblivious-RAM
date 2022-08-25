@@ -34,27 +34,41 @@ class BaseOramServerStorage {
   const size_t capacity_;
   // The type.
   OramStorageType oram_storage_type_;
+  // The size of the block.
+  const size_t block_size_;
 
  public:
-  BaseOramServerStorage(uint32_t id, size_t capacity,
+  BaseOramServerStorage(uint32_t id, size_t capacity, size_t block_size,
                         OramStorageType oram_storage_type)
-      : id_(id), capacity_(capacity), oram_storage_type_(oram_storage_type) {}
+      : id_(id),
+        capacity_(capacity),
+        block_size_(block_size),
+        oram_storage_type_(oram_storage_type) {}
 
   virtual uint32_t GetId(void) const { return id_; }
   virtual size_t GetCapacity(void) const { return capacity_; }
   virtual OramStorageType GetOramStorageType(void) const {
     return oram_storage_type_;
   }
+  virtual size_t GetBlockSize(void) const { return block_size_; }
+  virtual float ReportStorage(void) const { UNIMPLEMENTED_FUNC; }
+
+  virtual ~BaseOramServerStorage() = 0;
 };
 
 class FlatOramServerStorage : public BaseOramServerStorage {
   server_flat_storage_t storage_;
 
  public:
-  FlatOramServerStorage(uint32_t id, size_t capacity)
-      : BaseOramServerStorage(id, capacity, OramStorageType::kFlatStorage) {}
+  FlatOramServerStorage(uint32_t id, size_t capacity, size_t block_size)
+      : BaseOramServerStorage(id, capacity, block_size,
+                              OramStorageType::kFlatStorage) {}
 
-  server_flat_storage_t GetStorage(void) { return storage_; }
+  virtual server_flat_storage_t GetStorage(void) { return storage_; }
+  virtual void ResetStorage(void) { storage_.clear(); }
+  virtual void From(const server_flat_storage_t& storage) {
+    storage_ = storage;
+  }
 };
 
 class TreeOramServerStorage : public BaseOramServerStorage {
@@ -65,7 +79,8 @@ class TreeOramServerStorage : public BaseOramServerStorage {
   size_t bucket_size_;
 
  public:
-  TreeOramServerStorage(uint32_t id, size_t capacity, size_t bucket_size);
+  TreeOramServerStorage(uint32_t id, size_t capacity, size_t block_size,
+                        size_t bucket_size);
 
   OramStatus ReadPath(uint32_t level, uint32_t path,
                       p_oram_bucket_t* const out_bucket);
@@ -77,7 +92,7 @@ class TreeOramServerStorage : public BaseOramServerStorage {
 
   server_tree_storage_t GetStorage(void) const { return storage_; }
 
-  float ReportStorage(void) const;
+  virtual float ReportStorage(void) const;
 };
 }  // namespace oram_impl
 

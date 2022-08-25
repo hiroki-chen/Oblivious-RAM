@@ -21,12 +21,17 @@
 
 #include <ostream>
 #include <sstream>
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
+#define DEFAULT_ORAM_METADATA_SIZE sizeof(oram_impl::BlockType)
 #define DEFAULT_ORAM_DATA_SIZE 512
 #define DEFAULT_COMPRESSED_BUF_SIZE 8192
+#define DEFAULT_ORAM_ENCSKIP_SIZE                                  \
+  crypto_aead_aes256gcm_NPUBBYTES + crypto_aead_aes256gcm_ABYTES + \
+      sizeof(uint32_t)
 
 #define ORAM_BLOCK_SIZE sizeof(oram_impl::oram_block_t)
 #define UNIMPLEMENTED_FUNC crash(__PRETTY_FUNCTION__, " not implemented yet")
@@ -88,10 +93,13 @@ enum class OramStorageType {
 
 // The header containing metadata.
 typedef struct _oram_block_header_t {
-  uint32_t block_id;
-  BlockType type;
+  // No need to encrypt (can be seen by the server).
   uint8_t iv[12];
   uint8_t mac_tag[16];
+  uint32_t block_id;
+
+  // Encrypted fields only accessible to client.
+  BlockType type;
 } oram_block_header_t;
 
 // The block for ORAM storage.
@@ -116,6 +124,11 @@ static const std::unordered_map<OramStatus, std::string> kErrorList = {
     {OramStatus::kVersionMismatch, "Version mismatch"},
 };
 
+static const std::string oram_type_mismatch_err =
+    "The remote storage cannot match the given ORAM type.";
+static const std::string oram_size_mismatch_err =
+    "The remote storage size cannot match the given ORAM size.";
+
 // This factor can also be used to control the size of the Path ORAM to prevent
 // storage overflow.
 static const float kPartitionAdjustmentFactor = 1.;
@@ -134,7 +147,7 @@ using server_storage_data = std::vector<std::string>;
 using server_storage_tag_t = std::pair<uint32_t, uint32_t>;
 using server_tree_storage_t =
     absl::flat_hash_map<server_storage_tag_t, server_storage_data>;
-using server_flat_storage_t = std::vector<std::pair<uint32_t, std::string>>;
+using server_flat_storage_t = std::string;
 
 struct BlockEqual {
  private:
@@ -151,8 +164,7 @@ struct BlockEqual {
 
 static void crash_t(std::ostringstream &oss) {
   oss << std::endl;
-  write(2, &oss.str()[0], oss.str().size());
-  exit(1);
+  throw std::runtime_error(oss.str());
 }
 
 template <typename Arg, typename... Rest>

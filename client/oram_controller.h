@@ -41,9 +41,16 @@ class OramController {
   const OramType oram_type_;
 
   // An object used to call some methods of ORAM storage on the cloud.
-  std::shared_ptr<server::Stub> stub_;
+  std::shared_ptr<oram_server::Stub> stub_;
   // Cryptography manager.
   std::shared_ptr<oram_crypto::Cryptor> cryptor_;
+
+  // This interface is reserved for other ORAMs that use this ORAM controller as
+  // its backbone; sometimes the high-level ORAM will need to perform some fake
+  // operations (e.g., the Partition ORAM).
+  virtual OramStatus InternalAccess(Operation op_type, uint32_t address,
+                                    oram_block_t* const data,
+                                    bool dummy = false) = 0;
 
  public:
   OramController(uint32_t id, bool standalone, OramType oram_type);
@@ -51,7 +58,9 @@ class OramController {
   virtual OramStatus InitOram(void) = 0;
   virtual OramStatus FillWithData(const std::vector<oram_block_t>& data) = 0;
   virtual OramStatus Access(Operation op_type, uint32_t address,
-                            oram_block_t* const data) = 0;
+                            oram_block_t* const data) {
+    return InternalAccess(op_type, address, data, false);
+  }
   virtual OramStatus FromFile(const std::string& file_path) {
     UNIMPLEMENTED_FUNC;
   }
@@ -59,7 +68,9 @@ class OramController {
   virtual uint32_t GetId(void) const { return id_; }
   virtual OramType GetOramType(void) const { return oram_type_; }
   virtual bool IsStandAlone(void) const { return standalone_; }
-  virtual void SetStub(std::shared_ptr<server::Stub> stub) { stub_ = stub; }
+  virtual void SetStub(std::shared_ptr<oram_server::Stub> stub) {
+    stub_ = stub;
+  }
 
   virtual ~OramController() {
     // Because they are shared pointers, we cannot directly drop them.
@@ -71,9 +82,29 @@ class OramController {
 // A trivial solution for ORAM. It only has educational meaning. Do not use it
 // in any productive environment.
 class LinearOramController : public OramController {
+ private:
+  grpc::Status ReadFromServer(std::string* const out);
+  grpc::Status WriteToServer(const std::string& input);
+
+ protected:
+  virtual OramStatus InternalAccess(Operation op_type, uint32_t address,
+                                    oram_block_t* const data,
+                                    bool dummy = false) override;
+
  public:
   LinearOramController(uint32_t id, bool standalone)
       : OramController(id, standalone, OramType::kLinearOram) {}
+};
+
+class SquareRootOramController : public OramController {
+ protected:
+  virtual OramStatus InternalAccess(Operation op_type, uint32_t address,
+                                    oram_block_t* const data,
+                                    bool dummy = false) override;
+
+ public:
+  SquareRootOramController(uint32_t id, bool standalone)
+      : OramController(id, standalone, OramType::kSquareOram) {}
 };
 
 // This class is the implementation of the ORAM controller for Path ORAM.
@@ -110,8 +141,9 @@ class PathOramController : public OramController {
   p_oram_stash_t FindSubsetOf(uint32_t current_path);
   // ==================== End private methods ==================== //
  protected:
-  OramStatus InternalAccess(Operation op_type, uint32_t address,
-                            oram_block_t* const data, bool dummy = false);
+  virtual OramStatus InternalAccess(Operation op_type, uint32_t address,
+                                    oram_block_t* const data,
+                                    bool dummy = false);
 
  public:
   PathOramController(uint32_t id, uint32_t block_num, uint32_t bucket_size,
@@ -120,12 +152,6 @@ class PathOramController : public OramController {
   virtual OramStatus InitOram(void) override;
   virtual OramStatus FillWithData(
       const std::vector<oram_block_t>& data) override;
-
-  // The meanings of parameters are explained in Stefanov et al.'s paper.
-  virtual OramStatus Access(Operation op_type, uint32_t address,
-                            oram_block_t* const data) override {
-    return InternalAccess(op_type, address, data, false);
-  }
   virtual OramStatus FromFile(const std::string& file_path) override;
 
   uint32_t GetTreeLevel(void) const { return tree_level_; }
@@ -138,7 +164,7 @@ class PathOramController : public OramController {
 };
 
 // This class is the implementation of the ORAM controller for Partition ORAM.
-class PartitionOramController : public OramController {
+class PartitionOramController final : public OramController {
   size_t partition_size_;
   size_t bucket_size_;
   size_t nu_;
@@ -164,6 +190,12 @@ class PartitionOramController : public OramController {
   OramStatus ProcessSlot(const std::vector<oram_block_t>& data,
                          uint32_t slot_id);
   // ==================== End private methods ==================== //
+ protected:
+  virtual OramStatus InternalAccess(Operation op_type, uint32_t address,
+                                    oram_block_t* const data,
+                                    bool dummy = false) {
+    UNIMPLEMENTED_FUNC;
+  }
 
  public:
   static std::unique_ptr<PartitionOramController> GetInstance();

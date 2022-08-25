@@ -32,17 +32,24 @@
 extern std::shared_ptr<spdlog::logger> logger;
 
 namespace oram_impl {
-class PartitionORAMService final : public server::Service {
+class OramService final : public oram_server::Service {
  private:
   friend class ServerRunner;
 
   std::shared_ptr<oram_crypto::Cryptor> cryptor_;
-  std::vector<std::unique_ptr<TreeOramServerStorage>> storages_;
+  std::vector<std::unique_ptr<BaseOramServerStorage>> storages_;
+
+  grpc::Status CheckInitRequest(uint32_t id);
+  grpc::Status CheckIdValid(uint32_t id);
 
  public:
-  grpc::Status InitOram(grpc::ServerContext* context,
-                        const InitOramRequest* request,
-                        google::protobuf::Empty* empty) override;
+  grpc::Status InitTreeOram(grpc::ServerContext* context,
+                            const InitTreeOramRequest* request,
+                            google::protobuf::Empty* empty) override;
+
+  grpc::Status InitFlatOram(grpc::ServerContext* context,
+                            const InitFlatOramRequest* request,
+                            google::protobuf::Empty* empty) override;
 
   grpc::Status PrintOramTree(grpc::ServerContext* context,
                              const PrintOramTreeRequest* request,
@@ -55,6 +62,14 @@ class PartitionORAMService final : public server::Service {
   grpc::Status WritePath(grpc::ServerContext* context,
                          const WritePathRequest* request,
                          WritePathResponse* response) override;
+
+  grpc::Status ReadFlatMemory(grpc::ServerContext* context,
+                              const ReadFlatRequest* request,
+                              FlatVectorMessage* response) override;
+
+  grpc::Status WriteFlatMemory(grpc::ServerContext* context,
+                               const FlatVectorMessage* request,
+                               google::protobuf::Empty* empty) override;
 
   grpc::Status CloseConnection(grpc::ServerContext* context,
                                const google::protobuf::Empty* request,
@@ -79,7 +94,7 @@ class PartitionORAMService final : public server::Service {
 
 class ServerRunner {
  private:
-  std::unique_ptr<PartitionORAMService> service_;
+  std::unique_ptr<OramService> service_;
 
   // Networking configurations.
   std::string address_;
