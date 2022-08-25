@@ -47,6 +47,77 @@ OramController::OramController(uint32_t id, bool standalone, OramType oram_type)
   cryptor_ = oram_crypto::Cryptor::GetInstance();
 }
 
+grpc::Status LinearOramController::ReadFromServer(std::string* const out) {
+  grpc::ClientContext context;
+  ReadFlatRequest request;
+  FlatVectorMessage response;
+  request.set_id(id_);
+
+  // Read the whole storage from the remote storage.
+  grpc::Status status = stub_->ReadFlatMemory(&context, request, &response);
+
+  if (status.ok()) {
+    *out = response.content();
+  }
+
+  return status;
+}
+
+grpc::Status LinearOramController::WriteToServer(const std::string& input) {
+  grpc::ClientContext context;
+  FlatVectorMessage request;
+  google::protobuf::Empty empty;
+  request.set_id(id_);
+  request.set_content(input);
+
+  return stub_->WriteFlatMemory(&context, request, &empty);
+}
+
+OramStatus LinearOramController::InternalAccess(Operation op_type,
+                                                uint32_t address,
+                                                oram_block_t* const data,
+                                                bool dummy) {
+  PANIC_IF(op_type == Operation::kInvalid, "Invalid ORAM operation!");
+
+  // For every R/W operation:
+  //    – Client reads entire storage, item by item.
+  //    – Re-encrypts each item after possibly changing it.
+  //    – Writes the item back to remote storage.
+  // O(n) overhead per each R/W operation.
+  std::string storage;
+  grpc::Status status = grpc::Status::OK;
+  if (!(status = ReadFromServer(&storage)).ok()) {
+    logger->error("[-] LinearOramController::InternalAccess failed: {}",
+                  status.error_message());
+    return OramStatus::kServerError;
+  }
+
+  // Reinterpret the storage as an array of oram_block_t.
+  oram_block_t* block_ptr = reinterpret_cast<oram_block_t*>(storage.data());
+  for (size_t i = 0; i < (storage.size() / ORAM_BLOCK_SIZE); i++) {
+    // Decrypt the block.
+    oram_utils::DecryptBlock(block_ptr, cryptor_.get());
+
+    if (block_ptr->header.type == BlockType::kNormal &&
+        block_ptr->header.block_id == address) {
+      // Read or write.
+      if (op_type == Operation::kRead) {
+        memcpy(data, block_ptr, ORAM_BLOCK_SIZE);
+      } else {
+        memcpy(block_ptr->data, data->data, DEFAULT_ORAM_DATA_SIZE);
+      }
+    }
+
+    // Re-encrypt the block whenever this is the target block.
+    oram_utils::EncryptBlock(block_ptr, cryptor_.get());
+  }
+
+  // FIXME: May need to permute before writing to the server.
+
+  return WriteToServer(storage).ok() ? OramStatus::kOK
+                                     : OramStatus::kServerError;
+}
+
 PathOramController::PathOramController(uint32_t id, uint32_t block_num,
                                        uint32_t bucket_size, bool standalone)
     : OramController(id, standalone, OramType::kPathOram),
@@ -107,7 +178,6 @@ OramStatus PathOramController::AccurateWriteBucket(
   for (auto block : bucket) {
     // Encrypt the block.
     oram_utils::EncryptBlock(&block, cryptor_.get());
-
     std::string block_str;
     oram_utils::ConvertToString(&block, &block_str);
     request.add_bucket(block_str);
@@ -124,14 +194,15 @@ OramStatus PathOramController::AccurateWriteBucket(
 
 OramStatus PathOramController::InitOram(void) {
   grpc::ClientContext context;
-  InitOramRequest request;
+  InitTreeOramRequest request;
   google::protobuf::Empty empty;
 
   request.set_id(id_);
   request.set_bucket_size(bucket_size_);
   request.set_bucket_num(number_of_leafs_);
+  request.set_block_size(ORAM_BLOCK_SIZE);
 
-  grpc::Status status = stub_->InitOram(&context, request, &empty);
+  grpc::Status status = stub_->InitTreeOram(&context, request, &empty);
   if (!status.ok()) {
     logger->error("InitOram failed: {}", status.error_message());
     return OramStatus::kServerError;

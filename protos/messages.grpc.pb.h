@@ -29,21 +29,28 @@ namespace oram_impl {
 
 // The Oram interface is the interface that must be implemented by
 // any ORAM implementation. It is used to interact with the ORAM.
-class server final {
+class oram_server final {
  public:
   static constexpr char const* service_full_name() {
-    return "oram_impl.server";
+    return "oram_impl.oram_server";
   }
   class StubInterface {
    public:
     virtual ~StubInterface() {}
     // Initialize the ORAM by sending the client's configurations.
-    virtual ::grpc::Status InitOram(::grpc::ClientContext* context, const ::oram_impl::InitOramRequest& request, ::google::protobuf::Empty* response) = 0;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> AsyncInitOram(::grpc::ClientContext* context, const ::oram_impl::InitOramRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(AsyncInitOramRaw(context, request, cq));
+    virtual ::grpc::Status InitTreeOram(::grpc::ClientContext* context, const ::oram_impl::InitTreeOramRequest& request, ::google::protobuf::Empty* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> AsyncInitTreeOram(::grpc::ClientContext* context, const ::oram_impl::InitTreeOramRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(AsyncInitTreeOramRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> PrepareAsyncInitOram(::grpc::ClientContext* context, const ::oram_impl::InitOramRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(PrepareAsyncInitOramRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> PrepareAsyncInitTreeOram(::grpc::ClientContext* context, const ::oram_impl::InitTreeOramRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(PrepareAsyncInitTreeOramRaw(context, request, cq));
+    }
+    virtual ::grpc::Status InitFlatOram(::grpc::ClientContext* context, const ::oram_impl::InitFlatOramRequest& request, ::google::protobuf::Empty* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> AsyncInitFlatOram(::grpc::ClientContext* context, const ::oram_impl::InitFlatOramRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(AsyncInitFlatOramRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> PrepareAsyncInitFlatOram(::grpc::ClientContext* context, const ::oram_impl::InitFlatOramRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(PrepareAsyncInitFlatOramRaw(context, request, cq));
     }
     virtual ::grpc::Status PrintOramTree(::grpc::ClientContext* context, const ::oram_impl::PrintOramTreeRequest& request, ::google::protobuf::Empty* response) = 0;
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> AsyncPrintOramTree(::grpc::ClientContext* context, const ::oram_impl::PrintOramTreeRequest& request, ::grpc::CompletionQueue* cq) {
@@ -65,6 +72,20 @@ class server final {
     }
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::oram_impl::WritePathResponse>> PrepareAsyncWritePath(::grpc::ClientContext* context, const ::oram_impl::WritePathRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::oram_impl::WritePathResponse>>(PrepareAsyncWritePathRaw(context, request, cq));
+    }
+    virtual ::grpc::Status ReadFlatMemory(::grpc::ClientContext* context, const ::oram_impl::ReadFlatRequest& request, ::oram_impl::FlatVectorMessage* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::oram_impl::FlatVectorMessage>> AsyncReadFlatMemory(::grpc::ClientContext* context, const ::oram_impl::ReadFlatRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::oram_impl::FlatVectorMessage>>(AsyncReadFlatMemoryRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::oram_impl::FlatVectorMessage>> PrepareAsyncReadFlatMemory(::grpc::ClientContext* context, const ::oram_impl::ReadFlatRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::oram_impl::FlatVectorMessage>>(PrepareAsyncReadFlatMemoryRaw(context, request, cq));
+    }
+    virtual ::grpc::Status WriteFlatMemory(::grpc::ClientContext* context, const ::oram_impl::FlatVectorMessage& request, ::google::protobuf::Empty* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> AsyncWriteFlatMemory(::grpc::ClientContext* context, const ::oram_impl::FlatVectorMessage& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(AsyncWriteFlatMemoryRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> PrepareAsyncWriteFlatMemory(::grpc::ClientContext* context, const ::oram_impl::FlatVectorMessage& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(PrepareAsyncWriteFlatMemoryRaw(context, request, cq));
     }
     virtual ::grpc::Status CloseConnection(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::google::protobuf::Empty* response) = 0;
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> AsyncCloseConnection(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) {
@@ -109,14 +130,20 @@ class server final {
      public:
       virtual ~async_interface() {}
       // Initialize the ORAM by sending the client's configurations.
-      virtual void InitOram(::grpc::ClientContext* context, const ::oram_impl::InitOramRequest* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) = 0;
-      virtual void InitOram(::grpc::ClientContext* context, const ::oram_impl::InitOramRequest* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void InitTreeOram(::grpc::ClientContext* context, const ::oram_impl::InitTreeOramRequest* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void InitTreeOram(::grpc::ClientContext* context, const ::oram_impl::InitTreeOramRequest* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void InitFlatOram(::grpc::ClientContext* context, const ::oram_impl::InitFlatOramRequest* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void InitFlatOram(::grpc::ClientContext* context, const ::oram_impl::InitFlatOramRequest* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       virtual void PrintOramTree(::grpc::ClientContext* context, const ::oram_impl::PrintOramTreeRequest* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) = 0;
       virtual void PrintOramTree(::grpc::ClientContext* context, const ::oram_impl::PrintOramTreeRequest* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       virtual void ReadPath(::grpc::ClientContext* context, const ::oram_impl::ReadPathRequest* request, ::oram_impl::ReadPathResponse* response, std::function<void(::grpc::Status)>) = 0;
       virtual void ReadPath(::grpc::ClientContext* context, const ::oram_impl::ReadPathRequest* request, ::oram_impl::ReadPathResponse* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       virtual void WritePath(::grpc::ClientContext* context, const ::oram_impl::WritePathRequest* request, ::oram_impl::WritePathResponse* response, std::function<void(::grpc::Status)>) = 0;
       virtual void WritePath(::grpc::ClientContext* context, const ::oram_impl::WritePathRequest* request, ::oram_impl::WritePathResponse* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void ReadFlatMemory(::grpc::ClientContext* context, const ::oram_impl::ReadFlatRequest* request, ::oram_impl::FlatVectorMessage* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void ReadFlatMemory(::grpc::ClientContext* context, const ::oram_impl::ReadFlatRequest* request, ::oram_impl::FlatVectorMessage* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void WriteFlatMemory(::grpc::ClientContext* context, const ::oram_impl::FlatVectorMessage* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void WriteFlatMemory(::grpc::ClientContext* context, const ::oram_impl::FlatVectorMessage* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       virtual void CloseConnection(::grpc::ClientContext* context, const ::google::protobuf::Empty* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) = 0;
       virtual void CloseConnection(::grpc::ClientContext* context, const ::google::protobuf::Empty* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       // ============ Key Exchange Using Diffie-Hellman ============ //
@@ -136,14 +163,20 @@ class server final {
     virtual class async_interface* async() { return nullptr; }
     class async_interface* experimental_async() { return async(); }
    private:
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* AsyncInitOramRaw(::grpc::ClientContext* context, const ::oram_impl::InitOramRequest& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* PrepareAsyncInitOramRaw(::grpc::ClientContext* context, const ::oram_impl::InitOramRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* AsyncInitTreeOramRaw(::grpc::ClientContext* context, const ::oram_impl::InitTreeOramRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* PrepareAsyncInitTreeOramRaw(::grpc::ClientContext* context, const ::oram_impl::InitTreeOramRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* AsyncInitFlatOramRaw(::grpc::ClientContext* context, const ::oram_impl::InitFlatOramRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* PrepareAsyncInitFlatOramRaw(::grpc::ClientContext* context, const ::oram_impl::InitFlatOramRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* AsyncPrintOramTreeRaw(::grpc::ClientContext* context, const ::oram_impl::PrintOramTreeRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* PrepareAsyncPrintOramTreeRaw(::grpc::ClientContext* context, const ::oram_impl::PrintOramTreeRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::oram_impl::ReadPathResponse>* AsyncReadPathRaw(::grpc::ClientContext* context, const ::oram_impl::ReadPathRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::oram_impl::ReadPathResponse>* PrepareAsyncReadPathRaw(::grpc::ClientContext* context, const ::oram_impl::ReadPathRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::oram_impl::WritePathResponse>* AsyncWritePathRaw(::grpc::ClientContext* context, const ::oram_impl::WritePathRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::oram_impl::WritePathResponse>* PrepareAsyncWritePathRaw(::grpc::ClientContext* context, const ::oram_impl::WritePathRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::oram_impl::FlatVectorMessage>* AsyncReadFlatMemoryRaw(::grpc::ClientContext* context, const ::oram_impl::ReadFlatRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::oram_impl::FlatVectorMessage>* PrepareAsyncReadFlatMemoryRaw(::grpc::ClientContext* context, const ::oram_impl::ReadFlatRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* AsyncWriteFlatMemoryRaw(::grpc::ClientContext* context, const ::oram_impl::FlatVectorMessage& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* PrepareAsyncWriteFlatMemoryRaw(::grpc::ClientContext* context, const ::oram_impl::FlatVectorMessage& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* AsyncCloseConnectionRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* PrepareAsyncCloseConnectionRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::oram_impl::KeyExchangeResponse>* AsyncKeyExchangeRaw(::grpc::ClientContext* context, const ::oram_impl::KeyExchangeRequest& request, ::grpc::CompletionQueue* cq) = 0;
@@ -158,12 +191,19 @@ class server final {
   class Stub final : public StubInterface {
    public:
     Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
-    ::grpc::Status InitOram(::grpc::ClientContext* context, const ::oram_impl::InitOramRequest& request, ::google::protobuf::Empty* response) override;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> AsyncInitOram(::grpc::ClientContext* context, const ::oram_impl::InitOramRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(AsyncInitOramRaw(context, request, cq));
+    ::grpc::Status InitTreeOram(::grpc::ClientContext* context, const ::oram_impl::InitTreeOramRequest& request, ::google::protobuf::Empty* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> AsyncInitTreeOram(::grpc::ClientContext* context, const ::oram_impl::InitTreeOramRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(AsyncInitTreeOramRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> PrepareAsyncInitOram(::grpc::ClientContext* context, const ::oram_impl::InitOramRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(PrepareAsyncInitOramRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> PrepareAsyncInitTreeOram(::grpc::ClientContext* context, const ::oram_impl::InitTreeOramRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(PrepareAsyncInitTreeOramRaw(context, request, cq));
+    }
+    ::grpc::Status InitFlatOram(::grpc::ClientContext* context, const ::oram_impl::InitFlatOramRequest& request, ::google::protobuf::Empty* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> AsyncInitFlatOram(::grpc::ClientContext* context, const ::oram_impl::InitFlatOramRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(AsyncInitFlatOramRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> PrepareAsyncInitFlatOram(::grpc::ClientContext* context, const ::oram_impl::InitFlatOramRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(PrepareAsyncInitFlatOramRaw(context, request, cq));
     }
     ::grpc::Status PrintOramTree(::grpc::ClientContext* context, const ::oram_impl::PrintOramTreeRequest& request, ::google::protobuf::Empty* response) override;
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> AsyncPrintOramTree(::grpc::ClientContext* context, const ::oram_impl::PrintOramTreeRequest& request, ::grpc::CompletionQueue* cq) {
@@ -185,6 +225,20 @@ class server final {
     }
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::oram_impl::WritePathResponse>> PrepareAsyncWritePath(::grpc::ClientContext* context, const ::oram_impl::WritePathRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::oram_impl::WritePathResponse>>(PrepareAsyncWritePathRaw(context, request, cq));
+    }
+    ::grpc::Status ReadFlatMemory(::grpc::ClientContext* context, const ::oram_impl::ReadFlatRequest& request, ::oram_impl::FlatVectorMessage* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::oram_impl::FlatVectorMessage>> AsyncReadFlatMemory(::grpc::ClientContext* context, const ::oram_impl::ReadFlatRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::oram_impl::FlatVectorMessage>>(AsyncReadFlatMemoryRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::oram_impl::FlatVectorMessage>> PrepareAsyncReadFlatMemory(::grpc::ClientContext* context, const ::oram_impl::ReadFlatRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::oram_impl::FlatVectorMessage>>(PrepareAsyncReadFlatMemoryRaw(context, request, cq));
+    }
+    ::grpc::Status WriteFlatMemory(::grpc::ClientContext* context, const ::oram_impl::FlatVectorMessage& request, ::google::protobuf::Empty* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> AsyncWriteFlatMemory(::grpc::ClientContext* context, const ::oram_impl::FlatVectorMessage& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(AsyncWriteFlatMemoryRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> PrepareAsyncWriteFlatMemory(::grpc::ClientContext* context, const ::oram_impl::FlatVectorMessage& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(PrepareAsyncWriteFlatMemoryRaw(context, request, cq));
     }
     ::grpc::Status CloseConnection(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::google::protobuf::Empty* response) override;
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> AsyncCloseConnection(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) {
@@ -224,14 +278,20 @@ class server final {
     class async final :
       public StubInterface::async_interface {
      public:
-      void InitOram(::grpc::ClientContext* context, const ::oram_impl::InitOramRequest* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) override;
-      void InitOram(::grpc::ClientContext* context, const ::oram_impl::InitOramRequest* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void InitTreeOram(::grpc::ClientContext* context, const ::oram_impl::InitTreeOramRequest* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) override;
+      void InitTreeOram(::grpc::ClientContext* context, const ::oram_impl::InitTreeOramRequest* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void InitFlatOram(::grpc::ClientContext* context, const ::oram_impl::InitFlatOramRequest* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) override;
+      void InitFlatOram(::grpc::ClientContext* context, const ::oram_impl::InitFlatOramRequest* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) override;
       void PrintOramTree(::grpc::ClientContext* context, const ::oram_impl::PrintOramTreeRequest* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) override;
       void PrintOramTree(::grpc::ClientContext* context, const ::oram_impl::PrintOramTreeRequest* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) override;
       void ReadPath(::grpc::ClientContext* context, const ::oram_impl::ReadPathRequest* request, ::oram_impl::ReadPathResponse* response, std::function<void(::grpc::Status)>) override;
       void ReadPath(::grpc::ClientContext* context, const ::oram_impl::ReadPathRequest* request, ::oram_impl::ReadPathResponse* response, ::grpc::ClientUnaryReactor* reactor) override;
       void WritePath(::grpc::ClientContext* context, const ::oram_impl::WritePathRequest* request, ::oram_impl::WritePathResponse* response, std::function<void(::grpc::Status)>) override;
       void WritePath(::grpc::ClientContext* context, const ::oram_impl::WritePathRequest* request, ::oram_impl::WritePathResponse* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void ReadFlatMemory(::grpc::ClientContext* context, const ::oram_impl::ReadFlatRequest* request, ::oram_impl::FlatVectorMessage* response, std::function<void(::grpc::Status)>) override;
+      void ReadFlatMemory(::grpc::ClientContext* context, const ::oram_impl::ReadFlatRequest* request, ::oram_impl::FlatVectorMessage* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void WriteFlatMemory(::grpc::ClientContext* context, const ::oram_impl::FlatVectorMessage* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) override;
+      void WriteFlatMemory(::grpc::ClientContext* context, const ::oram_impl::FlatVectorMessage* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) override;
       void CloseConnection(::grpc::ClientContext* context, const ::google::protobuf::Empty* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) override;
       void CloseConnection(::grpc::ClientContext* context, const ::google::protobuf::Empty* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) override;
       void KeyExchange(::grpc::ClientContext* context, const ::oram_impl::KeyExchangeRequest* request, ::oram_impl::KeyExchangeResponse* response, std::function<void(::grpc::Status)>) override;
@@ -253,14 +313,20 @@ class server final {
    private:
     std::shared_ptr< ::grpc::ChannelInterface> channel_;
     class async async_stub_{this};
-    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsyncInitOramRaw(::grpc::ClientContext* context, const ::oram_impl::InitOramRequest& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsyncInitOramRaw(::grpc::ClientContext* context, const ::oram_impl::InitOramRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsyncInitTreeOramRaw(::grpc::ClientContext* context, const ::oram_impl::InitTreeOramRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsyncInitTreeOramRaw(::grpc::ClientContext* context, const ::oram_impl::InitTreeOramRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsyncInitFlatOramRaw(::grpc::ClientContext* context, const ::oram_impl::InitFlatOramRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsyncInitFlatOramRaw(::grpc::ClientContext* context, const ::oram_impl::InitFlatOramRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsyncPrintOramTreeRaw(::grpc::ClientContext* context, const ::oram_impl::PrintOramTreeRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsyncPrintOramTreeRaw(::grpc::ClientContext* context, const ::oram_impl::PrintOramTreeRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::oram_impl::ReadPathResponse>* AsyncReadPathRaw(::grpc::ClientContext* context, const ::oram_impl::ReadPathRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::oram_impl::ReadPathResponse>* PrepareAsyncReadPathRaw(::grpc::ClientContext* context, const ::oram_impl::ReadPathRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::oram_impl::WritePathResponse>* AsyncWritePathRaw(::grpc::ClientContext* context, const ::oram_impl::WritePathRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::oram_impl::WritePathResponse>* PrepareAsyncWritePathRaw(::grpc::ClientContext* context, const ::oram_impl::WritePathRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::oram_impl::FlatVectorMessage>* AsyncReadFlatMemoryRaw(::grpc::ClientContext* context, const ::oram_impl::ReadFlatRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::oram_impl::FlatVectorMessage>* PrepareAsyncReadFlatMemoryRaw(::grpc::ClientContext* context, const ::oram_impl::ReadFlatRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsyncWriteFlatMemoryRaw(::grpc::ClientContext* context, const ::oram_impl::FlatVectorMessage& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsyncWriteFlatMemoryRaw(::grpc::ClientContext* context, const ::oram_impl::FlatVectorMessage& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsyncCloseConnectionRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsyncCloseConnectionRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::oram_impl::KeyExchangeResponse>* AsyncKeyExchangeRaw(::grpc::ClientContext* context, const ::oram_impl::KeyExchangeRequest& request, ::grpc::CompletionQueue* cq) override;
@@ -271,10 +337,13 @@ class server final {
     ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsyncReportServerInformationRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsyncResetServerRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsyncResetServerRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) override;
-    const ::grpc::internal::RpcMethod rpcmethod_InitOram_;
+    const ::grpc::internal::RpcMethod rpcmethod_InitTreeOram_;
+    const ::grpc::internal::RpcMethod rpcmethod_InitFlatOram_;
     const ::grpc::internal::RpcMethod rpcmethod_PrintOramTree_;
     const ::grpc::internal::RpcMethod rpcmethod_ReadPath_;
     const ::grpc::internal::RpcMethod rpcmethod_WritePath_;
+    const ::grpc::internal::RpcMethod rpcmethod_ReadFlatMemory_;
+    const ::grpc::internal::RpcMethod rpcmethod_WriteFlatMemory_;
     const ::grpc::internal::RpcMethod rpcmethod_CloseConnection_;
     const ::grpc::internal::RpcMethod rpcmethod_KeyExchange_;
     const ::grpc::internal::RpcMethod rpcmethod_SendHello_;
@@ -288,10 +357,13 @@ class server final {
     Service();
     virtual ~Service();
     // Initialize the ORAM by sending the client's configurations.
-    virtual ::grpc::Status InitOram(::grpc::ServerContext* context, const ::oram_impl::InitOramRequest* request, ::google::protobuf::Empty* response);
+    virtual ::grpc::Status InitTreeOram(::grpc::ServerContext* context, const ::oram_impl::InitTreeOramRequest* request, ::google::protobuf::Empty* response);
+    virtual ::grpc::Status InitFlatOram(::grpc::ServerContext* context, const ::oram_impl::InitFlatOramRequest* request, ::google::protobuf::Empty* response);
     virtual ::grpc::Status PrintOramTree(::grpc::ServerContext* context, const ::oram_impl::PrintOramTreeRequest* request, ::google::protobuf::Empty* response);
     virtual ::grpc::Status ReadPath(::grpc::ServerContext* context, const ::oram_impl::ReadPathRequest* request, ::oram_impl::ReadPathResponse* response);
     virtual ::grpc::Status WritePath(::grpc::ServerContext* context, const ::oram_impl::WritePathRequest* request, ::oram_impl::WritePathResponse* response);
+    virtual ::grpc::Status ReadFlatMemory(::grpc::ServerContext* context, const ::oram_impl::ReadFlatRequest* request, ::oram_impl::FlatVectorMessage* response);
+    virtual ::grpc::Status WriteFlatMemory(::grpc::ServerContext* context, const ::oram_impl::FlatVectorMessage* request, ::google::protobuf::Empty* response);
     virtual ::grpc::Status CloseConnection(::grpc::ServerContext* context, const ::google::protobuf::Empty* request, ::google::protobuf::Empty* response);
     // ============ Key Exchange Using Diffie-Hellman ============ //
     // For evaluating the performance when encryption is introduced, 
@@ -303,23 +375,43 @@ class server final {
     virtual ::grpc::Status ResetServer(::grpc::ServerContext* context, const ::google::protobuf::Empty* request, ::google::protobuf::Empty* response);
   };
   template <class BaseClass>
-  class WithAsyncMethod_InitOram : public BaseClass {
+  class WithAsyncMethod_InitTreeOram : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithAsyncMethod_InitOram() {
+    WithAsyncMethod_InitTreeOram() {
       ::grpc::Service::MarkMethodAsync(0);
     }
-    ~WithAsyncMethod_InitOram() override {
+    ~WithAsyncMethod_InitTreeOram() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status InitOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+    ::grpc::Status InitTreeOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitTreeOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestInitOram(::grpc::ServerContext* context, ::oram_impl::InitOramRequest* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+    void RequestInitTreeOram(::grpc::ServerContext* context, ::oram_impl::InitTreeOramRequest* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithAsyncMethod_InitFlatOram : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithAsyncMethod_InitFlatOram() {
+      ::grpc::Service::MarkMethodAsync(1);
+    }
+    ~WithAsyncMethod_InitFlatOram() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status InitFlatOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitFlatOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestInitFlatOram(::grpc::ServerContext* context, ::oram_impl::InitFlatOramRequest* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -328,7 +420,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_PrintOramTree() {
-      ::grpc::Service::MarkMethodAsync(1);
+      ::grpc::Service::MarkMethodAsync(2);
     }
     ~WithAsyncMethod_PrintOramTree() override {
       BaseClassMustBeDerivedFromService(this);
@@ -339,7 +431,7 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestPrintOramTree(::grpc::ServerContext* context, ::oram_impl::PrintOramTreeRequest* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(2, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -348,7 +440,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_ReadPath() {
-      ::grpc::Service::MarkMethodAsync(2);
+      ::grpc::Service::MarkMethodAsync(3);
     }
     ~WithAsyncMethod_ReadPath() override {
       BaseClassMustBeDerivedFromService(this);
@@ -359,7 +451,7 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestReadPath(::grpc::ServerContext* context, ::oram_impl::ReadPathRequest* request, ::grpc::ServerAsyncResponseWriter< ::oram_impl::ReadPathResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(2, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(3, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -368,7 +460,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_WritePath() {
-      ::grpc::Service::MarkMethodAsync(3);
+      ::grpc::Service::MarkMethodAsync(4);
     }
     ~WithAsyncMethod_WritePath() override {
       BaseClassMustBeDerivedFromService(this);
@@ -379,7 +471,47 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestWritePath(::grpc::ServerContext* context, ::oram_impl::WritePathRequest* request, ::grpc::ServerAsyncResponseWriter< ::oram_impl::WritePathResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(3, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(4, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithAsyncMethod_ReadFlatMemory : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithAsyncMethod_ReadFlatMemory() {
+      ::grpc::Service::MarkMethodAsync(5);
+    }
+    ~WithAsyncMethod_ReadFlatMemory() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ReadFlatMemory(::grpc::ServerContext* /*context*/, const ::oram_impl::ReadFlatRequest* /*request*/, ::oram_impl::FlatVectorMessage* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestReadFlatMemory(::grpc::ServerContext* context, ::oram_impl::ReadFlatRequest* request, ::grpc::ServerAsyncResponseWriter< ::oram_impl::FlatVectorMessage>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(5, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithAsyncMethod_WriteFlatMemory : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithAsyncMethod_WriteFlatMemory() {
+      ::grpc::Service::MarkMethodAsync(6);
+    }
+    ~WithAsyncMethod_WriteFlatMemory() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status WriteFlatMemory(::grpc::ServerContext* /*context*/, const ::oram_impl::FlatVectorMessage* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestWriteFlatMemory(::grpc::ServerContext* context, ::oram_impl::FlatVectorMessage* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(6, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -388,7 +520,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_CloseConnection() {
-      ::grpc::Service::MarkMethodAsync(4);
+      ::grpc::Service::MarkMethodAsync(7);
     }
     ~WithAsyncMethod_CloseConnection() override {
       BaseClassMustBeDerivedFromService(this);
@@ -399,7 +531,7 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestCloseConnection(::grpc::ServerContext* context, ::google::protobuf::Empty* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(4, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(7, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -408,7 +540,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_KeyExchange() {
-      ::grpc::Service::MarkMethodAsync(5);
+      ::grpc::Service::MarkMethodAsync(8);
     }
     ~WithAsyncMethod_KeyExchange() override {
       BaseClassMustBeDerivedFromService(this);
@@ -419,7 +551,7 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestKeyExchange(::grpc::ServerContext* context, ::oram_impl::KeyExchangeRequest* request, ::grpc::ServerAsyncResponseWriter< ::oram_impl::KeyExchangeResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(5, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(8, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -428,7 +560,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_SendHello() {
-      ::grpc::Service::MarkMethodAsync(6);
+      ::grpc::Service::MarkMethodAsync(9);
     }
     ~WithAsyncMethod_SendHello() override {
       BaseClassMustBeDerivedFromService(this);
@@ -439,7 +571,7 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestSendHello(::grpc::ServerContext* context, ::oram_impl::HelloMessage* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(6, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(9, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -448,7 +580,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_ReportServerInformation() {
-      ::grpc::Service::MarkMethodAsync(7);
+      ::grpc::Service::MarkMethodAsync(10);
     }
     ~WithAsyncMethod_ReportServerInformation() override {
       BaseClassMustBeDerivedFromService(this);
@@ -459,7 +591,7 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestReportServerInformation(::grpc::ServerContext* context, ::google::protobuf::Empty* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(7, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(10, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -468,7 +600,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_ResetServer() {
-      ::grpc::Service::MarkMethodAsync(8);
+      ::grpc::Service::MarkMethodAsync(11);
     }
     ~WithAsyncMethod_ResetServer() override {
       BaseClassMustBeDerivedFromService(this);
@@ -479,36 +611,63 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestResetServer(::grpc::ServerContext* context, ::google::protobuf::Empty* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(8, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(11, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
-  typedef WithAsyncMethod_InitOram<WithAsyncMethod_PrintOramTree<WithAsyncMethod_ReadPath<WithAsyncMethod_WritePath<WithAsyncMethod_CloseConnection<WithAsyncMethod_KeyExchange<WithAsyncMethod_SendHello<WithAsyncMethod_ReportServerInformation<WithAsyncMethod_ResetServer<Service > > > > > > > > > AsyncService;
+  typedef WithAsyncMethod_InitTreeOram<WithAsyncMethod_InitFlatOram<WithAsyncMethod_PrintOramTree<WithAsyncMethod_ReadPath<WithAsyncMethod_WritePath<WithAsyncMethod_ReadFlatMemory<WithAsyncMethod_WriteFlatMemory<WithAsyncMethod_CloseConnection<WithAsyncMethod_KeyExchange<WithAsyncMethod_SendHello<WithAsyncMethod_ReportServerInformation<WithAsyncMethod_ResetServer<Service > > > > > > > > > > > > AsyncService;
   template <class BaseClass>
-  class WithCallbackMethod_InitOram : public BaseClass {
+  class WithCallbackMethod_InitTreeOram : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_InitOram() {
+    WithCallbackMethod_InitTreeOram() {
       ::grpc::Service::MarkMethodCallback(0,
-          new ::grpc::internal::CallbackUnaryHandler< ::oram_impl::InitOramRequest, ::google::protobuf::Empty>(
+          new ::grpc::internal::CallbackUnaryHandler< ::oram_impl::InitTreeOramRequest, ::google::protobuf::Empty>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::oram_impl::InitOramRequest* request, ::google::protobuf::Empty* response) { return this->InitOram(context, request, response); }));}
-    void SetMessageAllocatorFor_InitOram(
-        ::grpc::MessageAllocator< ::oram_impl::InitOramRequest, ::google::protobuf::Empty>* allocator) {
+                   ::grpc::CallbackServerContext* context, const ::oram_impl::InitTreeOramRequest* request, ::google::protobuf::Empty* response) { return this->InitTreeOram(context, request, response); }));}
+    void SetMessageAllocatorFor_InitTreeOram(
+        ::grpc::MessageAllocator< ::oram_impl::InitTreeOramRequest, ::google::protobuf::Empty>* allocator) {
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(0);
-      static_cast<::grpc::internal::CallbackUnaryHandler< ::oram_impl::InitOramRequest, ::google::protobuf::Empty>*>(handler)
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::oram_impl::InitTreeOramRequest, ::google::protobuf::Empty>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_InitOram() override {
+    ~WithCallbackMethod_InitTreeOram() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status InitOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+    ::grpc::Status InitTreeOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitTreeOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual ::grpc::ServerUnaryReactor* InitOram(
-      ::grpc::CallbackServerContext* /*context*/, const ::oram_impl::InitOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/)  { return nullptr; }
+    virtual ::grpc::ServerUnaryReactor* InitTreeOram(
+      ::grpc::CallbackServerContext* /*context*/, const ::oram_impl::InitTreeOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
+  class WithCallbackMethod_InitFlatOram : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithCallbackMethod_InitFlatOram() {
+      ::grpc::Service::MarkMethodCallback(1,
+          new ::grpc::internal::CallbackUnaryHandler< ::oram_impl::InitFlatOramRequest, ::google::protobuf::Empty>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::oram_impl::InitFlatOramRequest* request, ::google::protobuf::Empty* response) { return this->InitFlatOram(context, request, response); }));}
+    void SetMessageAllocatorFor_InitFlatOram(
+        ::grpc::MessageAllocator< ::oram_impl::InitFlatOramRequest, ::google::protobuf::Empty>* allocator) {
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(1);
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::oram_impl::InitFlatOramRequest, ::google::protobuf::Empty>*>(handler)
+              ->SetMessageAllocator(allocator);
+    }
+    ~WithCallbackMethod_InitFlatOram() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status InitFlatOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitFlatOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* InitFlatOram(
+      ::grpc::CallbackServerContext* /*context*/, const ::oram_impl::InitFlatOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/)  { return nullptr; }
   };
   template <class BaseClass>
   class WithCallbackMethod_PrintOramTree : public BaseClass {
@@ -516,13 +675,13 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithCallbackMethod_PrintOramTree() {
-      ::grpc::Service::MarkMethodCallback(1,
+      ::grpc::Service::MarkMethodCallback(2,
           new ::grpc::internal::CallbackUnaryHandler< ::oram_impl::PrintOramTreeRequest, ::google::protobuf::Empty>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::oram_impl::PrintOramTreeRequest* request, ::google::protobuf::Empty* response) { return this->PrintOramTree(context, request, response); }));}
     void SetMessageAllocatorFor_PrintOramTree(
         ::grpc::MessageAllocator< ::oram_impl::PrintOramTreeRequest, ::google::protobuf::Empty>* allocator) {
-      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(1);
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(2);
       static_cast<::grpc::internal::CallbackUnaryHandler< ::oram_impl::PrintOramTreeRequest, ::google::protobuf::Empty>*>(handler)
               ->SetMessageAllocator(allocator);
     }
@@ -543,13 +702,13 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithCallbackMethod_ReadPath() {
-      ::grpc::Service::MarkMethodCallback(2,
+      ::grpc::Service::MarkMethodCallback(3,
           new ::grpc::internal::CallbackUnaryHandler< ::oram_impl::ReadPathRequest, ::oram_impl::ReadPathResponse>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::oram_impl::ReadPathRequest* request, ::oram_impl::ReadPathResponse* response) { return this->ReadPath(context, request, response); }));}
     void SetMessageAllocatorFor_ReadPath(
         ::grpc::MessageAllocator< ::oram_impl::ReadPathRequest, ::oram_impl::ReadPathResponse>* allocator) {
-      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(2);
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(3);
       static_cast<::grpc::internal::CallbackUnaryHandler< ::oram_impl::ReadPathRequest, ::oram_impl::ReadPathResponse>*>(handler)
               ->SetMessageAllocator(allocator);
     }
@@ -570,13 +729,13 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithCallbackMethod_WritePath() {
-      ::grpc::Service::MarkMethodCallback(3,
+      ::grpc::Service::MarkMethodCallback(4,
           new ::grpc::internal::CallbackUnaryHandler< ::oram_impl::WritePathRequest, ::oram_impl::WritePathResponse>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::oram_impl::WritePathRequest* request, ::oram_impl::WritePathResponse* response) { return this->WritePath(context, request, response); }));}
     void SetMessageAllocatorFor_WritePath(
         ::grpc::MessageAllocator< ::oram_impl::WritePathRequest, ::oram_impl::WritePathResponse>* allocator) {
-      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(3);
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(4);
       static_cast<::grpc::internal::CallbackUnaryHandler< ::oram_impl::WritePathRequest, ::oram_impl::WritePathResponse>*>(handler)
               ->SetMessageAllocator(allocator);
     }
@@ -592,18 +751,72 @@ class server final {
       ::grpc::CallbackServerContext* /*context*/, const ::oram_impl::WritePathRequest* /*request*/, ::oram_impl::WritePathResponse* /*response*/)  { return nullptr; }
   };
   template <class BaseClass>
+  class WithCallbackMethod_ReadFlatMemory : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithCallbackMethod_ReadFlatMemory() {
+      ::grpc::Service::MarkMethodCallback(5,
+          new ::grpc::internal::CallbackUnaryHandler< ::oram_impl::ReadFlatRequest, ::oram_impl::FlatVectorMessage>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::oram_impl::ReadFlatRequest* request, ::oram_impl::FlatVectorMessage* response) { return this->ReadFlatMemory(context, request, response); }));}
+    void SetMessageAllocatorFor_ReadFlatMemory(
+        ::grpc::MessageAllocator< ::oram_impl::ReadFlatRequest, ::oram_impl::FlatVectorMessage>* allocator) {
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(5);
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::oram_impl::ReadFlatRequest, ::oram_impl::FlatVectorMessage>*>(handler)
+              ->SetMessageAllocator(allocator);
+    }
+    ~WithCallbackMethod_ReadFlatMemory() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ReadFlatMemory(::grpc::ServerContext* /*context*/, const ::oram_impl::ReadFlatRequest* /*request*/, ::oram_impl::FlatVectorMessage* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* ReadFlatMemory(
+      ::grpc::CallbackServerContext* /*context*/, const ::oram_impl::ReadFlatRequest* /*request*/, ::oram_impl::FlatVectorMessage* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
+  class WithCallbackMethod_WriteFlatMemory : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithCallbackMethod_WriteFlatMemory() {
+      ::grpc::Service::MarkMethodCallback(6,
+          new ::grpc::internal::CallbackUnaryHandler< ::oram_impl::FlatVectorMessage, ::google::protobuf::Empty>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::oram_impl::FlatVectorMessage* request, ::google::protobuf::Empty* response) { return this->WriteFlatMemory(context, request, response); }));}
+    void SetMessageAllocatorFor_WriteFlatMemory(
+        ::grpc::MessageAllocator< ::oram_impl::FlatVectorMessage, ::google::protobuf::Empty>* allocator) {
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(6);
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::oram_impl::FlatVectorMessage, ::google::protobuf::Empty>*>(handler)
+              ->SetMessageAllocator(allocator);
+    }
+    ~WithCallbackMethod_WriteFlatMemory() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status WriteFlatMemory(::grpc::ServerContext* /*context*/, const ::oram_impl::FlatVectorMessage* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* WriteFlatMemory(
+      ::grpc::CallbackServerContext* /*context*/, const ::oram_impl::FlatVectorMessage* /*request*/, ::google::protobuf::Empty* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
   class WithCallbackMethod_CloseConnection : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithCallbackMethod_CloseConnection() {
-      ::grpc::Service::MarkMethodCallback(4,
+      ::grpc::Service::MarkMethodCallback(7,
           new ::grpc::internal::CallbackUnaryHandler< ::google::protobuf::Empty, ::google::protobuf::Empty>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::google::protobuf::Empty* request, ::google::protobuf::Empty* response) { return this->CloseConnection(context, request, response); }));}
     void SetMessageAllocatorFor_CloseConnection(
         ::grpc::MessageAllocator< ::google::protobuf::Empty, ::google::protobuf::Empty>* allocator) {
-      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(4);
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(7);
       static_cast<::grpc::internal::CallbackUnaryHandler< ::google::protobuf::Empty, ::google::protobuf::Empty>*>(handler)
               ->SetMessageAllocator(allocator);
     }
@@ -624,13 +837,13 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithCallbackMethod_KeyExchange() {
-      ::grpc::Service::MarkMethodCallback(5,
+      ::grpc::Service::MarkMethodCallback(8,
           new ::grpc::internal::CallbackUnaryHandler< ::oram_impl::KeyExchangeRequest, ::oram_impl::KeyExchangeResponse>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::oram_impl::KeyExchangeRequest* request, ::oram_impl::KeyExchangeResponse* response) { return this->KeyExchange(context, request, response); }));}
     void SetMessageAllocatorFor_KeyExchange(
         ::grpc::MessageAllocator< ::oram_impl::KeyExchangeRequest, ::oram_impl::KeyExchangeResponse>* allocator) {
-      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(5);
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(8);
       static_cast<::grpc::internal::CallbackUnaryHandler< ::oram_impl::KeyExchangeRequest, ::oram_impl::KeyExchangeResponse>*>(handler)
               ->SetMessageAllocator(allocator);
     }
@@ -651,13 +864,13 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithCallbackMethod_SendHello() {
-      ::grpc::Service::MarkMethodCallback(6,
+      ::grpc::Service::MarkMethodCallback(9,
           new ::grpc::internal::CallbackUnaryHandler< ::oram_impl::HelloMessage, ::google::protobuf::Empty>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::oram_impl::HelloMessage* request, ::google::protobuf::Empty* response) { return this->SendHello(context, request, response); }));}
     void SetMessageAllocatorFor_SendHello(
         ::grpc::MessageAllocator< ::oram_impl::HelloMessage, ::google::protobuf::Empty>* allocator) {
-      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(6);
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(9);
       static_cast<::grpc::internal::CallbackUnaryHandler< ::oram_impl::HelloMessage, ::google::protobuf::Empty>*>(handler)
               ->SetMessageAllocator(allocator);
     }
@@ -678,13 +891,13 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithCallbackMethod_ReportServerInformation() {
-      ::grpc::Service::MarkMethodCallback(7,
+      ::grpc::Service::MarkMethodCallback(10,
           new ::grpc::internal::CallbackUnaryHandler< ::google::protobuf::Empty, ::google::protobuf::Empty>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::google::protobuf::Empty* request, ::google::protobuf::Empty* response) { return this->ReportServerInformation(context, request, response); }));}
     void SetMessageAllocatorFor_ReportServerInformation(
         ::grpc::MessageAllocator< ::google::protobuf::Empty, ::google::protobuf::Empty>* allocator) {
-      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(7);
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(10);
       static_cast<::grpc::internal::CallbackUnaryHandler< ::google::protobuf::Empty, ::google::protobuf::Empty>*>(handler)
               ->SetMessageAllocator(allocator);
     }
@@ -705,13 +918,13 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithCallbackMethod_ResetServer() {
-      ::grpc::Service::MarkMethodCallback(8,
+      ::grpc::Service::MarkMethodCallback(11,
           new ::grpc::internal::CallbackUnaryHandler< ::google::protobuf::Empty, ::google::protobuf::Empty>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::google::protobuf::Empty* request, ::google::protobuf::Empty* response) { return this->ResetServer(context, request, response); }));}
     void SetMessageAllocatorFor_ResetServer(
         ::grpc::MessageAllocator< ::google::protobuf::Empty, ::google::protobuf::Empty>* allocator) {
-      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(8);
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(11);
       static_cast<::grpc::internal::CallbackUnaryHandler< ::google::protobuf::Empty, ::google::protobuf::Empty>*>(handler)
               ->SetMessageAllocator(allocator);
     }
@@ -726,21 +939,38 @@ class server final {
     virtual ::grpc::ServerUnaryReactor* ResetServer(
       ::grpc::CallbackServerContext* /*context*/, const ::google::protobuf::Empty* /*request*/, ::google::protobuf::Empty* /*response*/)  { return nullptr; }
   };
-  typedef WithCallbackMethod_InitOram<WithCallbackMethod_PrintOramTree<WithCallbackMethod_ReadPath<WithCallbackMethod_WritePath<WithCallbackMethod_CloseConnection<WithCallbackMethod_KeyExchange<WithCallbackMethod_SendHello<WithCallbackMethod_ReportServerInformation<WithCallbackMethod_ResetServer<Service > > > > > > > > > CallbackService;
+  typedef WithCallbackMethod_InitTreeOram<WithCallbackMethod_InitFlatOram<WithCallbackMethod_PrintOramTree<WithCallbackMethod_ReadPath<WithCallbackMethod_WritePath<WithCallbackMethod_ReadFlatMemory<WithCallbackMethod_WriteFlatMemory<WithCallbackMethod_CloseConnection<WithCallbackMethod_KeyExchange<WithCallbackMethod_SendHello<WithCallbackMethod_ReportServerInformation<WithCallbackMethod_ResetServer<Service > > > > > > > > > > > > CallbackService;
   typedef CallbackService ExperimentalCallbackService;
   template <class BaseClass>
-  class WithGenericMethod_InitOram : public BaseClass {
+  class WithGenericMethod_InitTreeOram : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithGenericMethod_InitOram() {
+    WithGenericMethod_InitTreeOram() {
       ::grpc::Service::MarkMethodGeneric(0);
     }
-    ~WithGenericMethod_InitOram() override {
+    ~WithGenericMethod_InitTreeOram() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status InitOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+    ::grpc::Status InitTreeOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitTreeOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
+  class WithGenericMethod_InitFlatOram : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithGenericMethod_InitFlatOram() {
+      ::grpc::Service::MarkMethodGeneric(1);
+    }
+    ~WithGenericMethod_InitFlatOram() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status InitFlatOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitFlatOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -751,7 +981,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_PrintOramTree() {
-      ::grpc::Service::MarkMethodGeneric(1);
+      ::grpc::Service::MarkMethodGeneric(2);
     }
     ~WithGenericMethod_PrintOramTree() override {
       BaseClassMustBeDerivedFromService(this);
@@ -768,7 +998,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_ReadPath() {
-      ::grpc::Service::MarkMethodGeneric(2);
+      ::grpc::Service::MarkMethodGeneric(3);
     }
     ~WithGenericMethod_ReadPath() override {
       BaseClassMustBeDerivedFromService(this);
@@ -785,7 +1015,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_WritePath() {
-      ::grpc::Service::MarkMethodGeneric(3);
+      ::grpc::Service::MarkMethodGeneric(4);
     }
     ~WithGenericMethod_WritePath() override {
       BaseClassMustBeDerivedFromService(this);
@@ -797,12 +1027,46 @@ class server final {
     }
   };
   template <class BaseClass>
+  class WithGenericMethod_ReadFlatMemory : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithGenericMethod_ReadFlatMemory() {
+      ::grpc::Service::MarkMethodGeneric(5);
+    }
+    ~WithGenericMethod_ReadFlatMemory() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ReadFlatMemory(::grpc::ServerContext* /*context*/, const ::oram_impl::ReadFlatRequest* /*request*/, ::oram_impl::FlatVectorMessage* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
+  class WithGenericMethod_WriteFlatMemory : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithGenericMethod_WriteFlatMemory() {
+      ::grpc::Service::MarkMethodGeneric(6);
+    }
+    ~WithGenericMethod_WriteFlatMemory() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status WriteFlatMemory(::grpc::ServerContext* /*context*/, const ::oram_impl::FlatVectorMessage* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
   class WithGenericMethod_CloseConnection : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_CloseConnection() {
-      ::grpc::Service::MarkMethodGeneric(4);
+      ::grpc::Service::MarkMethodGeneric(7);
     }
     ~WithGenericMethod_CloseConnection() override {
       BaseClassMustBeDerivedFromService(this);
@@ -819,7 +1083,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_KeyExchange() {
-      ::grpc::Service::MarkMethodGeneric(5);
+      ::grpc::Service::MarkMethodGeneric(8);
     }
     ~WithGenericMethod_KeyExchange() override {
       BaseClassMustBeDerivedFromService(this);
@@ -836,7 +1100,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_SendHello() {
-      ::grpc::Service::MarkMethodGeneric(6);
+      ::grpc::Service::MarkMethodGeneric(9);
     }
     ~WithGenericMethod_SendHello() override {
       BaseClassMustBeDerivedFromService(this);
@@ -853,7 +1117,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_ReportServerInformation() {
-      ::grpc::Service::MarkMethodGeneric(7);
+      ::grpc::Service::MarkMethodGeneric(10);
     }
     ~WithGenericMethod_ReportServerInformation() override {
       BaseClassMustBeDerivedFromService(this);
@@ -870,7 +1134,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_ResetServer() {
-      ::grpc::Service::MarkMethodGeneric(8);
+      ::grpc::Service::MarkMethodGeneric(11);
     }
     ~WithGenericMethod_ResetServer() override {
       BaseClassMustBeDerivedFromService(this);
@@ -882,23 +1146,43 @@ class server final {
     }
   };
   template <class BaseClass>
-  class WithRawMethod_InitOram : public BaseClass {
+  class WithRawMethod_InitTreeOram : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawMethod_InitOram() {
+    WithRawMethod_InitTreeOram() {
       ::grpc::Service::MarkMethodRaw(0);
     }
-    ~WithRawMethod_InitOram() override {
+    ~WithRawMethod_InitTreeOram() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status InitOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+    ::grpc::Status InitTreeOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitTreeOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestInitOram(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+    void RequestInitTreeOram(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithRawMethod_InitFlatOram : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawMethod_InitFlatOram() {
+      ::grpc::Service::MarkMethodRaw(1);
+    }
+    ~WithRawMethod_InitFlatOram() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status InitFlatOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitFlatOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestInitFlatOram(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -907,7 +1191,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_PrintOramTree() {
-      ::grpc::Service::MarkMethodRaw(1);
+      ::grpc::Service::MarkMethodRaw(2);
     }
     ~WithRawMethod_PrintOramTree() override {
       BaseClassMustBeDerivedFromService(this);
@@ -918,7 +1202,7 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestPrintOramTree(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(2, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -927,7 +1211,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_ReadPath() {
-      ::grpc::Service::MarkMethodRaw(2);
+      ::grpc::Service::MarkMethodRaw(3);
     }
     ~WithRawMethod_ReadPath() override {
       BaseClassMustBeDerivedFromService(this);
@@ -938,7 +1222,7 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestReadPath(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(2, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(3, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -947,7 +1231,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_WritePath() {
-      ::grpc::Service::MarkMethodRaw(3);
+      ::grpc::Service::MarkMethodRaw(4);
     }
     ~WithRawMethod_WritePath() override {
       BaseClassMustBeDerivedFromService(this);
@@ -958,7 +1242,47 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestWritePath(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(3, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(4, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithRawMethod_ReadFlatMemory : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawMethod_ReadFlatMemory() {
+      ::grpc::Service::MarkMethodRaw(5);
+    }
+    ~WithRawMethod_ReadFlatMemory() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ReadFlatMemory(::grpc::ServerContext* /*context*/, const ::oram_impl::ReadFlatRequest* /*request*/, ::oram_impl::FlatVectorMessage* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestReadFlatMemory(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(5, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithRawMethod_WriteFlatMemory : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawMethod_WriteFlatMemory() {
+      ::grpc::Service::MarkMethodRaw(6);
+    }
+    ~WithRawMethod_WriteFlatMemory() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status WriteFlatMemory(::grpc::ServerContext* /*context*/, const ::oram_impl::FlatVectorMessage* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestWriteFlatMemory(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(6, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -967,7 +1291,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_CloseConnection() {
-      ::grpc::Service::MarkMethodRaw(4);
+      ::grpc::Service::MarkMethodRaw(7);
     }
     ~WithRawMethod_CloseConnection() override {
       BaseClassMustBeDerivedFromService(this);
@@ -978,7 +1302,7 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestCloseConnection(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(4, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(7, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -987,7 +1311,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_KeyExchange() {
-      ::grpc::Service::MarkMethodRaw(5);
+      ::grpc::Service::MarkMethodRaw(8);
     }
     ~WithRawMethod_KeyExchange() override {
       BaseClassMustBeDerivedFromService(this);
@@ -998,7 +1322,7 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestKeyExchange(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(5, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(8, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -1007,7 +1331,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_SendHello() {
-      ::grpc::Service::MarkMethodRaw(6);
+      ::grpc::Service::MarkMethodRaw(9);
     }
     ~WithRawMethod_SendHello() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1018,7 +1342,7 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestSendHello(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(6, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(9, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -1027,7 +1351,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_ReportServerInformation() {
-      ::grpc::Service::MarkMethodRaw(7);
+      ::grpc::Service::MarkMethodRaw(10);
     }
     ~WithRawMethod_ReportServerInformation() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1038,7 +1362,7 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestReportServerInformation(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(7, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(10, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -1047,7 +1371,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_ResetServer() {
-      ::grpc::Service::MarkMethodRaw(8);
+      ::grpc::Service::MarkMethodRaw(11);
     }
     ~WithRawMethod_ResetServer() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1058,29 +1382,51 @@ class server final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestResetServer(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(8, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(11, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_InitOram : public BaseClass {
+  class WithRawCallbackMethod_InitTreeOram : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_InitOram() {
+    WithRawCallbackMethod_InitTreeOram() {
       ::grpc::Service::MarkMethodRawCallback(0,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->InitOram(context, request, response); }));
+                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->InitTreeOram(context, request, response); }));
     }
-    ~WithRawCallbackMethod_InitOram() override {
+    ~WithRawCallbackMethod_InitTreeOram() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status InitOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+    ::grpc::Status InitTreeOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitTreeOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual ::grpc::ServerUnaryReactor* InitOram(
+    virtual ::grpc::ServerUnaryReactor* InitTreeOram(
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
+  class WithRawCallbackMethod_InitFlatOram : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawCallbackMethod_InitFlatOram() {
+      ::grpc::Service::MarkMethodRawCallback(1,
+          new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->InitFlatOram(context, request, response); }));
+    }
+    ~WithRawCallbackMethod_InitFlatOram() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status InitFlatOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitFlatOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* InitFlatOram(
       ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
   };
   template <class BaseClass>
@@ -1089,7 +1435,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawCallbackMethod_PrintOramTree() {
-      ::grpc::Service::MarkMethodRawCallback(1,
+      ::grpc::Service::MarkMethodRawCallback(2,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->PrintOramTree(context, request, response); }));
@@ -1111,7 +1457,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawCallbackMethod_ReadPath() {
-      ::grpc::Service::MarkMethodRawCallback(2,
+      ::grpc::Service::MarkMethodRawCallback(3,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->ReadPath(context, request, response); }));
@@ -1133,7 +1479,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawCallbackMethod_WritePath() {
-      ::grpc::Service::MarkMethodRawCallback(3,
+      ::grpc::Service::MarkMethodRawCallback(4,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->WritePath(context, request, response); }));
@@ -1150,12 +1496,56 @@ class server final {
       ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
   };
   template <class BaseClass>
+  class WithRawCallbackMethod_ReadFlatMemory : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawCallbackMethod_ReadFlatMemory() {
+      ::grpc::Service::MarkMethodRawCallback(5,
+          new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->ReadFlatMemory(context, request, response); }));
+    }
+    ~WithRawCallbackMethod_ReadFlatMemory() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ReadFlatMemory(::grpc::ServerContext* /*context*/, const ::oram_impl::ReadFlatRequest* /*request*/, ::oram_impl::FlatVectorMessage* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* ReadFlatMemory(
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
+  class WithRawCallbackMethod_WriteFlatMemory : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawCallbackMethod_WriteFlatMemory() {
+      ::grpc::Service::MarkMethodRawCallback(6,
+          new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->WriteFlatMemory(context, request, response); }));
+    }
+    ~WithRawCallbackMethod_WriteFlatMemory() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status WriteFlatMemory(::grpc::ServerContext* /*context*/, const ::oram_impl::FlatVectorMessage* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* WriteFlatMemory(
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
   class WithRawCallbackMethod_CloseConnection : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawCallbackMethod_CloseConnection() {
-      ::grpc::Service::MarkMethodRawCallback(4,
+      ::grpc::Service::MarkMethodRawCallback(7,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->CloseConnection(context, request, response); }));
@@ -1177,7 +1567,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawCallbackMethod_KeyExchange() {
-      ::grpc::Service::MarkMethodRawCallback(5,
+      ::grpc::Service::MarkMethodRawCallback(8,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->KeyExchange(context, request, response); }));
@@ -1199,7 +1589,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawCallbackMethod_SendHello() {
-      ::grpc::Service::MarkMethodRawCallback(6,
+      ::grpc::Service::MarkMethodRawCallback(9,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendHello(context, request, response); }));
@@ -1221,7 +1611,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawCallbackMethod_ReportServerInformation() {
-      ::grpc::Service::MarkMethodRawCallback(7,
+      ::grpc::Service::MarkMethodRawCallback(10,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->ReportServerInformation(context, request, response); }));
@@ -1243,7 +1633,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawCallbackMethod_ResetServer() {
-      ::grpc::Service::MarkMethodRawCallback(8,
+      ::grpc::Service::MarkMethodRawCallback(11,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->ResetServer(context, request, response); }));
@@ -1260,31 +1650,58 @@ class server final {
       ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
   };
   template <class BaseClass>
-  class WithStreamedUnaryMethod_InitOram : public BaseClass {
+  class WithStreamedUnaryMethod_InitTreeOram : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithStreamedUnaryMethod_InitOram() {
+    WithStreamedUnaryMethod_InitTreeOram() {
       ::grpc::Service::MarkMethodStreamed(0,
         new ::grpc::internal::StreamedUnaryHandler<
-          ::oram_impl::InitOramRequest, ::google::protobuf::Empty>(
+          ::oram_impl::InitTreeOramRequest, ::google::protobuf::Empty>(
             [this](::grpc::ServerContext* context,
                    ::grpc::ServerUnaryStreamer<
-                     ::oram_impl::InitOramRequest, ::google::protobuf::Empty>* streamer) {
-                       return this->StreamedInitOram(context,
+                     ::oram_impl::InitTreeOramRequest, ::google::protobuf::Empty>* streamer) {
+                       return this->StreamedInitTreeOram(context,
                          streamer);
                   }));
     }
-    ~WithStreamedUnaryMethod_InitOram() override {
+    ~WithStreamedUnaryMethod_InitTreeOram() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status InitOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+    ::grpc::Status InitTreeOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitTreeOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedInitOram(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::oram_impl::InitOramRequest,::google::protobuf::Empty>* server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedInitTreeOram(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::oram_impl::InitTreeOramRequest,::google::protobuf::Empty>* server_unary_streamer) = 0;
+  };
+  template <class BaseClass>
+  class WithStreamedUnaryMethod_InitFlatOram : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithStreamedUnaryMethod_InitFlatOram() {
+      ::grpc::Service::MarkMethodStreamed(1,
+        new ::grpc::internal::StreamedUnaryHandler<
+          ::oram_impl::InitFlatOramRequest, ::google::protobuf::Empty>(
+            [this](::grpc::ServerContext* context,
+                   ::grpc::ServerUnaryStreamer<
+                     ::oram_impl::InitFlatOramRequest, ::google::protobuf::Empty>* streamer) {
+                       return this->StreamedInitFlatOram(context,
+                         streamer);
+                  }));
+    }
+    ~WithStreamedUnaryMethod_InitFlatOram() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status InitFlatOram(::grpc::ServerContext* /*context*/, const ::oram_impl::InitFlatOramRequest* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedInitFlatOram(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::oram_impl::InitFlatOramRequest,::google::protobuf::Empty>* server_unary_streamer) = 0;
   };
   template <class BaseClass>
   class WithStreamedUnaryMethod_PrintOramTree : public BaseClass {
@@ -1292,7 +1709,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_PrintOramTree() {
-      ::grpc::Service::MarkMethodStreamed(1,
+      ::grpc::Service::MarkMethodStreamed(2,
         new ::grpc::internal::StreamedUnaryHandler<
           ::oram_impl::PrintOramTreeRequest, ::google::protobuf::Empty>(
             [this](::grpc::ServerContext* context,
@@ -1319,7 +1736,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_ReadPath() {
-      ::grpc::Service::MarkMethodStreamed(2,
+      ::grpc::Service::MarkMethodStreamed(3,
         new ::grpc::internal::StreamedUnaryHandler<
           ::oram_impl::ReadPathRequest, ::oram_impl::ReadPathResponse>(
             [this](::grpc::ServerContext* context,
@@ -1346,7 +1763,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_WritePath() {
-      ::grpc::Service::MarkMethodStreamed(3,
+      ::grpc::Service::MarkMethodStreamed(4,
         new ::grpc::internal::StreamedUnaryHandler<
           ::oram_impl::WritePathRequest, ::oram_impl::WritePathResponse>(
             [this](::grpc::ServerContext* context,
@@ -1368,12 +1785,66 @@ class server final {
     virtual ::grpc::Status StreamedWritePath(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::oram_impl::WritePathRequest,::oram_impl::WritePathResponse>* server_unary_streamer) = 0;
   };
   template <class BaseClass>
+  class WithStreamedUnaryMethod_ReadFlatMemory : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithStreamedUnaryMethod_ReadFlatMemory() {
+      ::grpc::Service::MarkMethodStreamed(5,
+        new ::grpc::internal::StreamedUnaryHandler<
+          ::oram_impl::ReadFlatRequest, ::oram_impl::FlatVectorMessage>(
+            [this](::grpc::ServerContext* context,
+                   ::grpc::ServerUnaryStreamer<
+                     ::oram_impl::ReadFlatRequest, ::oram_impl::FlatVectorMessage>* streamer) {
+                       return this->StreamedReadFlatMemory(context,
+                         streamer);
+                  }));
+    }
+    ~WithStreamedUnaryMethod_ReadFlatMemory() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status ReadFlatMemory(::grpc::ServerContext* /*context*/, const ::oram_impl::ReadFlatRequest* /*request*/, ::oram_impl::FlatVectorMessage* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedReadFlatMemory(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::oram_impl::ReadFlatRequest,::oram_impl::FlatVectorMessage>* server_unary_streamer) = 0;
+  };
+  template <class BaseClass>
+  class WithStreamedUnaryMethod_WriteFlatMemory : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithStreamedUnaryMethod_WriteFlatMemory() {
+      ::grpc::Service::MarkMethodStreamed(6,
+        new ::grpc::internal::StreamedUnaryHandler<
+          ::oram_impl::FlatVectorMessage, ::google::protobuf::Empty>(
+            [this](::grpc::ServerContext* context,
+                   ::grpc::ServerUnaryStreamer<
+                     ::oram_impl::FlatVectorMessage, ::google::protobuf::Empty>* streamer) {
+                       return this->StreamedWriteFlatMemory(context,
+                         streamer);
+                  }));
+    }
+    ~WithStreamedUnaryMethod_WriteFlatMemory() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status WriteFlatMemory(::grpc::ServerContext* /*context*/, const ::oram_impl::FlatVectorMessage* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedWriteFlatMemory(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::oram_impl::FlatVectorMessage,::google::protobuf::Empty>* server_unary_streamer) = 0;
+  };
+  template <class BaseClass>
   class WithStreamedUnaryMethod_CloseConnection : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_CloseConnection() {
-      ::grpc::Service::MarkMethodStreamed(4,
+      ::grpc::Service::MarkMethodStreamed(7,
         new ::grpc::internal::StreamedUnaryHandler<
           ::google::protobuf::Empty, ::google::protobuf::Empty>(
             [this](::grpc::ServerContext* context,
@@ -1400,7 +1871,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_KeyExchange() {
-      ::grpc::Service::MarkMethodStreamed(5,
+      ::grpc::Service::MarkMethodStreamed(8,
         new ::grpc::internal::StreamedUnaryHandler<
           ::oram_impl::KeyExchangeRequest, ::oram_impl::KeyExchangeResponse>(
             [this](::grpc::ServerContext* context,
@@ -1427,7 +1898,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_SendHello() {
-      ::grpc::Service::MarkMethodStreamed(6,
+      ::grpc::Service::MarkMethodStreamed(9,
         new ::grpc::internal::StreamedUnaryHandler<
           ::oram_impl::HelloMessage, ::google::protobuf::Empty>(
             [this](::grpc::ServerContext* context,
@@ -1454,7 +1925,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_ReportServerInformation() {
-      ::grpc::Service::MarkMethodStreamed(7,
+      ::grpc::Service::MarkMethodStreamed(10,
         new ::grpc::internal::StreamedUnaryHandler<
           ::google::protobuf::Empty, ::google::protobuf::Empty>(
             [this](::grpc::ServerContext* context,
@@ -1481,7 +1952,7 @@ class server final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_ResetServer() {
-      ::grpc::Service::MarkMethodStreamed(8,
+      ::grpc::Service::MarkMethodStreamed(11,
         new ::grpc::internal::StreamedUnaryHandler<
           ::google::protobuf::Empty, ::google::protobuf::Empty>(
             [this](::grpc::ServerContext* context,
@@ -1502,9 +1973,9 @@ class server final {
     // replace default version of method with streamed unary
     virtual ::grpc::Status StreamedResetServer(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::google::protobuf::Empty,::google::protobuf::Empty>* server_unary_streamer) = 0;
   };
-  typedef WithStreamedUnaryMethod_InitOram<WithStreamedUnaryMethod_PrintOramTree<WithStreamedUnaryMethod_ReadPath<WithStreamedUnaryMethod_WritePath<WithStreamedUnaryMethod_CloseConnection<WithStreamedUnaryMethod_KeyExchange<WithStreamedUnaryMethod_SendHello<WithStreamedUnaryMethod_ReportServerInformation<WithStreamedUnaryMethod_ResetServer<Service > > > > > > > > > StreamedUnaryService;
+  typedef WithStreamedUnaryMethod_InitTreeOram<WithStreamedUnaryMethod_InitFlatOram<WithStreamedUnaryMethod_PrintOramTree<WithStreamedUnaryMethod_ReadPath<WithStreamedUnaryMethod_WritePath<WithStreamedUnaryMethod_ReadFlatMemory<WithStreamedUnaryMethod_WriteFlatMemory<WithStreamedUnaryMethod_CloseConnection<WithStreamedUnaryMethod_KeyExchange<WithStreamedUnaryMethod_SendHello<WithStreamedUnaryMethod_ReportServerInformation<WithStreamedUnaryMethod_ResetServer<Service > > > > > > > > > > > > StreamedUnaryService;
   typedef Service SplitStreamedService;
-  typedef WithStreamedUnaryMethod_InitOram<WithStreamedUnaryMethod_PrintOramTree<WithStreamedUnaryMethod_ReadPath<WithStreamedUnaryMethod_WritePath<WithStreamedUnaryMethod_CloseConnection<WithStreamedUnaryMethod_KeyExchange<WithStreamedUnaryMethod_SendHello<WithStreamedUnaryMethod_ReportServerInformation<WithStreamedUnaryMethod_ResetServer<Service > > > > > > > > > StreamedService;
+  typedef WithStreamedUnaryMethod_InitTreeOram<WithStreamedUnaryMethod_InitFlatOram<WithStreamedUnaryMethod_PrintOramTree<WithStreamedUnaryMethod_ReadPath<WithStreamedUnaryMethod_WritePath<WithStreamedUnaryMethod_ReadFlatMemory<WithStreamedUnaryMethod_WriteFlatMemory<WithStreamedUnaryMethod_CloseConnection<WithStreamedUnaryMethod_KeyExchange<WithStreamedUnaryMethod_SendHello<WithStreamedUnaryMethod_ReportServerInformation<WithStreamedUnaryMethod_ResetServer<Service > > > > > > > > > > > > StreamedService;
 };
 
 }  // namespace oram_impl

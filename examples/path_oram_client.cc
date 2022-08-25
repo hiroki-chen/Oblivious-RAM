@@ -38,7 +38,8 @@ void Client::Run(void) {
   std::shared_ptr<grpc::ChannelCredentials> ssl_creds =
       grpc::SslCredentials(ssl_opts);
   // Make this stub shared among all.
-  stub_ = std::move(server::NewStub(grpc::CreateChannel(address, ssl_creds)));
+  stub_ =
+      std::move(oram_server::NewStub(grpc::CreateChannel(address, ssl_creds)));
 
   // Initialize the cryptor and controller.
   cryptor_ = oram_crypto::Cryptor::GetInstance();

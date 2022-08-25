@@ -25,9 +25,15 @@
 extern std::shared_ptr<spdlog::logger> logger;
 
 namespace oram_impl {
+// Simply does nothing. We need a pure virtual destructor mainly because we do
+// not want an instance of BaseOramServerStorage to be created accidentally.
+BaseOramServerStorage::~BaseOramServerStorage() {}
+
 TreeOramServerStorage::TreeOramServerStorage(uint32_t id, size_t capacity,
+                                             size_t block_size,
                                              size_t bucket_size)
-    : BaseOramServerStorage(id, capacity, OramStorageType::kTreeStorage),
+    : BaseOramServerStorage(id, capacity, block_size,
+                            OramStorageType::kTreeStorage),
       bucket_size_(bucket_size) {
   level_ = std::ceil(LOG_BASE(capacity_ + 1, 2)) - 1;
 

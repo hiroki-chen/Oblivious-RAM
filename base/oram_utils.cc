@@ -204,48 +204,56 @@ void PrintOramTree(const oram_impl::server_tree_storage_t& storage) {
 
 void EncryptBlock(oram_impl::oram_block_t* const block,
                   oram_crypto::Cryptor* const cryptor) {
-  if (block->header.type != oram_impl::BlockType::kNormal) {
-    return;
-  }
   // First let us generate the iv.
-  oram_impl::OramStatus status = cryptor->RandomBytes(block->header.iv, 12);
+  oram_impl::OramStatus status =
+      cryptor->RandomBytes(block->header.iv, ORAM_CRYPTO_RANDOM_SIZE);
   CheckStatus(status, "Failed to generate iv!");
 
-  // Second prepare the buffer.
+  // Second prepare the buffer. The buffer includes part of the header.
   std::string enc;
-  status = cryptor->Encrypt(block->data, DEFAULT_ORAM_DATA_SIZE,
-                            block->header.iv, &enc);
+  status = cryptor->Encrypt(
+      (uint8_t*)(&block->header) + DEFAULT_ORAM_ENCSKIP_SIZE,
+      DEFAULT_ORAM_DATA_SIZE + DEFAULT_ORAM_METADATA_SIZE, block->header.iv,
+      &enc);
   CheckStatus(status, "Failed to encrypt data!");
 
   // Third, let us split the mac tag to the header.
-  memcpy(block->header.mac_tag, enc.data() + enc.size() - 16, 16);
+  memcpy(block->header.mac_tag,
+         enc.data() + enc.size() - crypto_aead_aes256gcm_ABYTES,
+         crypto_aead_aes256gcm_ABYTES);
 
-  // Finally, let us copy the encrypted data to the block.
-  memcpy(block->data, enc.data(), enc.size() - 16);
+  // Fourth, let us copy the encrypted data to the block.
+  memcpy((uint8_t*)(&block->header) + DEFAULT_ORAM_ENCSKIP_SIZE, enc.data(),
+         enc.size() - crypto_aead_aes256gcm_ABYTES);
 }
 
 void DecryptBlock(oram_impl::oram_block_t* const block,
                   oram_crypto::Cryptor* const cryptor) {
-  if (block->header.type != oram_impl::BlockType::kNormal) {
-    return;
-  }
   // First, let us prepare the buffer.
-  uint8_t* enc_data = (uint8_t*)malloc(DEFAULT_ORAM_DATA_SIZE + 16);
+  uint8_t* enc_data =
+      (uint8_t*)malloc(DEFAULT_ORAM_DATA_SIZE + DEFAULT_ORAM_METADATA_SIZE +
+                       crypto_aead_aes256gcm_ABYTES);
 
   // Second, let us copy the encrypted data to the buffer.
-  memcpy(enc_data, block->data, DEFAULT_ORAM_DATA_SIZE);
+  memcpy(enc_data, (uint8_t*)(&block->header) + DEFAULT_ORAM_ENCSKIP_SIZE,
+         DEFAULT_ORAM_DATA_SIZE + DEFAULT_ORAM_METADATA_SIZE);
 
   // Third, let us copy the mac tag to the buffer.
-  memcpy(enc_data + DEFAULT_ORAM_DATA_SIZE, block->header.mac_tag, 16);
+  memcpy(enc_data + DEFAULT_ORAM_DATA_SIZE + DEFAULT_ORAM_METADATA_SIZE,
+         block->header.mac_tag, crypto_aead_aes256gcm_ABYTES);
 
   // Fourth, let us decrypt the data.
   std::string dec;
-  oram_impl::OramStatus status = cryptor->Decrypt(
-      enc_data, DEFAULT_ORAM_DATA_SIZE + 16, block->header.iv, &dec);
+  oram_impl::OramStatus status =
+      cryptor->Decrypt(enc_data,
+                       DEFAULT_ORAM_DATA_SIZE + DEFAULT_ORAM_METADATA_SIZE +
+                           crypto_aead_aes256gcm_ABYTES,
+                       block->header.iv, &dec);
   CheckStatus(status, "Failed to decrypt data!");
 
-  // Finally, let us copy the decrypted data to the block.
-  memcpy(block->data, dec.data(), dec.size());
+  // Fifth, let us copy the decrypted data to the block.
+  memcpy((uint8_t*)(&block->header) + DEFAULT_ORAM_ENCSKIP_SIZE, dec.data(),
+         dec.size());
 
   SafeFree(enc_data);
 }

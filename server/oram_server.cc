@@ -27,21 +27,10 @@
 std::atomic_bool server_running;
 
 namespace oram_impl {
-
-grpc::Status PartitionORAMService::InitOram(grpc::ServerContext* context,
-                                            const InitOramRequest* request,
-                                            google::protobuf::Empty* empty) {
-  logger->info("From peer: {}, InitOram request received.", context->peer());
-
-  // Intialize the Path ORAM storage.
-  const uint32_t id = request->id();
-  const uint32_t bucket_size = request->bucket_size();
-  const uint32_t bucket_num = request->bucket_num();
-
-  // Do some sanity check.
+grpc::Status OramService::CheckInitRequest(uint32_t id) {
   if (id < storages_.size()) {
     const std::string error_message =
-        oram_utils::StrCat("PathORAM id: ", id, " already exists.");
+        oram_utils::StrCat("ORAM id: ", id, " already exists.");
     return grpc::Status(grpc::StatusCode::ALREADY_EXISTS, error_message);
   } else if (id >= kMaximumOramStorageNum) {
     const std::string error_message = oram_utils::StrCat(
@@ -50,18 +39,132 @@ grpc::Status PartitionORAMService::InitOram(grpc::ServerContext* context,
     return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, error_message);
   }
 
-  // Create a new storage and initialize it.
-  storages_.emplace_back(
-      std::make_unique<TreeOramServerStorage>(id, bucket_num, bucket_size));
+  return grpc::Status::OK;
+}
 
-  logger->info("PathORAM id: {} successfully created.", id);
+grpc::Status OramService::CheckIdValid(uint32_t id) {
+  if (id >= storages_.size()) {
+    const std::string error_message =
+        oram_utils::StrCat("ORAM id: ", id, " does not exist.");
+    return grpc::Status(grpc::StatusCode::NOT_FOUND, error_message);
+  }
+  return grpc::Status::OK;
+}
+
+grpc::Status OramService::InitTreeOram(grpc::ServerContext* context,
+                                       const InitTreeOramRequest* request,
+                                       google::protobuf::Empty* empty) {
+  logger->info("From peer: {}, InitTreeOram request received.",
+               context->peer());
+
+  // Intialize the Tree ORAM storage.
+  const uint32_t id = request->id();
+  const uint32_t bucket_size = request->bucket_size();
+  const uint32_t bucket_num = request->bucket_num();
+  const size_t block_size = request->block_size();
+
+  // Do check.
+  grpc::Status status = CheckInitRequest(id);
+  if (!status.ok()) {
+    return status;
+  }
+
+  // Create a new storage and initialize it.
+  storages_.emplace_back(std::make_unique<TreeOramServerStorage>(
+      id, bucket_num, block_size, bucket_size));
+
+  logger->info("Tree ORAM successfully created. ID = {}", id);
 
   return grpc::Status::OK;
 }
 
-grpc::Status PartitionORAMService::ResetServer(
-    grpc::ServerContext* context, const google::protobuf::Empty* request,
-    google::protobuf::Empty* response) {
+grpc::Status OramService::InitFlatOram(grpc::ServerContext* context,
+                                       const InitFlatOramRequest* request,
+                                       google::protobuf::Empty* empty) {
+  logger->info("From peer: {}, InitFlatOram request received.",
+               context->peer());
+
+  // Initialize the Flat ORAM storage.
+  const uint32_t id = request->id();
+  const size_t capacity = request->capacity();
+  const size_t block_size = request->block_size();
+
+  // Do check.
+  grpc::Status status = CheckInitRequest(id);
+  if (!status.ok()) {
+    return status;
+  }
+
+  storages_.emplace_back(
+      std::make_unique<FlatOramServerStorage>(id, capacity, block_size));
+
+  logger->info("Flat ORAM successfully created. ID = {}", id);
+
+  return grpc::Status::OK;
+}
+
+grpc::Status OramService::ReadFlatMemory(grpc::ServerContext* context,
+                                         const ReadFlatRequest* request,
+                                         FlatVectorMessage* response) {
+  logger->info("From peer: {}, ReadFlagMemory request received.",
+               context->peer());
+
+  const uint32_t id = request->id();
+
+  grpc::Status status = grpc::Status::OK;
+  if (!(status = CheckIdValid(id)).ok()) {
+    return status;
+  }
+
+  FlatOramServerStorage* const storage =
+      dynamic_cast<FlatOramServerStorage* const>(storages_[id].get());
+  if (storage == nullptr ||
+      storage->GetOramStorageType() != OramStorageType::kFlatStorage) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
+  }
+
+  const server_flat_storage_t blocks = storage->GetStorage();
+  response->set_id(id);
+  response->set_content(blocks);
+
+  return status;
+}
+
+grpc::Status OramService::WriteFlatMemory(grpc::ServerContext* context,
+                                          const FlatVectorMessage* request,
+                                          google::protobuf::Empty* empty) {
+  logger->info("From peer: {}, WriteFlatMemory request received.",
+               context->peer());
+
+  const uint32_t id = request->id();
+
+  grpc::Status status = grpc::Status::OK;
+  if (!(status = CheckIdValid(id)).ok()) {
+    return status;
+  }
+
+  FlatOramServerStorage* const storage =
+      dynamic_cast<FlatOramServerStorage* const>(storages_[id].get());
+  if (storage == nullptr ||
+      storage->GetOramStorageType() != OramStorageType::kFlatStorage) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
+  }
+
+  if (storage->GetStorage().size() !=
+      std::ceil(request->content().size() / storage->GetBlockSize())) {
+    return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
+                        oram_size_mismatch_err);
+  }
+
+  storage->ResetStorage();
+  storage->From(request->content());
+
+  return status;
+}
+
+grpc::Status OramService::ResetServer(grpc::ServerContext* context,
+                                      const google::protobuf::Empty* request,
+                                      google::protobuf::Empty* response) {
   logger->info("From peer: {}, Reset server.", context->peer());
 
   storages_.clear();
@@ -70,28 +173,35 @@ grpc::Status PartitionORAMService::ResetServer(
   return grpc::Status::OK;
 }
 
-grpc::Status PartitionORAMService::PrintOramTree(
-    grpc::ServerContext* context, const PrintOramTreeRequest* request,
-    google::protobuf::Empty* response) {
+grpc::Status OramService::PrintOramTree(grpc::ServerContext* context,
+                                        const PrintOramTreeRequest* request,
+                                        google::protobuf::Empty* response) {
   logger->info("From peer: {}, PrintOramTree request received.",
                context->peer());
 
   const uint32_t id = request->id();
 
-  if (id >= storages_.size()) {
-    const std::string error_message =
-        oram_utils::StrCat("PathORAM id: ", id, " does not exist.");
-    return grpc::Status(grpc::StatusCode::NOT_FOUND, error_message);
+  grpc::Status status = grpc::Status::OK;
+  if (!(status = CheckIdValid(id)).ok()) {
+    return status;
   }
 
-  oram_utils::PrintOramTree(std::move(storages_[id]->GetStorage()));
+  // Check if the storage is tree ORAM.
+  TreeOramServerStorage* const storage =
+      dynamic_cast<TreeOramServerStorage* const>(storages_[id].get());
+  if (storage == nullptr ||
+      storage->GetOramStorageType() != OramStorageType::kTreeStorage) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
+  }
 
-  return grpc::Status::OK;
+  oram_utils::PrintOramTree(std::move(storage->GetStorage()));
+
+  return status;
 }
 
-grpc::Status PartitionORAMService::ReadPath(grpc::ServerContext* context,
-                                            const ReadPathRequest* request,
-                                            ReadPathResponse* response) {
+grpc::Status OramService::ReadPath(grpc::ServerContext* context,
+                                   const ReadPathRequest* request,
+                                   ReadPathResponse* response) {
   logger->info("From peer: {}, ReadPath request received.", context->peer());
 
   const uint32_t id = request->id();
@@ -100,17 +210,24 @@ grpc::Status PartitionORAMService::ReadPath(grpc::ServerContext* context,
 
   logger->info("PathORAM id: {}, path: {}, level: {}", id, path, level);
 
-  if (id >= storages_.size()) {
-    const std::string error_message =
-        oram_utils::StrCat("PathORAM id: ", id, " does not exist.");
-    return grpc::Status(grpc::StatusCode::NOT_FOUND, error_message);
+  grpc::Status status = grpc::Status::OK;
+  if (!(status = CheckIdValid(id)).ok()) {
+    return status;
+  }
+
+  // Check if the storage is tree ORAM.
+  TreeOramServerStorage* const storage =
+      dynamic_cast<TreeOramServerStorage* const>(storages_[id].get());
+  if (storage == nullptr ||
+      storage->GetOramStorageType() != OramStorageType::kTreeStorage) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
   }
 
   // Read the path and record the time it used.
   auto begin = std::chrono::high_resolution_clock::now();
 
   p_oram_bucket_t bucket;
-  if (storages_[id]->ReadPath(level, path, &bucket) != OramStatus::kOK) {
+  if (storage->ReadPath(level, path, &bucket) != OramStatus::kOK) {
     const std::string error_message =
         oram_utils::StrCat("Failed to read path: ", path, " in level: ", level,
                            " in PathORAM id: ", id);
@@ -133,12 +250,12 @@ grpc::Status PartitionORAMService::ReadPath(grpc::ServerContext* context,
     response->add_bucket(bucket);
   }
 
-  return grpc::Status::OK;
+  return status;
 }
 
-grpc::Status PartitionORAMService::WritePath(grpc::ServerContext* context,
-                                             const WritePathRequest* request,
-                                             WritePathResponse* response) {
+grpc::Status OramService::WritePath(grpc::ServerContext* context,
+                                    const WritePathRequest* request,
+                                    WritePathResponse* response) {
   logger->info("From peer: {}, WritePath request received.", context->peer());
   Type type = request->type();
 
@@ -147,10 +264,17 @@ grpc::Status PartitionORAMService::WritePath(grpc::ServerContext* context,
   const uint32_t path = request->path();
   const uint32_t offset = request->offset();
 
-  if (id >= storages_.size()) {
-    const std::string error_message =
-        oram_utils::StrCat("PathORAM id: ", id, " does not exist.");
-    return grpc::Status(grpc::StatusCode::NOT_FOUND, error_message);
+  grpc::Status server_status = grpc::Status::OK;
+  if (!(server_status = CheckIdValid(id)).ok()) {
+    return server_status;
+  }
+
+  // Check if the storage is tree ORAM.
+  TreeOramServerStorage* const storage =
+      dynamic_cast<TreeOramServerStorage* const>(storages_[id].get());
+  if (storage == nullptr ||
+      storage->GetOramStorageType() != OramStorageType::kTreeStorage) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
   }
 
   // Deserialize the bucket from the string.
@@ -164,8 +288,8 @@ grpc::Status PartitionORAMService::WritePath(grpc::ServerContext* context,
   // Write the path.
   OramStatus status =
       type == Type::kInit
-          ? storages_[id]->AccurateWritePath(level, offset, bucket, type)
-          : storages_[id]->WritePath(level, path, bucket);
+          ? storage->AccurateWritePath(level, offset, bucket, type)
+          : storage->WritePath(level, path, bucket);
 
   if (status != OramStatus::kOK) {
     const std::string error_message =
@@ -174,12 +298,12 @@ grpc::Status PartitionORAMService::WritePath(grpc::ServerContext* context,
     return grpc::Status(grpc::StatusCode::INTERNAL, error_message);
   }
 
-  return grpc::Status::OK;
+  return server_status;
 }
 
-grpc::Status PartitionORAMService::KeyExchange(
-    grpc::ServerContext* context, const KeyExchangeRequest* request,
-    KeyExchangeResponse* response) {
+grpc::Status OramService::KeyExchange(grpc::ServerContext* context,
+                                      const KeyExchangeRequest* request,
+                                      KeyExchangeResponse* response) {
   const std::string public_key_client = request->public_key_client();
 
   OramStatus status;
@@ -207,7 +331,7 @@ grpc::Status PartitionORAMService::KeyExchange(
   return grpc::Status::OK;
 }
 
-grpc::Status PartitionORAMService::CloseConnection(
+grpc::Status OramService::CloseConnection(
     grpc::ServerContext* context, const google::protobuf::Empty* request,
     google::protobuf::Empty* response) {
   logger->info("Closing connection...");
@@ -215,9 +339,9 @@ grpc::Status PartitionORAMService::CloseConnection(
   return grpc::Status::OK;
 }
 
-grpc::Status PartitionORAMService::SendHello(grpc::ServerContext* context,
-                                             const HelloMessage* request,
-                                             google::protobuf::Empty* empty) {
+grpc::Status OramService::SendHello(grpc::ServerContext* context,
+                                    const HelloMessage* request,
+                                    google::protobuf::Empty* empty) {
   const std::string encrypted_message = request->content();
   const std::string iv = request->iv();
   std::string message;
@@ -238,7 +362,7 @@ grpc::Status PartitionORAMService::SendHello(grpc::ServerContext* context,
   return grpc::Status::OK;
 }
 
-grpc::Status PartitionORAMService::ReportServerInformation(
+grpc::Status OramService::ReportServerInformation(
     grpc::ServerContext* context, const google::protobuf::Empty* request,
     google::protobuf::Empty* response) {
   logger->info("Report server information...");
@@ -275,7 +399,7 @@ ServerRunner::ServerRunner(const std::string& address, const std::string& port,
   ssl_opts.pem_key_cert_pairs.emplace_back(pkcp);
   creds_ = grpc::SslServerCredentials(ssl_opts);
 
-  service_ = std::make_unique<PartitionORAMService>();
+  service_ = std::make_unique<OramService>();
   is_initialized = true;
 }
 
