@@ -135,6 +135,9 @@ static const float kPartitionAdjustmentFactor = 1.;
 
 static const uint32_t kMaximumOramStorageNum = 1e5;
 
+// Alias for SQRT ORam.
+using sqrt_oram_storage_t = std::vector<oram_block_t>;
+
 // Alias for Path ORAM.
 using p_oram_bucket_t = std::vector<oram_block_t>;
 using p_oram_stash_t = std::vector<oram_block_t>;

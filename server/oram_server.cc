@@ -150,12 +150,6 @@ grpc::Status OramService::WriteFlatMemory(grpc::ServerContext* context,
     return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
   }
 
-  if (storage->GetStorage().size() !=
-      std::ceil(request->content().size() / storage->GetBlockSize())) {
-    return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
-                        oram_size_mismatch_err);
-  }
-
   storage->ResetStorage();
   storage->From(request->content());
 
