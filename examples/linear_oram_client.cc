@@ -14,7 +14,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "path_oram_client.h"
+#include "linear_oram_client.h"
 
 #include <absl/flags/flag.h>
 #include <spdlog/fmt/bin_to_hex.h>
@@ -44,8 +44,7 @@ void Client::Run(void) {
   // Initialize the cryptor and controller.
   cryptor_ = oram_crypto::Cryptor::GetInstance();
 
-  controller_ =
-      std::make_unique<PathOramController>(0, block_num_, bucket_size_);
+  controller_ = std::make_unique<LinearOramController>(0, true, block_num_);
   controller_->SetStub(stub_);
 }
 
@@ -115,22 +114,31 @@ int Client::InitOram(void) {
                   kErrorList.at(oram_status));
     return -1;
   } else {
+    // Read from file.
+    controller_->FromFile("../data/data.txt");
     logger->info("The oram is initialized.");
 
-    const size_t level = controller_->GetTreeLevel();
-    const size_t tree_size = (POW2(level + 1) - 1) * bucket_size_;
-    controller_->FillWithData(oram_utils::SampleRandomBucket(
-        controller_->GetBlockNum(), tree_size, 0ul));
-    // Read from file.
-    // controller_->FromFile("../data/data.txt");
     return 0;
   }
 }
 
 int Client::TestOram(void) {
-  logger->info("[+] Tesing Path ORAM...");
+  logger->info("[+] Tesing Linear ORAM...");
 
-  // FIXME: Get block num is incorrect...?
+  for (size_t i = 0; i < controller_->GetBlockNum() >> 1; i++) {
+    oram_block_t block;
+    memset(&block, 0, ORAM_BLOCK_SIZE);
+
+    OramStatus s;
+    if ((s = controller_->Access(Operation::kRead, i, &block)) !=
+        OramStatus::kOK) {
+      logger->error("[-] Error: {}", kErrorList.at(s));
+      abort();
+    }
+
+    logger->info("[+] Read {}, {}", block.header.block_id, block.data[0]);
+  }
+
   for (size_t i = 0; i < controller_->GetBlockNum() >> 1; i++) {
     oram_block_t block;
     block.header.block_id = i;
@@ -161,7 +169,6 @@ int Client::TestOram(void) {
     logger->info("[+] Read {}, {}", block.header.block_id, block.data[0]);
   }
 
-  logger->info("[-] End testing Path ORAM.");
-  logger->info("[-] Peak stash: {}", controller_->ReportStashSize());
+  logger->info("[-] End testing Linear ORAM.");
   return 0;
 }

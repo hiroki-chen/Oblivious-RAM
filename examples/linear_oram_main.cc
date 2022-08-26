@@ -24,7 +24,7 @@
 
 #include <memory>
 
-#include "path_oram_client.h"
+#include "linear_oram_client.h"
 
 ABSL_FLAG(std::string, address, "localhost", "The address of the server.");
 ABSL_FLAG(std::string, port, "1234", "The port of the server.");
@@ -33,8 +33,6 @@ ABSL_FLAG(std::string, crt_path, "../key/sslcred.crt",
 
 // ORAM PARAMS.
 ABSL_FLAG(uint32_t, block_num, 1e6, "The number of blocks.");
-ABSL_FLAG(uint32_t, bucket_size, 4,
-          "The size of each bucket. (Z in Path ORAM)");
 
 // Log setting
 ABSL_FLAG(int, log_level, spdlog::level::info, "The level of the log.");
@@ -76,11 +74,9 @@ int main(int argc, char** argv) {
       static_cast<spdlog::level::level_enum>(absl::GetFlag(FLAGS_log_level)));
   spdlog::flush_every(std::chrono::seconds(3));
 
-  std::unique_ptr<Client> client =
-      std::make_unique<Client>(
-          absl::GetFlag(FLAGS_address), absl::GetFlag(FLAGS_port),
-          absl::GetFlag(FLAGS_crt_path), absl::GetFlag(FLAGS_bucket_size),
-          absl::GetFlag(FLAGS_block_num));
+  std::unique_ptr<Client> client = std::make_unique<Client>(
+      absl::GetFlag(FLAGS_address), absl::GetFlag(FLAGS_port),
+      absl::GetFlag(FLAGS_crt_path), absl::GetFlag(FLAGS_block_num));
   client->Run();
   client->StartKeyExchange();
   client->InitOram();

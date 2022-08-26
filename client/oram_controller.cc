@@ -42,8 +42,12 @@ PartitionOramController::GetInstance() {
 
 size_t PartitionOramController::counter_ = 0;
 
-OramController::OramController(uint32_t id, bool standalone, OramType oram_type)
-    : id_(id), standalone_(standalone), oram_type_(oram_type) {
+OramController::OramController(uint32_t id, bool standalone, size_t block_num,
+                               OramType oram_type)
+    : id_(id),
+      standalone_(standalone),
+      block_num_(block_num),
+      oram_type_(oram_type) {
   cryptor_ = oram_crypto::Cryptor::GetInstance();
 }
 
@@ -110,6 +114,9 @@ OramStatus LinearOramController::InternalAccess(Operation op_type,
 
     // Re-encrypt the block whenever this is the target block.
     oram_utils::EncryptBlock(block_ptr, cryptor_.get());
+
+    // Increment the pointer.
+    block_ptr += 1;
   }
 
   // FIXME: May need to permute before writing to the server.
@@ -118,9 +125,58 @@ OramStatus LinearOramController::InternalAccess(Operation op_type,
                                      : OramStatus::kServerError;
 }
 
+OramStatus LinearOramController::InitOram(void) {
+  grpc::ClientContext context;
+  InitFlatOramRequest request;
+  google::protobuf::Empty empty;
+
+  request.set_id(id_);
+  request.set_capacity(block_num_);
+  request.set_block_size(ORAM_BLOCK_SIZE);
+
+  return stub_->InitFlatOram(&context, request, &empty).ok()
+             ? OramStatus::kOK
+             : OramStatus::kServerError;
+}
+
+OramStatus LinearOramController::FillWithData(
+    const std::vector<oram_block_t>& data) {
+  // We always assume that `data` is properly permuted in a secure way.
+  grpc::ClientContext context;
+  FlatVectorMessage request;
+  google::protobuf::Empty empty;
+  request.set_id(id_);
+
+  std::string content;
+  for (size_t i = 0; i < data.size(); i++) {
+    oram_block_t block = data[i];
+    oram_utils::EncryptBlock(&block, cryptor_.get());
+    content.append(
+        std::string(reinterpret_cast<char*>(&block), ORAM_BLOCK_SIZE));
+  }
+  request.set_content(content);
+
+  return stub_->WriteFlatMemory(&context, request, &empty).ok()
+             ? OramStatus::kOK
+             : OramStatus::kServerError;
+}
+SquareRootOramController::SquareRootOramController(uint32_t id, bool standalone,
+                                                   size_t block_num)
+    : OramController(id, standalone, block_num, OramType::kSquareOram) {
+  const size_t m_squared = (size_t)(std::ceil(std::sqrt(block_num)));
+  shelter_.reserve(m_squared);
+}
+
+OramStatus SquareRootOramController::InternalAccess(Operation op_type,
+                                                    uint32_t address,
+                                                    oram_block_t* const data,
+                                                    bool dummy) {
+  return OramStatus::kOK;
+}
+
 PathOramController::PathOramController(uint32_t id, uint32_t block_num,
                                        uint32_t bucket_size, bool standalone)
-    : OramController(id, standalone, OramType::kPathOram),
+    : OramController(id, standalone, block_num, OramType::kPathOram),
       bucket_size_(bucket_size),
       network_time_(0us),
       network_communication_(0ul),
@@ -211,9 +267,11 @@ OramStatus PathOramController::InitOram(void) {
   return OramStatus::kOK;
 }
 
-OramStatus PathOramController::FromFile(const std::string& file_path) {
+OramStatus OramController::FromFile(const std::string& file_path) {
   const std::vector<std::string> data =
       std::move(oram_utils::ReadDataFromFile(file_path));
+  // Change the block number.
+  block_num_ = data.size();
 
   p_oram_bucket_t blocks;
   for (size_t i = 0; i < data.size(); i++) {

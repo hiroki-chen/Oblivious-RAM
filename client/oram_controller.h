@@ -37,6 +37,8 @@ class OramController {
   // Whether this pathoram conroller is a standalone controller
   // or embedded with other controllers, say PartitionORAM controller.
   const bool standalone_;
+  // The number can vary.
+  size_t block_num_;
   // Oram type.
   const OramType oram_type_;
 
@@ -53,7 +55,8 @@ class OramController {
                                     bool dummy = false) = 0;
 
  public:
-  OramController(uint32_t id, bool standalone, OramType oram_type);
+  OramController(uint32_t id, bool standalone, size_t block_num,
+                 OramType oram_type);
 
   virtual OramStatus InitOram(void) = 0;
   virtual OramStatus FillWithData(const std::vector<oram_block_t>& data) = 0;
@@ -61,12 +64,11 @@ class OramController {
                             oram_block_t* const data) {
     return InternalAccess(op_type, address, data, false);
   }
-  virtual OramStatus FromFile(const std::string& file_path) {
-    UNIMPLEMENTED_FUNC;
-  }
+  virtual OramStatus FromFile(const std::string& file_path);
 
   virtual uint32_t GetId(void) const { return id_; }
   virtual OramType GetOramType(void) const { return oram_type_; }
+  virtual size_t GetBlockNum(void) const { return block_num_; }
   virtual bool IsStandAlone(void) const { return standalone_; }
   virtual void SetStub(std::shared_ptr<oram_server::Stub> stub) {
     stub_ = stub;
@@ -92,19 +94,31 @@ class LinearOramController : public OramController {
                                     bool dummy = false) override;
 
  public:
-  LinearOramController(uint32_t id, bool standalone)
-      : OramController(id, standalone, OramType::kLinearOram) {}
+  LinearOramController(uint32_t id, bool standalone, size_t block_num)
+      : OramController(id, standalone, block_num, OramType::kLinearOram) {}
+  virtual OramStatus InitOram(void) override;
+  virtual OramStatus FillWithData(
+      const std::vector<oram_block_t>& data) override;
 };
 
 class SquareRootOramController : public OramController {
+  // The layout of the square root ORAM is:
+  // ------------------ | ------- | -------|
+  //    m main sotrage    sqrt(m)   sqrt(m)
+  //                      dummy     shelter
+  // |       permuted memory      |
+  //
+  // Select a permutation \pi over the integers 1, ..., m + \sqrt{m} and
+  // obliviously relocate the words according to the permutation.
+  sqrt_oram_storage_t shelter_;
+
  protected:
   virtual OramStatus InternalAccess(Operation op_type, uint32_t address,
                                     oram_block_t* const data,
                                     bool dummy = false) override;
 
  public:
-  SquareRootOramController(uint32_t id, bool standalone)
-      : OramController(id, standalone, OramType::kSquareOram) {}
+  SquareRootOramController(uint32_t id, bool standalone, size_t block_num);
 };
 
 // This class is the implementation of the ORAM controller for Path ORAM.
@@ -113,10 +127,9 @@ class PathOramController : public OramController {
 
   uint32_t id_;
   // ORAM parameters.
-  uint32_t number_of_leafs_;
   uint32_t tree_level_;
   uint8_t bucket_size_;
-
+  uint32_t number_of_leafs_;
   // stash size.
   size_t stash_size_;
 
@@ -152,7 +165,6 @@ class PathOramController : public OramController {
   virtual OramStatus InitOram(void) override;
   virtual OramStatus FillWithData(
       const std::vector<oram_block_t>& data) override;
-  virtual OramStatus FromFile(const std::string& file_path) override;
 
   uint32_t GetTreeLevel(void) const { return tree_level_; }
   size_t ReportClientStorage(void) const;
@@ -168,7 +180,6 @@ class PartitionOramController final : public OramController {
   size_t partition_size_;
   size_t bucket_size_;
   size_t nu_;
-  size_t block_num_;
   static size_t counter_;
   // Position map: [key] -> [slot_id].
   p_oram_position_t position_map_;
@@ -180,7 +191,7 @@ class PartitionOramController final : public OramController {
   std::vector<std::unique_ptr<PathOramController>> path_oram_controllers_;
 
   PartitionOramController(uint32_t id = 0ul)
-      : OramController(id, true, OramType::kPartitionOram) {}
+      : OramController(id, true, 0ul, OramType::kPartitionOram) {}
 
   // ==================== Begin private methods ==================== //
   OramStatus Evict(uint32_t id);
