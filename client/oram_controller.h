@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "base/oram_crypto.h"
+#include "base/oram_utils.h"
 #include "base/oram_defs.h"
 #include "protos/messages.grpc.pb.h"
 
@@ -65,13 +66,19 @@ class OramController {
     return InternalAccess(op_type, address, data, false);
   }
   virtual OramStatus FromFile(const std::string& file_path);
+  virtual uint32_t RandomPosition(void) { return 0ul; }
 
   virtual uint32_t GetId(void) const { return id_; }
   virtual OramType GetOramType(void) const { return oram_type_; }
   virtual size_t GetBlockNum(void) const { return block_num_; }
   virtual bool IsStandAlone(void) const { return standalone_; }
+
   virtual void SetStub(std::shared_ptr<oram_server::Stub> stub) {
     stub_ = stub;
+  }
+
+  virtual std::string GetName(void) const {
+    return oram_utils::TypeToName(oram_type_);
   }
 
   virtual ~OramController() {
@@ -157,6 +164,12 @@ class PathOramController : public OramController {
   virtual OramStatus InternalAccess(Operation op_type, uint32_t address,
                                     oram_block_t* const data,
                                     bool dummy = false);
+  // The separate interface for reading is reserved for direct designation of
+  // position, which is useful to ODS.
+  virtual OramStatus InternalAccessDirect(Operation op_type, uint32_t address,
+                                          uint32_t position,
+                                          oram_block_t* const data,
+                                          bool dummy = false);
 
  public:
   PathOramController(uint32_t id, uint32_t block_num, uint32_t bucket_size,
@@ -165,6 +178,12 @@ class PathOramController : public OramController {
   virtual OramStatus InitOram(void) override;
   virtual OramStatus FillWithData(
       const std::vector<oram_block_t>& data) override;
+  virtual uint32_t RandomPosition(void) override;
+
+  virtual OramStatus AccessDirect(Operation op_type, uint32_t address,
+                                  uint32_t position, oram_block_t* const data) {
+    return InternalAccessDirect(op_type, address, position, data, false);
+  }
 
   uint32_t GetTreeLevel(void) const { return tree_level_; }
   size_t ReportClientStorage(void) const;

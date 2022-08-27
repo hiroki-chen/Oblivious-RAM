@@ -81,7 +81,8 @@ enum class OramType {
   kSquareOram = 1,
   kPathOram = 2,
   kPartitionOram = 3,
-  kInvalidStorage = 4,
+  kCuckooOram = 4,
+  kInvalidStorage = 5,
 };
 
 enum class OramStorageType {
@@ -128,6 +129,9 @@ static const std::string oram_type_mismatch_err =
     "The remote storage cannot match the given ORAM type.";
 static const std::string oram_size_mismatch_err =
     "The remote storage size cannot match the given ORAM size.";
+static const std::string oram_block_id_mismatch_err = "Block id mismatch!";
+static const std::string oram_read_err = "Cannot read from ORAM! Please check if there is any error.";
+static const std::string oram_write_err = "Cannot write to ORAM! Please check if there is any error.";
 
 // This factor can also be used to control the size of the Path ORAM to prevent
 // storage overflow.

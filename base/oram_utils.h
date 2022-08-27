@@ -23,6 +23,7 @@
 
 #include "oram_crypto.h"
 #include "oram_defs.h"
+#include "ods_objects.h"
 
 #define ASSERT_MSG(x) !(std::cerr << "Assertion failed: " << x << std::endl)
 #define PANIC_IF(cond, message) assert(!(cond) || ASSERT_MSG(message))
@@ -79,6 +80,15 @@ size_t DataCompress(const uint8_t* data, size_t data_size, uint8_t* const out);
 
 size_t DataDecompress(const uint8_t* data, size_t data_size,
                       uint8_t* const out);
+
+std::string TypeToName(oram_impl::OramType oram_type);
+
+std::vector<std::string> split(const std::string& str, char delim);
+
+std::string TreeNodeSerialize(oram_impl::ods::TreeNode* const node);
+
+void TreeNodeDeserialize(const std::string& str,
+                         oram_impl::ods::TreeNode* const out_node);
 }  // namespace oram_utils
 
 #endif  // ORAM_IMPL_BASE_ORAM_UTILS_H_
