@@ -174,6 +174,15 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
   return OramStatus::kOK;
 }
 
+uint32_t PathOramController::RandomPosition(void) {
+  uint32_t x;
+  // We sample a random path in advance to handle the case when dummy = true.
+  oram_utils::CheckStatus(
+      oram_crypto::Cryptor::UniformRandom(0, number_of_leafs_ - 1, &x),
+      "UniformRandom error");
+  return x;
+}
+
 PathOramController::PathOramController(uint32_t id, uint32_t block_num,
                                        uint32_t bucket_size, bool standalone)
     : OramController(id, standalone, block_num, OramType::kPathOram),
@@ -473,11 +482,7 @@ OramStatus PathOramController::InternalAccess(Operation op_type,
   // Steps: 1-2
   // Randomly remap the position of block a to a new random position.
   // Let x denote the block’s old position.
-  uint32_t x;
-  // We sample a random path in advance to handle the case when dummy = true.
-  oram_utils::CheckStatus(
-      oram_crypto::Cryptor::UniformRandom(0, number_of_leafs_ - 1, &x),
-      "UniformRandom error");
+  uint32_t x = RandomPosition();
 
   if (!dummy) {
     uint32_t prev = position_map_[address];
@@ -486,6 +491,14 @@ OramStatus PathOramController::InternalAccess(Operation op_type,
     x = prev;
   }
 
+  return InternalAccessDirect(op_type, address, x, data, dummy);
+}
+
+OramStatus PathOramController::InternalAccessDirect(Operation op_type,
+                                                    uint32_t address,
+                                                    uint32_t x,
+                                                    oram_block_t* const data,
+                                                    bool dummy) {
   // Step 3-5: Read the whole path from the server into the stash.
   p_oram_path_t bucket_this_path;
 
