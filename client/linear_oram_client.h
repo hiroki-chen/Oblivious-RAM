@@ -14,13 +14,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef ORAM_IMPL_EXAMPLES_PATH_ORAM_CLIENT_H_
-#define ORAM_IMPL_EXAMPLES_PATH_ORAM_CLIENT_H_
+#ifndef ORAM_IMPL_EXAMPLES_LINEAR_ORAM_CLIENT_H_
+#define ORAM_IMPL_EXAMPLES_LINEAR_ORAM_CLIENT_H_
 
 #include <grpc++/grpc++.h>
 
 #include "base/oram_crypto.h"
-#include "client/oram_controller.h"
+#include "core/oram_controller.h"
 #include "protos/messages.grpc.pb.h"
 #include "protos/messages.pb.h"
 
@@ -31,22 +31,18 @@ class Client {
   std::string server_port_;
   std::string crt_path_;
 
-  uint32_t bucket_size_;
   uint32_t block_num_;
 
   std::shared_ptr<oram_server::Stub> stub_;
-
-  std::unique_ptr<PathOramController> controller_;
-
+  std::unique_ptr<LinearOramController> controller_;
   std::shared_ptr<oram_crypto::Cryptor> cryptor_;
 
  public:
   Client(const std::string& server_address, const std::string& server_port,
-         const std::string& crt_path, uint32_t bucket_size, uint32_t block_num)
+         const std::string& crt_path, uint32_t block_num)
       : server_address_(server_address),
         server_port_(server_port),
         crt_path_(crt_path),
-        bucket_size_(bucket_size),
         block_num_(block_num) {}
 
   void Run(void);
