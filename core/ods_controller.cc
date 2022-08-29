@@ -339,6 +339,31 @@ OramStatus OdictController::OdsFinalize(size_t pad_val) {
   return OramStatus::kOK;
 }
 
+OramStatus OdictController::InitOds(void) {
+  OramStatus status = OramStatus::kOK;
+
+  // Create a dummy for padding operations in future.
+  uint8_t* const dummy_data = (uint8_t*)(malloc(sizeof(TreeNode)));
+  status = oram_crypto::Cryptor::RandomBytes(dummy_data, sizeof(TreeNode));
+
+  if (status != OramStatus::kOK) {
+    return status;
+  }
+
+  oram_block_t block;
+  block.header.block_id = 0ul;
+  block.header.type = BlockType::kNormal;
+  memcpy(block.data, dummy_data, sizeof(TreeNode));
+
+  status = oram_contrller_->Access(Operation::kRead, 0ul, &block);
+  if (status != OramStatus::kOK) {
+    return status;
+  }
+
+  oram_utils::SafeFree(dummy_data);
+  return status;
+}
+
 OdictController::OdictController(
     size_t odict_size, size_t client_cache_max_size, uint32_t x,
     const std::shared_ptr<PathOramController>& oram_controller)
@@ -348,7 +373,13 @@ OdictController::OdictController(
                oram_controller->GetName());
   ods_cache_ =
       std::make_unique<OdsCache>(client_cache_max_size, oram_controller);
-  // TODO: Add a dummy node for padding.
+
+  OramStatus status = InitOds();
+  if (status != OramStatus::kOK) {
+    logger->error("[-] Initialize ODS controller failed: {}",
+                  kErrorList.at(status));
+    abort();
+  }
 }
 
 TreeNode* OdictController::InternalFind(uint32_t key, uint32_t root_id) {

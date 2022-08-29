@@ -14,13 +14,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef ORAM_IMPL_EXAMPLES_PATH_ORAM_CLIENT_H_
-#define ORAM_IMPL_EXAMPLES_PATH_ORAM_CLIENT_H_
+#ifndef ORAM_IMPL_CLIENT_PATH_ORAM_CLIENT_H_
+#define ORAM_IMPL_CLIENT_PATH_ORAM_CLIENT_H_
 
 #include <grpc++/grpc++.h>
 
 #include "base/oram_crypto.h"
-#include "core/oram_controller.h"
+#include "core/path_oram_controller.h"
 #include "protos/messages.grpc.pb.h"
 #include "protos/messages.pb.h"
 
@@ -58,4 +58,4 @@ class Client {
   virtual ~Client() {}
 };
 
-#endif
+#endif // ORAM_IMPL_CLIENT_PATH_ORAM_CLIENT_H_

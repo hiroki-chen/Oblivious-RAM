@@ -1,7 +1,14 @@
 find_package(Threads)
 find_package(absl REQUIRED)
 
-add_library(oram_controller SHARED oram_controller.cc )
+add_library(oram_controller SHARED
+  oram_controller.cc
+  path_oram_controller.cc
+  partition_oram_controller.cc
+  linear_oram_controller.cc
+  square_root_oram_controller.cc
+)
+
 add_library(ods_controller SHARED ods_controller.cc ods_cache.cc)
 
 target_include_directories(oram_controller PUBLIC ${CMAKE_SOURCE_DIR})

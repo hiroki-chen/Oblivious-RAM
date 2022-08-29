@@ -14,8 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef ORAM_IMPL_CLIENT_ODS_CONTROLLER_H_
-#define ORAM_IMPL_CLIENT_ODS_CONTROLLER_H_
+#ifndef ORAM_IMPL_CORE_ODS_CONTROLLER_H_
+#define ORAM_IMPL_CORE_ODS_CONTROLLER_H_
 
 #include <memory>
 
@@ -23,7 +23,7 @@
 #include "base/ods_defs.h"
 #include "base/ods_objects.h"
 #include "base/oram_defs.h"
-#include "oram_controller.h"
+#include "path_oram_controller.h"
 #include "protos/messages.grpc.pb.h"
 
 namespace oram_impl::ods {
@@ -41,6 +41,8 @@ class OdictController {
   uint32_t write_count_;
 
   OramStatus CacheHelper(uint32_t id, TreeNode* const node);
+
+  OramStatus InitOds(void);
 
   OramStatus OdsAccessRead(TreeNode* const node);
   OramStatus OdsAccessWrite(TreeNode* const node);
@@ -83,4 +85,4 @@ class OdictController {
 };
 }  // namespace oram_impl::ods
 
-#endif  // ORAM_IMPL_CLIENT_ODS_CONTROLLER_H_
+#endif  // ORAM_IMPL_CORE_ODS_CONTROLLER_H_
