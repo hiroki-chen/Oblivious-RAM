@@ -14,8 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef ORAM_IMPL_CLIENT_ODS_OdsCache_H_
-#define ORAM_IMPL_CLIENT_ODS_OdsCache_H_
+#ifndef ORAM_IMPL_CORE_ODS_CACHE_H_
+#define ORAM_IMPL_CORE_ODS_CACHE_H_
 
 #include <cstddef>
 #include <deque>
@@ -50,4 +50,4 @@ class OdsCache {
 };
 }  // namespace oram_impl::ods
 
-#endif  // ORAM_IMPL_CLIENT_ODS_CACHE_H_
+#endif  // ORAM_IMPL_CORE_ODS_CACHE_H_
