@@ -90,7 +90,7 @@ If you are using domain other than `localhost`. You may need to re-generate the 
 You can run a PathORAM controller instance directly by
 
 ```cpp
-using namespace partition_oram;
+using namespace oram_impl;
 
 // Create the instance
 const std::unique_ptr<PathOramController> path_oram_controller = 
@@ -100,13 +100,13 @@ const std::unique_ptr<PathOramController> path_oram_controller =
 path_oram_controller->SetStub(stub_);
 
 // Initialize the oram.
-Status status = path_oram_controller->InitOram();
+OramStatus status = path_oram_controller->InitOram();
 if (status != Status::kOK) {
   logger->error("Unexpected error: {}", kErrorList.at(status));
 }
 
 // Fill data. Assume you have created a vector of oram_block_t.
-status = path_oram_controller->FillWithData(data);
+OramStatus = path_oram_controller->FillWithData(data);
 
 // Read some data.
 oram_block_t block;
