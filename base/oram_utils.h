@@ -23,6 +23,7 @@
 
 #include "oram_crypto.h"
 #include "oram_defs.h"
+#include "oram_status.h"
 #include "ods_objects.h"
 
 #define ASSERT_MSG(x) !(std::cerr << "Assertion failed: " << x << std::endl)
@@ -62,7 +63,8 @@ void ConvertToBlock(const std::string& data,
 void ConvertToString(const oram_impl::oram_block_t* const block,
                      std::string* const data);
 
-void CheckStatus(oram_impl::OramStatus status, const std::string& reason);
+void CheckStatus(const oram_impl::OramStatus& status,
+                 const std::string& reason);
 
 void PadStash(oram_impl::p_oram_stash_t* const stash, const size_t bucket_size);
 

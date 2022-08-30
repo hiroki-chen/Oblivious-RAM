@@ -19,6 +19,8 @@
 
 #include "oram_controller.h"
 
+#include "base/oram_status.h"
+
 namespace oram_impl {
 // A trivial solution for ORAM. It only has educational meaning. Do not use it
 // in any productive environment.

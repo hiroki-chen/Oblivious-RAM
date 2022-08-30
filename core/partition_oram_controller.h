@@ -33,7 +33,6 @@ class PartitionOramController final : public OramController {
   pp_oram_slot_t slots_;
   // Controllers for each slot: [slot_id] -> [controller_1, controller_2, ...,
   //                                          controller_n].
-  // TODO: Currently this is pathoram controller.
   std::vector<std::unique_ptr<PathOramController>> path_oram_controllers_;
 
   PartitionOramController(uint32_t id = 0ul)

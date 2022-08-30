@@ -29,7 +29,7 @@ struct ChildrenPos {
   uint32_t id_;
   uint32_t pos_tag_;
 
-  ChildrenPos() = default;
+  ChildrenPos(): id_(invalid_mask), pos_tag_(invalid_mask) {}
   ChildrenPos(int id, int pos_tag) : id_(id), pos_tag_(pos_tag) {}
 };
 
@@ -49,10 +49,21 @@ struct TreeNode {
   uint32_t right_height_;
 
   TreeNode() = default;
+
   TreeNode(uint32_t id)
-      : id_(id), pos_tag_(0ul), left_id_(0ul), right_id_(0ul) {}
+      : id_(id),
+        pos_tag_(invalid_mask),
+        left_id_(invalid_mask),
+        right_id_(invalid_mask),
+        left_height_(invalid_mask),
+        right_height_(invalid_mask) {}
   TreeNode(uint32_t id, uint32_t pos_tag)
-      : id_(id), pos_tag_(pos_tag), left_id_(0ul), right_id_(0ul) {}
+      : id_(id),
+        pos_tag_(pos_tag),
+        left_id_(invalid_mask),
+        right_id_(invalid_mask),
+        left_height_(invalid_mask),
+        right_height_(invalid_mask) {}
 
   const char* GetType(void) const { return "AvlNode"; }
 };

@@ -92,9 +92,10 @@ void ConvertToString(const oram_impl::oram_block_t* const block,
   memcpy(data->data(), (void*)block, ORAM_BLOCK_SIZE);
 }
 
-void CheckStatus(oram_impl::OramStatus status, const std::string& reason) {
-  if (status != oram_impl::OramStatus::kOK) {
-    logger->error("{}: {}", oram_impl::kErrorList.at(status), reason);
+void CheckStatus(const oram_impl::OramStatus& status,
+                 const std::string& reason) {
+  if (!status.ok()) {
+    logger->error("{}: {}", status.ErrorMessage(), reason);
     abort();
   }
 }
@@ -106,9 +107,9 @@ void PadStash(oram_impl::p_oram_stash_t* const stash,
     for (size_t i = stash_size; i < bucket_size; ++i) {
       oram_impl::oram_block_t dummy;
 
-      if (oram_crypto::Cryptor::RandomBytes((uint8_t*)(&dummy),
-                                            ORAM_BLOCK_SIZE) !=
-          oram_impl::OramStatus::kOK) {
+      if (!oram_crypto::Cryptor::RandomBytes((uint8_t*)(&dummy),
+                                             ORAM_BLOCK_SIZE)
+               .ok()) {
         logger->error("Failed to generate random bytes");
         abort();
       }
@@ -130,9 +131,9 @@ oram_impl::p_oram_bucket_t SampleRandomBucket(size_t size, size_t tree_size,
         i < size ? oram_impl::BlockType::kNormal : oram_impl::BlockType::kDummy;
     block.data[0] = i + initial_offset;
 
-    if (oram_crypto::Cryptor::RandomBytes(block.data + 1,
-                                          DEFAULT_ORAM_DATA_SIZE - 1) !=
-        oram_impl::OramStatus::kOK) {
+    if (!oram_crypto::Cryptor::RandomBytes(block.data + 1,
+                                           DEFAULT_ORAM_DATA_SIZE - 1)
+             .ok()) {
       logger->error("Failed to generate random bytes");
       abort();
     }

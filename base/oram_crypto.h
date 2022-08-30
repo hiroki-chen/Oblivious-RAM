@@ -24,6 +24,7 @@
 #include <utility>
 
 #include "oram_defs.h"
+#include "oram_status.h"
 
 #define ORAM_CRYPTO_KEY_SIZE crypto_aead_aes256gcm_KEYBYTES
 #define ORAM_CRYPTO_RANDOM_SIZE crypto_aead_aes256gcm_NPUBBYTES
@@ -53,18 +54,20 @@ class Cryptor {
   template <typename Tp>
   static oram_impl::OramStatus RandomShuffle(std::vector<Tp>& array) {
     if (array.empty()) {
-      return oram_impl::OramStatus::kInvalidArgument;
+      return oram_impl::OramStatus(oram_impl::StatusCode::kInvalidArgument,
+                                   "The input array is empty");
     }
 
     for (size_t i = array.size() - 1; i > 0; --i) {
       uint32_t j;
-      if (Cryptor::UniformRandom(0, i, &j) != oram_impl::OramStatus::kOK) {
-        return oram_impl::OramStatus::kUnknownError;
+      oram_impl::OramStatus status;
+      if (!(status = Cryptor::UniformRandom(0, i, &j)).ok()) {
+        return status;
       }
       std::swap(array[i], array[j]);
     }
 
-    return oram_impl::OramStatus::kOK;
+    return oram_impl::OramStatus::OK;
   }
 
   static std::shared_ptr<Cryptor> GetInstance(void);

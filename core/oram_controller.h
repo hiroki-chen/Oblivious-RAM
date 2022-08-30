@@ -29,6 +29,7 @@
 #include "base/oram_crypto.h"
 #include "base/oram_utils.h"
 #include "base/oram_defs.h"
+#include "base/oram_status.h"
 #include "protos/messages.grpc.pb.h"
 
 namespace oram_impl {
@@ -65,8 +66,10 @@ class OramController {
   virtual OramStatus FillWithData(const std::vector<oram_block_t>& data) = 0;
   virtual OramStatus Access(Operation op_type, uint32_t address,
                             oram_block_t* const data) {
-    return !is_initialized_ ? OramStatus::kInvalidOperation
-                           : InternalAccess(op_type, address, data, false);
+    return !is_initialized_
+               ? OramStatus(StatusCode::kInvalidOperation,
+                            "Cannot access ORAM before it is initialized")
+               : InternalAccess(op_type, address, data, false);
   }
   virtual OramStatus FromFile(const std::string& file_path);
   virtual uint32_t RandomPosition(void) { return 0ul; }

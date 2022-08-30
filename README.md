@@ -102,7 +102,7 @@ path_oram_controller->SetStub(stub_);
 // Initialize the oram.
 OramStatus status = path_oram_controller->InitOram();
 if (status != Status::kOK) {
-  logger->error("Unexpected error: {}", kErrorList.at(status));
+  logger->error("Unexpected error: {}", status.ErrorMessage());
 }
 
 // Fill data. Assume you have created a vector of oram_block_t.

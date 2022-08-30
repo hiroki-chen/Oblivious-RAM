@@ -68,8 +68,12 @@ oram_impl::OramStatus Cryptor::Encrypt(const uint8_t* message, size_t length,
       (uint8_t*)out->data(), &ciphertext_len, message, length, nullptr, 0, NULL,
       iv, session_key_rx_);
 
-  return ret == 0 ? oram_impl::OramStatus::kOK
-                  : oram_impl::OramStatus::kInvalidOperation;
+  oram_impl::OramStatus err = oram_impl::OramStatus(
+      oram_impl::StatusCode::kUnknownError,
+      "Libsodium cannot encrypt the block! Maybe the buffer "
+      "is truncated or corrupted.");
+
+  return ret == 0 ? oram_impl::OramStatus::OK : err;
 }
 
 oram_impl::OramStatus Cryptor::Decrypt(const uint8_t* message, size_t length,
@@ -79,8 +83,8 @@ oram_impl::OramStatus Cryptor::Decrypt(const uint8_t* message, size_t length,
   PANIC_IF(!is_setup, "Cryptor is not yet correctly set up.");
 
   if (length < crypto_aead_aes256gcm_ABYTES) {
-    logger->error("The length of the message is too short.");
-    return oram_impl::OramStatus::kInvalidArgument;
+    return oram_impl::OramStatus(oram_impl::StatusCode::kInvalidArgument,
+                                 "The length of the message is too short.");
   }
 
   // The message consists of the GCM MAC tag, the nonce, ant the
@@ -95,10 +99,14 @@ oram_impl::OramStatus Cryptor::Decrypt(const uint8_t* message, size_t length,
                                           iv, session_key_rx_);
   *out = std::string((char*)decrypted, message_len);
 
+  oram_impl::OramStatus err = oram_impl::OramStatus(
+      oram_impl::StatusCode::kUnknownError,
+      "Libsodium cannot decrypt the block! Maybe the buffer "
+      "is truncated or corrupted.");
+
   // Free the memory.
   oram_utils::SafeFree(decrypted);
-  return ret == 0 ? oram_impl::OramStatus::kOK
-                  : oram_impl::OramStatus::kInvalidOperation;
+  return ret == 0 ? oram_impl::OramStatus::OK : err;
 }
 
 oram_impl::OramStatus Cryptor::Digest(const uint8_t* message, size_t length,
@@ -114,19 +122,27 @@ oram_impl::OramStatus Cryptor::Digest(const uint8_t* message, size_t length,
                                length + ORAM_CRYPTO_RANDOM_SIZE);
   *out = std::string((char*)digest, crypto_hash_sha256_BYTES);
 
+  oram_impl::OramStatus err = oram_impl::OramStatus(
+      oram_impl::StatusCode::kUnknownError,
+      "Libsodium cannot digest the block! Maybe the buffer "
+      "is truncated or corrupted.");
+
   // Free the memory.
   oram_utils::SafeFreeAll(2, digest, message_with_nonce);
-  return ret == 0 ? oram_impl::OramStatus::kOK
-                  : oram_impl::OramStatus::kInvalidOperation;
+  return ret == 0 ? oram_impl::OramStatus::OK : err;
 }
 
 oram_impl::OramStatus Cryptor::SampleKeyPair(void) {
   CryptoPrelogue();
 
+  oram_impl::OramStatus err = oram_impl::OramStatus(
+      oram_impl::StatusCode::kUnknownError,
+      "Libsodium cannot sample the key pair! Maybe the buffer "
+      "is truncated or corrupted.");
+
   // Generate a key pair.
   int ret = crypto_kx_keypair(public_key_, secret_key_);
-  return ret == 0 ? oram_impl::OramStatus::kOK
-                  : oram_impl::OramStatus::kInvalidOperation;
+  return ret == 0 ? oram_impl::OramStatus::OK : err;
 }
 
 oram_impl::OramStatus Cryptor::SampleSessionKey(const std::string& peer_pk,
@@ -135,8 +151,9 @@ oram_impl::OramStatus Cryptor::SampleSessionKey(const std::string& peer_pk,
 
   // Check the length of the peer's public key.
   if (peer_pk.length() != crypto_kx_PUBLICKEYBYTES) {
-    logger->error("The length of the peer's public key is not correct.");
-    return oram_impl::OramStatus::kInvalidArgument;
+    return oram_impl::OramStatus(
+        oram_impl::StatusCode::kInvalidArgument,
+        "The length of the peer's public key is not correct.");
   }
 
   // Generate a session key. Prerequisite after this point: the peer's public
@@ -157,9 +174,13 @@ oram_impl::OramStatus Cryptor::SampleSessionKey(const std::string& peer_pk,
 
   if (ret == 0) {
     is_setup = true;
-    return oram_impl::OramStatus::kOK;
+    return oram_impl::OramStatus::OK;
   } else {
-    return oram_impl::OramStatus::kInvalidOperation;
+    return oram_impl::OramStatus(
+        oram_impl::StatusCode::kUnknownError,
+        "Libsodium cannot sample the session key! Maybe the buffer "
+        "is truncated or corrupted.");
+    ;
   }
 }
 
@@ -184,8 +205,9 @@ std::pair<std::string, std::string> Cryptor::GetSessionKeyPair(void) {
 oram_impl::OramStatus Cryptor::UniformRandom(uint32_t min, uint32_t max,
                                              uint32_t* const out) {
   if (min > max) {
-    logger->error("The minimum value is greater than the maximum value.");
-    return oram_impl::OramStatus::kInvalidArgument;
+    return oram_impl::OramStatus(
+        oram_impl::StatusCode::kInvalidArgument,
+        "The minimum value is greater than the maximum value");
   }
 
   // @ref Chromium's base/rand_util.cc for the implementation.
@@ -205,17 +227,17 @@ oram_impl::OramStatus Cryptor::UniformRandom(uint32_t min, uint32_t max,
 
   value = value % range + min;
   *out = value;
-  return oram_impl::OramStatus::kOK;
+  return oram_impl::OramStatus::OK;
 }
 
 oram_impl::OramStatus Cryptor::RandomBytes(uint8_t* const out, size_t length) {
   if (length == 0) {
-    logger->error("The length of the output buffer is zero.");
-    return oram_impl::OramStatus::kInvalidArgument;
+    return oram_impl::OramStatus(oram_impl::StatusCode::kInvalidArgument,
+                                 "The length of the output buffer is zero.");
   }
 
   randombytes_buf(out, length);
-  return oram_impl::OramStatus::kOK;
+  return oram_impl::OramStatus::OK;
 }
 
 void Cryptor::NoNeedForSessionKey(void) {
