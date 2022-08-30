@@ -7,6 +7,7 @@ add_library(oram_controller SHARED
   partition_oram_controller.cc
   linear_oram_controller.cc
   square_root_oram_controller.cc
+  oram.cc
 )
 
 add_library(ods_controller SHARED odict_controller.cc ods_cache.cc)

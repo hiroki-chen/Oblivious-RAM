@@ -14,35 +14,21 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef ORAM_IMPL_BASE_ODS_DEFS_H_
-#define ORAM_IMPL_BASE_ODS_DEFS_H_
+#ifndef ORAM_IMPL_CORE_ORAM_H_
+#define ORAM_IMPL_CORE_ORAM_H_
 
-#include <cstdint>
 #include <string>
 
-#ifndef MAX
-#define MAX(lhs, rhs) (lhs >= rhs ? lhs : rhs)
-#endif
+#include "linear_oram_controller.h"
+#include "odict_controller.h"
+#include "ods_cache.h"
+#include "oram_controller.h"
+#include "partition_oram_controller.h"
+#include "path_oram_controller.h"
+#include "square_root_oram_controller.h"
 
-#ifndef HEIGHT
-#define HEIGHT(x) \
-  (x == nullptr ? 0 : MAX(x->left_height_, x->right_height_) + 1)
-#endif
+namespace oram_impl {
+std::string GetVersion(void);
+} // namespace oram_impl
 
-namespace oram_impl::ods {
-static const uint32_t invalid_mask = 0ul;
-
-static const std::string pad_val_err =
-    "Pad value is smaller than the read count!";
-
-enum class OdsOperation {
-  kRead = 1,
-  kWrite = 2,
-  kRemove = 3,
-  kInsert = 4,
-  kInvalid = 5,
-};
-
-}  // namespace oram_impl::ods
-
-#endif
+#endif  // ORAM_IMPL_CORE_ORAM_H_
