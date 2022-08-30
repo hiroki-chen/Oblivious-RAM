@@ -24,8 +24,7 @@ namespace oram_impl {
 // This class is the implementation of the ORAM controller for Path ORAM.
 class PathOramController : public OramController {
   friend class PartitionOramController;
-
-  uint32_t id_;
+  
   // ORAM parameters.
   uint32_t tree_level_;
   uint8_t bucket_size_;
@@ -75,7 +74,9 @@ class PathOramController : public OramController {
 
   virtual OramStatus AccessDirect(Operation op_type, uint32_t address,
                                   uint32_t position, oram_block_t* const data) {
-    return InternalAccessDirect(op_type, address, position, data, false);
+    return !is_initialized_
+               ? OramStatus::kInvalidOperation
+               : InternalAccessDirect(op_type, address, position, data, false);
   }
 
   uint32_t GetTreeLevel(void) const { return tree_level_; }

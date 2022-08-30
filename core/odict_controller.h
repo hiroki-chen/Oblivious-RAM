@@ -14,8 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef ORAM_IMPL_CORE_ODS_CONTROLLER_H_
-#define ORAM_IMPL_CORE_ODS_CONTROLLER_H_
+#ifndef ORAM_IMPL_CORE_ODICT_CONTROLLER_H_
+#define ORAM_IMPL_CORE_ODICT_CONTROLLER_H_
 
 #include <memory>
 
@@ -85,4 +85,4 @@ class OdictController {
 };
 }  // namespace oram_impl::ods
 
-#endif  // ORAM_IMPL_CORE_ODS_CONTROLLER_H_
+#endif  // ORAM_IMPL_CORE_ODICT_CONTROLLER_H_

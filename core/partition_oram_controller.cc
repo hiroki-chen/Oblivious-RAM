@@ -250,6 +250,9 @@ OramStatus PartitionOramController::FillWithData(
       std::chrono::duration_cast<std::chrono::microseconds>(end - begin)
           .count());
 
+  // Set initialized.
+  is_initialized_ = true;
+
   return OramStatus::kOK;
 }
 

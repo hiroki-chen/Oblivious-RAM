@@ -127,6 +127,9 @@ OramStatus LinearOramController::FillWithData(
   }
   request.set_content(content);
 
+  // Set initialized.
+  is_initialized_ = true;
+
   return stub_->WriteFlatMemory(&context, request, &empty).ok()
              ? OramStatus::kOK
              : OramStatus::kServerError;

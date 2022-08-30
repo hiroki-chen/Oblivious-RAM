@@ -43,6 +43,8 @@ class OramController {
   // Oram type.
   const OramType oram_type_;
 
+  bool is_initialized_;
+
   // An object used to call some methods of ORAM storage on the cloud.
   std::shared_ptr<oram_server::Stub> stub_;
   // Cryptography manager.
@@ -63,7 +65,8 @@ class OramController {
   virtual OramStatus FillWithData(const std::vector<oram_block_t>& data) = 0;
   virtual OramStatus Access(Operation op_type, uint32_t address,
                             oram_block_t* const data) {
-    return InternalAccess(op_type, address, data, false);
+    return !is_initialized_ ? OramStatus::kInvalidOperation
+                           : InternalAccess(op_type, address, data, false);
   }
   virtual OramStatus FromFile(const std::string& file_path);
   virtual uint32_t RandomPosition(void) { return 0ul; }
@@ -72,6 +75,7 @@ class OramController {
   virtual OramType GetOramType(void) const { return oram_type_; }
   virtual size_t GetBlockNum(void) const { return block_num_; }
   virtual bool IsStandAlone(void) const { return standalone_; }
+  virtual bool IsInitialized(void) const { return is_initialized_; }
 
   virtual void SetStub(std::shared_ptr<oram_server::Stub> stub) {
     stub_ = stub;
