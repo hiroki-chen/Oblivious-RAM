@@ -28,6 +28,6 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
                                                     uint32_t address,
                                                     oram_block_t* const data,
                                                     bool dummy) {
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 }  // namespace oram_impl

@@ -114,7 +114,7 @@ OramStatus PartitionOramController::Access(Operation op_type, uint32_t address,
                    end_evict - begin_evict)
                    .count());
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus PartitionOramController::Evict(uint32_t id) {
@@ -143,12 +143,14 @@ OramStatus PartitionOramController::RandomEvict(void) {
     oram_utils::CheckStatus(oram_crypto::Cryptor::UniformRandom(
                                 0, path_oram_controllers_.size() - 1, &id),
                             "Failed to sample a new slot id.");
-    if (Evict(id) != OramStatus::kOK) {
-      return OramStatus::kInvalidOperation;
+
+    OramStatus status;
+    if (!(status = Evict(id)).ok()) {
+      return status;
     }
   }
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 // SequentialEvict determines the number of blocks to evict num based on a
@@ -164,12 +166,14 @@ OramStatus PartitionOramController::SequentialEvict(void) {
   for (size_t i = 0; i < evict_num; i++) {
     // cnt is a global counter for the sequential scan.
     counter_ = (counter_ + 1) % partition_size_;
-    if (Evict(counter_) != OramStatus::kOK) {
-      return OramStatus::kInvalidOperation;
+
+    OramStatus status;
+    if (!(status = Evict(counter_)).ok()) {
+      return status;
     }
   }
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus PartitionOramController::Run(uint32_t block_num,
@@ -198,12 +202,12 @@ OramStatus PartitionOramController::InitOram(void) {
 
     // Then invoke the intialization procedure.
     OramStatus status = path_oram_controllers_.back()->InitOram();
-    if (status != OramStatus::kOK) {
+    if (!status.ok()) {
       return status;
     }
   }
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus PartitionOramController::ProcessSlot(
@@ -215,7 +219,7 @@ OramStatus PartitionOramController::ProcessSlot(
     }
   });
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus PartitionOramController::FillWithData(
@@ -225,7 +229,7 @@ OramStatus PartitionOramController::FillWithData(
   // Check if the data size is consistent with the block number (note that this
   // includes dummy blocks).
   if (data.size() != tree_size * path_oram_controllers_.size()) {
-    return OramStatus::kInvalidArgument;
+    return OramStatus(StatusCode::kInvalidArgument, "Data size is wrong");
   }
 
   // Send the data vector to each PathORAM controller.
@@ -253,13 +257,13 @@ OramStatus PartitionOramController::FillWithData(
   // Set initialized.
   is_initialized_ = true;
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus PartitionOramController::TestPathOram(uint32_t controller_id) {
   if (controller_id >= path_oram_controllers_.size()) {
-    logger->error("The controller id is out of range.");
-    return OramStatus::kOutOfRange;
+    return OramStatus(StatusCode::kOutOfRange,
+                      "The controller id is out of range.");
   }
 
   PathOramController* const controller =
@@ -311,7 +315,7 @@ OramStatus PartitionOramController::TestPathOram(uint32_t controller_id) {
       std::chrono::duration_cast<std::chrono::milliseconds>(end - begin)
           .count());
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus PartitionOramController::TestPartitionOram(void) {
@@ -372,7 +376,7 @@ OramStatus PartitionOramController::TestPartitionOram(void) {
       "us. \nClient computation time is: {} us.",
       (end_to_end / 10).count(), (client_time / 10).count());
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 size_t PartitionOramController::ReportClientStorage(void) const {

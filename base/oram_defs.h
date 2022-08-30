@@ -45,20 +45,6 @@
 #endif
 
 namespace oram_impl {
-enum class OramStatus {
-  kOK = 0,
-  kInvalidArgument = 1,
-  kInvalidOperation = 2,
-  kOutOfMemory = 3,
-  kFileNotFound = 4,
-  kFileIOError = 5,
-  kOutOfRange = 6,
-  kServerError = 7,
-  kObjectNotFound = 8,
-  kUnknownError = 9,
-  kVersionMismatch = 10,
-};
-
 enum class Operation {
   kRead = 0,
   kWrite = 1,
@@ -109,21 +95,6 @@ typedef struct _oram_block_t {
 
   uint8_t data[DEFAULT_ORAM_DATA_SIZE];
 } oram_block_t;
-
-// Constants.
-static const std::unordered_map<OramStatus, std::string> kErrorList = {
-    {OramStatus::kOK, "OK"},
-    {OramStatus::kInvalidArgument, "Invalid argument"},
-    {OramStatus::kInvalidOperation, "Invalid operation"},
-    {OramStatus::kOutOfMemory, "Out of memory"},
-    {OramStatus::kFileNotFound, "File not found"},
-    {OramStatus::kFileIOError, "File IO error"},
-    {OramStatus::kOutOfRange, "Out of range"},
-    {OramStatus::kServerError, "Server error"},
-    {OramStatus::kObjectNotFound, "The object is not found"},
-    {OramStatus::kUnknownError, "Unknown error"},
-    {OramStatus::kVersionMismatch, "Version mismatch"},
-};
 
 static const std::string oram_type_mismatch_err =
     "The remote storage cannot match the given ORAM type.";

@@ -54,9 +54,9 @@ OramStatus TreeOramServerStorage::ReadPath(uint32_t level, uint32_t path,
 
   auto iter = storage_.find(tag);
   if (iter == storage_.end()) {
-    logger->error("OramServerStorage::ReadPath: Cannot find the bucket.");
     // Not found.
-    return OramStatus::kObjectNotFound;
+    return OramStatus(StatusCode::kObjectNotFound,
+                      "OramServerStorage::ReadPath: Cannot find the bucket.");
   } else {
     std::for_each(iter->second.begin(), iter->second.end(),
                   [&out_bucket](std::string& data) {
@@ -74,7 +74,7 @@ OramStatus TreeOramServerStorage::ReadPath(uint32_t level, uint32_t path,
                     }
                   });
 
-    return OramStatus::kOK;
+    return OramStatus::OK;
   }
 }
 
@@ -103,13 +103,13 @@ OramStatus TreeOramServerStorage::AccurateWritePath(
           std::string(reinterpret_cast<const char*>(buf), compressed_size));
     }
 
-    return OramStatus::kOK;
+    return OramStatus::OK;
   }
 
   if (iter == storage_.end() && type == oram_impl::Type::kNormal) {
-    logger->error("OramServerStorage::WritePath: Cannot find the bucket.");
     // Not found.
-    return OramStatus::kObjectNotFound;
+    return OramStatus(StatusCode::kObjectNotFound,
+                      "OramServerStorage::WritePath: Cannot find the bucket.");
   } else {
     iter->second.clear();
 
@@ -121,7 +121,7 @@ OramStatus TreeOramServerStorage::AccurateWritePath(
           std::string(reinterpret_cast<const char*>(buf), compressed_size));
     }
 
-    return OramStatus::kOK;
+    return OramStatus::OK;
   }
 }
 
@@ -134,4 +134,4 @@ float TreeOramServerStorage::ReportStorage(void) const {
 
   return storage_size * 1. / POW2(20);
 }
-}
+}  // namespace oram_impl

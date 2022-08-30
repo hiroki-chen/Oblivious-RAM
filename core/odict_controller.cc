@@ -27,7 +27,7 @@ using namespace ods;
 extern std::shared_ptr<spdlog::logger> logger;
 
 static inline uint32_t ComputePadVal(uint32_t x) {
-  return 3 * 1.44 * std::log(x);
+  return std::ceil(3 * 1.44 * std::log(x));
 }
 
 TreeNode* OdictController::Balance(uint32_t root_id) {
@@ -43,13 +43,13 @@ TreeNode* OdictController::Balance(uint32_t root_id) {
     oram_utils::CheckStatus(OdsAccess(OdsOperation::kRead, left),
                             "OdsAccess R failed");
 
-    delete root;
+    // delete root;
     // Case 1. LL. Single right rotation.
     if (left->left_height_ >= left->right_height_) {
-      delete left;
+      // delete left;
       return RightRotate(root_id);
     } else {
-      delete left;
+      // delete left;
       // Case 2. LR. double rotation.
       return LeftRightRotate(root_id);
     }
@@ -58,14 +58,14 @@ TreeNode* OdictController::Balance(uint32_t root_id) {
     oram_utils::CheckStatus(OdsAccess(OdsOperation::kRead, right),
                             "OdsAccess R failed");
 
-    delete root;
+    // delete root;
     // Case 3. RR. Single left rotation.
     if (right->right_height_ >= right->left_height_) {
-      delete right;
+      // delete right;
       return LeftRotate(root_id);
     } else {
       // Case 4. RL.
-      delete right;
+      // delete right;
       return RightLeftRotate(root_id);
     }
   }
@@ -97,7 +97,7 @@ TreeNode* OdictController::LeftRotate(uint32_t root_id) {
   oram_utils::CheckStatus(OdsAccess(OdsOperation::kWrite, right),
                           "OdsAccess failed");
 
-  delete root;
+  // delete root;
   return right;
 }
 
@@ -125,7 +125,7 @@ TreeNode* OdictController::RightRotate(uint32_t root_id) {
   oram_utils::CheckStatus(OdsAccess(OdsOperation::kWrite, left),
                           "OdsAccess failed");
 
-  delete root;
+  // delete root;
   return left;
 }
 
@@ -142,8 +142,8 @@ TreeNode* OdictController::LeftRightRotate(uint32_t root_id) {
   oram_utils::CheckStatus(OdsAccess(OdsOperation::kWrite, root),
                           "OdsAccess W failed");
 
-  delete root;
-  delete left;
+  // delete root;
+  // delete left;
   return RightRotate(root_id);
 }
 
@@ -160,31 +160,35 @@ TreeNode* OdictController::RightLeftRotate(uint32_t root_id) {
   oram_utils::CheckStatus(OdsAccess(OdsOperation::kWrite, root),
                           "OdsAccess W failed");
 
-  delete root;
-  delete right;
+  // delete root;
+  // delete right;
   return RightRotate(root_id);
 }
 
 OramStatus OdictController::CacheHelper(uint32_t id, TreeNode* const node) {
   // ODS does not need the position map to access the oblivious RAM because its
   // internal structure already fulfills this.
-  uint32_t pos = (id == root_id_ ? root_pos_ : ods_cache_->FindPosById(id));
+  uint32_t pos = (id == root_id_ ? root_pos_ : FindPosById(id));
+
+  logger->info("!!!!! pos = {}", pos);
 
   oram_block_t block;
   block.header.block_id = id;
-  OramStatus status = OramStatus::kOK;
+  OramStatus status;
   status = oram_contrller_->AccessDirect(Operation::kRead, id, pos, &block);
 
   // Error occurs here.
-  if (status != OramStatus::kOK) {
+  if (!status.ok()) {
     return status;
   }
-  // Decrypt the block.
-  oram_utils::DecryptBlock(&block, oram_crypto::Cryptor::GetInstance().get());
 
-  // Deserialize the node.
-  oram_utils::TreeNodeDeserialize(
-      std::string(reinterpret_cast<char*>(block.data), sizeof(TreeNode)), node);
+  if (id != invalid_mask) {
+    // Deserialize the node.
+    oram_utils::TreeNodeDeserialize(
+        std::string(reinterpret_cast<char*>(block.data), sizeof(TreeNode)),
+        node);
+  }
+
   return status;
 }
 
@@ -200,16 +204,17 @@ OramStatus OdictController::OdsAccessRead(TreeNode* const node) {
     // Read the node from the oblivious ram.
     logger->debug("[-] Cache miss. Read from ORAM.");
 
-    // We prevent creating raw pointers; instead we use RFII.
-    TreeNode node;
-    oram_utils::CheckStatus(CacheHelper(block_address, &node),
+    oram_utils::CheckStatus(CacheHelper(block_address, node),
                             oram_utils::StrCat("OdsAccessRead", oram_read_err));
+
+    node->old_tag_ = node->pos_tag_;
+    ods_cache_->Put(block_address, node);
   } else {
     logger->debug("[+] Cache hit.");
     memcpy(node, cache_node, sizeof(TreeNode));
   }
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus OdictController::OdsAccessWrite(TreeNode* const node) {
@@ -220,15 +225,15 @@ OramStatus OdictController::OdsAccessWrite(TreeNode* const node) {
   // Try get the tree node from the cache.
   TreeNode* const cache_node = ods_cache_->Get(block_address);
   if (cache_node == nullptr) {
-    // FIXME: Is this really needed?
     TreeNode node;
-    oram_utils::CheckStatus(CacheHelper(block_address, &node),
-                            oram_utils::StrCat("OdsAccessRead", oram_read_err));
+    oram_utils::CheckStatus(CacheHelper(invalid_mask, &node),
+                            oram_utils::StrCat("OdsAccessRead",
+                            oram_read_err));
   }
 
   // We always write to the cache.
   ods_cache_->Put(block_address, node);
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus OdictController::OdsAccessRemove(TreeNode* const node) {
@@ -248,7 +253,7 @@ OramStatus OdictController::OdsAccessRemove(TreeNode* const node) {
     ods_cache_->Pop();
   }
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus OdictController::OdsAccessInsert(TreeNode* const node) {
@@ -257,7 +262,7 @@ OramStatus OdictController::OdsAccessInsert(TreeNode* const node) {
 
   ods_cache_->Put(block_address, node);
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus OdictController::OdsAccess(OdsOperation op_type,
@@ -276,10 +281,11 @@ OramStatus OdictController::OdsAccess(OdsOperation op_type,
       return OdsAccessInsert(node);
   }
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus OdictController::OdsFinalize(size_t pad_val) {
+  logger->debug("pad val: {}", pad_val);
   // Update rootPos based on rootId / generate new position tags.
   root_pos_ = ods_cache_->UpdatePos(root_id_);
 
@@ -299,21 +305,23 @@ OramStatus OdictController::OdsFinalize(size_t pad_val) {
   // Evict the cache.
   while (!ods_cache_->IsEmpty()) {
     TreeNode* const node = ods_cache_->Get();
-    logger->debug("[+] Evicting {}", node->id_);
 
     // Need to serialize the node body.
     const std::string serialized_body = oram_utils::TreeNodeSerialize(node);
     // Construct the oram block.
     oram_block_t block;
     const uint32_t id = node->id_;
-    const uint32_t pos = node->pos_tag_;
+    const uint32_t pos = node->old_tag_;
+
+    logger->debug("[+] Evicting {}, old pos {} new {}", id, pos,
+                  node->pos_tag_);
 
     block.header.block_id = id;
     block.header.type = BlockType::kNormal;
     memcpy(block.data, serialized_body.data(), serialized_body.size());
 
-    // Encrypt the block.
-    oram_utils::EncryptBlock(&block, oram_crypto::Cryptor::GetInstance().get());
+    // Then update the position for the ORAM.
+    oram_contrller_->UpdatePosition(id, node->pos_tag_);
     OramStatus status =
         oram_contrller_->AccessDirect(Operation::kWrite, id, pos, &block);
 
@@ -336,17 +344,17 @@ OramStatus OdictController::OdsFinalize(size_t pad_val) {
   write_count_ = read_count_ = 0ul;
   logger->debug("[-] OdsFinalize finished.");
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus OdictController::InitOds(void) {
-  OramStatus status = OramStatus::kOK;
+  OramStatus status = OramStatus::OK;
 
   // Create a dummy for padding operations in future.
   uint8_t* const dummy_data = (uint8_t*)(malloc(sizeof(TreeNode)));
   status = oram_crypto::Cryptor::RandomBytes(dummy_data, sizeof(TreeNode));
 
-  if (status != OramStatus::kOK) {
+  if (!status.ok()) {
     return status;
   }
 
@@ -355,8 +363,9 @@ OramStatus OdictController::InitOds(void) {
   block.header.type = BlockType::kNormal;
   memcpy(block.data, dummy_data, sizeof(TreeNode));
 
-  status = oram_contrller_->Access(Operation::kRead, 0ul, &block);
-  if (status != OramStatus::kOK) {
+  // Insert a dummy node into the ORAM for padding.
+  status = oram_contrller_->Access(Operation::kWrite, 0ul, &block);
+  if (!status.ok()) {
     return status;
   }
 
@@ -367,7 +376,13 @@ OramStatus OdictController::InitOds(void) {
 OdictController::OdictController(
     size_t odict_size, size_t client_cache_max_size, uint32_t x,
     const std::shared_ptr<PathOramController>& oram_controller)
-    : x_(x), node_count_(1ul), oram_contrller_(oram_controller) {
+    : root_id_(invalid_mask),
+      root_pos_(invalid_mask),
+      x_(x),
+      node_count_(1ul),
+      read_count_(0ul),
+      write_count_(0ul),
+      oram_contrller_(oram_controller) {
   // Initialize the cache.
   logger->info("[+] Using {} as backbone ORAM for Odict controller.",
                oram_controller->GetName());
@@ -383,19 +398,19 @@ OdictController::OdictController(
   }
 
   OramStatus status = InitOds();
-  if (status != OramStatus::kOK) {
+  if (!status.ok()) {
     logger->error("[-] Initialize ODS controller failed: {}",
-                  kErrorList.at(status));
+                  status.ErrorMessage());
     abort();
   }
 }
 
 TreeNode* OdictController::InternalFind(uint32_t key, uint32_t root_id) {
-  if (root_id == 0) {
+  if (root_id == invalid_mask) {
     return nullptr;
   }
 
-  TreeNode* root = new TreeNode();
+  TreeNode* root = new TreeNode(root_id);
   oram_utils::CheckStatus(OdsAccess(OdsOperation::kRead, root),
                           "ReadOram failed");
   if (root->kv_pair_.first == key) {
@@ -407,14 +422,14 @@ TreeNode* OdictController::InternalFind(uint32_t key, uint32_t root_id) {
 
 TreeNode* OdictController::InternalInsert(TreeNode* node, uint32_t root_id) {
   // If there is no root node yet, assign the current node as the root node.
-  if (root_id == 0) {
+  if (root_id == invalid_mask) {
     oram_utils::CheckStatus(OdsAccess(OdsOperation::kInsert, node),
                             "OdsAccess I failed.");
     return node;
   }
 
   // Else read the current root node.
-  TreeNode* root = new TreeNode();
+  TreeNode* root = new TreeNode(root_id);
   oram_utils::CheckStatus(OdsAccess(OdsOperation::kRead, root),
                           "ReadOram R failed");
 
@@ -430,13 +445,13 @@ TreeNode* OdictController::InternalInsert(TreeNode* node, uint32_t root_id) {
 
   oram_utils::CheckStatus(OdsAccess(OdsOperation::kWrite, root),
                           "ReadOram W failed");
-                          
-  delete root;
+
+  // delete root;
   return Balance(root_id);
 }
 
 OramStatus OdictController::InternalRemove(uint32_t key, uint32_t root_id) {
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 TreeNode* OdictController::Find(uint32_t key) {
@@ -444,18 +459,33 @@ TreeNode* OdictController::Find(uint32_t key) {
   // start, access,and finalize.
   OdsStart();
   TreeNode* const node = InternalFind(key, root_id_);
-  oram_utils::CheckStatus(OdsFinalize(ComputePadVal(node_count_)),
-                          oram_utils::StrCat("Find: ", "OdsFinalize error!"));
+  oram_utils::CheckStatus(
+      OdsFinalize(ComputePadVal(oram_contrller_->GetBlockNum())),
+      oram_utils::StrCat("Find: ", "OdsFinalize error!"));
 
   return node;
 }
 
-TreeNode* OdictController::Insert(TreeNode* node) {
+TreeNode* OdictController::Insert(
+    const std::pair<uint32_t, std::string>& kv_pair) {
+  OdsStart();
+  // Wrap the node into a new one.
+  TreeNode* const node = new TreeNode(node_count_++);
+  node->kv_pair_ = kv_pair;
+  node->pos_tag_ = node->old_tag_ = oram_contrller_->GetPosition(node->id_);
+
+  logger->info("Trying to insert id {} into the ODICT. Initial pos tag = {}",
+               node->id_, node->pos_tag_);
+
   TreeNode* ans = InternalInsert(node, root_id_);
 
-  if (root_id_ == 0) {
+  if (root_id_ == invalid_mask) {
     root_id_ = ans->id_;
   }
+
+  oram_utils::CheckStatus(
+      OdsFinalize(ComputePadVal(oram_contrller_->GetBlockNum())),
+      oram_utils::StrCat("Insert: ", "OdsFinalize error!"));
 
   return ans;
 }

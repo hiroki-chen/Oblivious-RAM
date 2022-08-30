@@ -79,11 +79,12 @@ OramStatus PathOramController::PrintOramTree(void) {
   grpc::Status status = stub_->PrintOramTree(&context, request, &empty);
 
   if (!status.ok()) {
-    logger->error("PrintOramTree failed: {}", status.error_message());
-    return OramStatus::kServerError;
+    return OramStatus(
+        StatusCode::kServerError,
+        oram_utils::StrCat("PrintOramTree: ", status.error_message()));
   }
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus PathOramController::AccurateWriteBucket(
@@ -109,10 +110,12 @@ OramStatus PathOramController::AccurateWriteBucket(
   grpc::Status status = stub_->WritePath(&context, request, &response);
 
   if (!status.ok()) {
-    return OramStatus::kServerError;
+    return OramStatus(
+        StatusCode::kServerError,
+        oram_utils::StrCat("AccurateWriteBucket: ", status.error_message()));
   }
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus PathOramController::InitOram(void) {
@@ -127,11 +130,11 @@ OramStatus PathOramController::InitOram(void) {
 
   grpc::Status status = stub_->InitTreeOram(&context, request, &empty);
   if (!status.ok()) {
-    logger->error("InitOram failed: {}", status.error_message());
-    return OramStatus::kServerError;
+    return OramStatus(StatusCode::kServerError,
+                      oram_utils::StrCat("InitOram: ", status.error_message()));
   }
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus OramController::FromFile(const std::string& file_path) {
@@ -209,13 +212,14 @@ OramStatus PathOramController::FillWithData(
   // Set initialized.
   is_initialized_ = true;
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus PathOramController::ReadBucket(uint32_t path, uint32_t level,
                                           p_oram_bucket_t* const bucket) {
   if (path >= number_of_leafs_ || level > tree_level_) {
-    return OramStatus::kInvalidArgument;
+    return OramStatus(StatusCode::kInvalidArgument,
+                      "The path or the level given is not correct");
   }
 
   grpc::ClientContext context;
@@ -235,7 +239,9 @@ OramStatus PathOramController::ReadBucket(uint32_t path, uint32_t level,
       std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
 
   if (!status.ok()) {
-    return OramStatus::kServerError;
+    return OramStatus(
+        StatusCode::kServerError,
+        oram_utils::StrCat("ReadBucket: ", status.error_message()));
   }
 
   const size_t bucket_size = response.bucket_size();
@@ -253,7 +259,7 @@ OramStatus PathOramController::ReadBucket(uint32_t path, uint32_t level,
 
   network_communication_ += response.bucket_size();
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 OramStatus PathOramController::WriteBucket(uint32_t path, uint32_t level,
@@ -289,10 +295,12 @@ OramStatus PathOramController::WriteBucket(uint32_t path, uint32_t level,
       std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
 
   if (!status.ok()) {
-    return OramStatus::kServerError;
+    return OramStatus(
+        StatusCode::kServerError,
+        oram_utils::StrCat("WriteBucket: ", status.error_message()));
   }
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
 
 p_oram_stash_t PathOramController::FindSubsetOf(uint32_t current_path) {
@@ -300,6 +308,7 @@ p_oram_stash_t PathOramController::FindSubsetOf(uint32_t current_path) {
 
   auto iter = stash_.begin();
   while (iter != stash_.end()) {
+    // For Odict, we can directly read the position tag from its data.
     const uint32_t block_path = position_map_[iter->header.block_id];
     if (subset.size() < bucket_size_) {
       if (block_path == current_path) {
@@ -327,10 +336,9 @@ OramStatus PathOramController::InternalAccess(Operation op_type,
                                               oram_block_t* const data,
                                               bool dummy) {
   if (!is_initialized_) {
-    logger->error(
-        "[-] Cannot access ORAM before it is initialized."
-        " You may need to call InitOram() method first.");
-    return OramStatus::kInvalidOperation;
+    return OramStatus(StatusCode::kInvalidOperation,
+                      "Cannot access ORAM before it is initialized."
+                      " You may need to call InitOram() method first.");
   }
 
   logger->debug("ORAM ID: {}, Accessing address {}, op_type {}, dummy {} ", id_,
@@ -373,7 +381,7 @@ OramStatus PathOramController::InternalAccessDirect(Operation op_type,
 
   if (dummy) {
     // Invoke a dummy read operation and everything is done here.
-    return OramStatus::kOK;
+    return OramStatus::OK;
   }
 
   // Read all the blocks into the stash.
@@ -399,9 +407,14 @@ OramStatus PathOramController::InternalAccessDirect(Operation op_type,
   logger->debug("------------------------------------------------------");
   oram_utils::PrintStash(stash_);
   logger->debug("------------------------------------------------------");
-  PANIC_IF(iter == stash_.end(), "Failed to find the block in the stash.");
 
-  // FIXME: Not sure if this is accurate.
+  if (iter == stash_.end()) {
+    return OramStatus(StatusCode::kObjectNotFound,
+                      oram_utils::StrCat("Failed to find the block ", address,
+                                         " in the stash!"));
+  }
+
+  // HACK: This may be incorrect.
   stash_size_ = std::max(stash_size_, stash_.size());
 
   // Update the block.
@@ -439,6 +452,21 @@ OramStatus PathOramController::InternalAccessDirect(Operation op_type,
     oram_utils::CheckStatus(status, "Failed to write bucket.");
   }
 
-  return OramStatus::kOK;
+  return OramStatus::OK;
 }
+
+uint32_t PathOramController::GetPosition(uint32_t address) {
+  if (position_map_.count(address) != 0) {
+    return position_map_.at(address);
+  } else {
+    return 0xffffffff;
+  }
+}
+
+void PathOramController::UpdatePosition(uint32_t address, uint32_t pos) {
+  if (position_map_.count(address) != 0) {
+    position_map_[address] = pos;
+  }
+}
+
 }  // namespace oram_impl

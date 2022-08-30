@@ -19,6 +19,7 @@
 
 #include "base_oram_storage.h"
 
+#include "base/oram_status.h"
 #include "protos/messages.pb.h"
 
 namespace oram_impl {

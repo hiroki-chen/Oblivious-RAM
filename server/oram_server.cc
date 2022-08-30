@@ -221,7 +221,7 @@ grpc::Status OramService::ReadPath(grpc::ServerContext* context,
   auto begin = std::chrono::high_resolution_clock::now();
 
   p_oram_bucket_t bucket;
-  if (storage->ReadPath(level, path, &bucket) != OramStatus::kOK) {
+  if (!storage->ReadPath(level, path, &bucket).ok()) {
     const std::string error_message =
         oram_utils::StrCat("Failed to read path: ", path, " in level: ", level,
                            " in PathORAM id: ", id);
@@ -285,7 +285,7 @@ grpc::Status OramService::WritePath(grpc::ServerContext* context,
           ? storage->AccurateWritePath(level, offset, bucket, type)
           : storage->WritePath(level, path, bucket);
 
-  if (status != OramStatus::kOK) {
+  if (!status.ok()) {
     const std::string error_message =
         oram_utils::StrCat("Failed to write path: ", path, " in level: ", level,
                            " in PathORAM id: ", id);
@@ -301,16 +301,15 @@ grpc::Status OramService::KeyExchange(grpc::ServerContext* context,
   const std::string public_key_client = request->public_key_client();
 
   OramStatus status;
-  if ((status = cryptor_->SampleKeyPair()) != OramStatus::kOK) {
+  if (!(status = cryptor_->SampleKeyPair()).ok()) {
     const std::string error_message = oram_utils::StrCat(
-        "Failed to sample key pair! Error: ", kErrorList.at(status));
+        "Failed to sample key pair! Error: ", status.ErrorMessage());
     return grpc::Status(grpc::StatusCode::INTERNAL, error_message);
   }
 
-  if ((status = cryptor_->SampleSessionKey(public_key_client, 1)) !=
-      OramStatus::kOK) {
+  if (!(status = cryptor_->SampleSessionKey(public_key_client, 1)).ok()) {
     const std::string error_message = oram_utils::StrCat(
-        "Failed to sample session key! Error: ", kErrorList.at(status));
+        "Failed to sample session key! Error: ", status.ErrorMessage());
     return grpc::Status(grpc::StatusCode::INTERNAL, error_message);
   }
   auto key_pair = cryptor_->GetKeyPair();
@@ -344,11 +343,12 @@ grpc::Status OramService::SendHello(grpc::ServerContext* context,
   logger->info("Received encrypted message: {}.",
                spdlog::to_hex(encrypted_message));
 
-  if ((status = cryptor_->Decrypt((uint8_t*)encrypted_message.data(),
-                                  encrypted_message.size(), (uint8_t*)iv.data(),
-                                  &message)) != OramStatus::kOK) {
+  if (!(status = cryptor_->Decrypt((uint8_t*)encrypted_message.data(),
+                                   encrypted_message.size(),
+                                   (uint8_t*)iv.data(), &message))
+           .ok()) {
     const std::string error_message = oram_utils::StrCat(
-        "Failed to verify Hello message! Error: ", kErrorList.at(status));
+        "Failed to verify Hello message! Error: ", status.ErrorMessage());
     return grpc::Status(grpc::StatusCode::INTERNAL, error_message);
   }
 

@@ -66,6 +66,7 @@ TreeNode* OdsCache::Put(uint32_t id, TreeNode* const item) {
   }
 
   cache_items_[id] = item;
+  TreeNode* ret = nullptr;
 
   // evict the item
   if (cache_items_.size() > max_size_) {
@@ -73,11 +74,11 @@ TreeNode* OdsCache::Put(uint32_t id, TreeNode* const item) {
     lru_table_.pop_back();
     iter = cache_items_.find(back);
 
-    TreeNode* const ret = iter->second;
+    ret = iter->second;
     cache_items_.erase(iter);
-
-    return ret;
   }
+
+  return ret;
 }
 
 uint32_t OdsCache::UpdatePos(uint32_t root_id) {
@@ -92,7 +93,7 @@ uint32_t OdsCache::UpdatePos(uint32_t root_id) {
       node->old_tag_ = position_tag[node->id_];
     }
 
-    node->old_tag_ = position_tag[node->id_];
+    node->pos_tag_ = position_tag[node->id_];
   }
 
   for (auto iter = cache_items_.begin(); iter != cache_items_.end(); iter++) {

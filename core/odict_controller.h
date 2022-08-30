@@ -22,6 +22,7 @@
 #include "ods_cache.h"
 #include "base/ods_defs.h"
 #include "base/ods_objects.h"
+#include "base/oram_status.h"
 #include "base/oram_defs.h"
 #include "path_oram_controller.h"
 #include "protos/messages.grpc.pb.h"
@@ -41,6 +42,9 @@ class OdictController {
   uint32_t write_count_;
 
   OramStatus CacheHelper(uint32_t id, TreeNode* const node);
+  uint32_t FindPosById(uint32_t id) {
+    return id == root_id_ ? root_pos_ : ods_cache_->FindPosById(id);
+  }
 
   OramStatus InitOds(void);
 
@@ -70,8 +74,10 @@ class OdictController {
 
  public:
   TreeNode* Find(uint32_t key);
-  TreeNode* Insert(TreeNode* node);
+  TreeNode* Insert(const std::pair<uint32_t, std::string>& kv_pair);
   OramStatus Remove(uint32_t key);
+
+  size_t CurrentSize(void) { return node_count_; }
 
   void SetStub(const std::shared_ptr<oram_server::Stub>& stub) {
     oram_contrller_->SetStub(stub);
