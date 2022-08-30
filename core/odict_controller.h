@@ -66,7 +66,7 @@ class OdictController {
   OramStatus InternalRemove(uint32_t key, uint32_t root_id);
 
   // AVL Tree balance functions.
-  TreeNode* Balance(uint32_t root_id);
+  TreeNode* Balance(TreeNode* const root);
   TreeNode* LeftRotate(uint32_t root_id);
   TreeNode* RightRotate(uint32_t root_id);
   TreeNode* LeftRightRotate(uint32_t root_id);

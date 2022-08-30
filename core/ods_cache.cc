@@ -34,7 +34,7 @@ uint32_t OdsCache::FindPosById(uint32_t id) {
     }
   }
 
-  return invalid_mask;
+  return 0XFFFFFFFF;
 }
 
 TreeNode* OdsCache::Get(uint32_t id) {

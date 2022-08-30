@@ -86,12 +86,18 @@ int main(int argc, char** argv) {
       absl::GetFlag(FLAGS_client_cache_max_size), absl::GetFlag(FLAGS_x),
       absl::GetFlag(FLAGS_block_num), absl::GetFlag(FLAGS_bucket_size));
 
-  // FIXME: This is for test, not for productive environments!
-  for (size_t i = 0; i < 100; i++) {
+  for (size_t i = 0; i < 1000; i++) {
     // Insert some nodes.
 
     auto ret = client->controller_->Insert(std::make_pair(i, std::to_string(i)));
     logger->info("OK");
+  }
+
+  for (size_t i = 0; i < 1000; i++) {
+    // Insert some nodes.
+
+    auto ret = client->controller_->Find(i);
+    logger->info("OK {}", ret->kv_pair_.second);
   }
 
   return 0;

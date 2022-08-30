@@ -57,7 +57,7 @@ class PathOramController : public OramController {
                                     oram_block_t* const data,
                                     bool dummy = false);
   // The separate interface for reading is reserved for direct designation of
-  // position, which is useful to ODS.
+  // position, which is useful to, say, ODS.
   virtual OramStatus InternalAccessDirect(Operation op_type, uint32_t address,
                                           uint32_t position,
                                           oram_block_t* const data,
