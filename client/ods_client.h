@@ -14,11 +14,31 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef ORAM_IMPL_SERVER_ORAM_STORAGE_H_
-#define ORAM_IMPL_SERVER_ORAM_STORAGE_H_
+#ifndef ORAM_IMPL_CLIENT_ODS_CLIENT_H_
+#define ORAM_IMPL_CLIENT_ODS_CLIENT_H_
 
-#include "base_oram_storage.h"
-#include "flat_oram_storage.h"
-#include "tree_oram_storage.h"
+#include <memory>
 
-#endif  // ORAM_IMPL_SERVER_ORAM_STORAGE_H_
+#include <grpc++/grpc++.h>
+
+#include "core/odict_controller.h"
+#include "protos/messages.grpc.pb.h"
+#include "protos/messages.pb.h"
+
+using namespace oram_impl;
+using namespace ods;
+
+class Client {
+  std::shared_ptr<oram_server::Stub> stub_;
+  std::unique_ptr<OdictController> controller_;
+
+public:
+  Client(const std::string address, const std::string port,
+         const std::string crt_path, size_t odict_size,
+         size_t client_cache_max_size, uint32_t x, uint32_t block_num,
+         uint32_t bucket_size);
+
+  
+};
+
+#endif  // ORAM_IMPL_CLIENT_ODS_CLIENT_H_

@@ -14,21 +14,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "oram_storage.h"
+#include "tree_oram_storage.h"
 
 #include <spdlog/logger.h>
-
-#include <cmath>
 
 #include "base/oram_utils.h"
 
 extern std::shared_ptr<spdlog::logger> logger;
 
 namespace oram_impl {
-// Simply does nothing. We need a pure virtual destructor mainly because we do
-// not want an instance of BaseOramServerStorage to be created accidentally.
-BaseOramServerStorage::~BaseOramServerStorage() {}
-
 TreeOramServerStorage::TreeOramServerStorage(uint32_t id, size_t capacity,
                                              size_t block_size,
                                              size_t bucket_size)
@@ -140,4 +134,4 @@ float TreeOramServerStorage::ReportStorage(void) const {
 
   return storage_size * 1. / POW2(20);
 }
-}  // namespace oram_impl
+}

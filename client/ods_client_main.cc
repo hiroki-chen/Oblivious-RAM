@@ -14,21 +14,28 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "path_oram_client.h"
+#include "ods_client.h"
+
+#include <execinfo.h>
+#include <signal.h>
 
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
-#include <execinfo.h>
-#include <signal.h>
+#include <spdlog/fmt/bin_to_hex.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-#include <memory>
+extern std::shared_ptr<spdlog::logger> logger;
 
 ABSL_FLAG(std::string, address, "localhost", "The address of the server.");
 ABSL_FLAG(std::string, port, "1234", "The port of the server.");
 ABSL_FLAG(std::string, crt_path, "../key/sslcred.crt",
           "The path of the certificate file.");
+// ODS PARAMS.
+ABSL_FLAG(uint32_t, odict_size, 1e6, "The size of oblivious dictionary.");
+ABSL_FLAG(uint32_t, client_cache_max_size, 32, "The size of cache.");
+ABSL_FLAG(uint32_t, x, 2, "The param for padding.");
+
 
 // ORAM PARAMS.
 ABSL_FLAG(uint32_t, block_num, 1e6, "The number of blocks.");
@@ -37,11 +44,10 @@ ABSL_FLAG(uint32_t, bucket_size, 4,
 
 // Log setting
 ABSL_FLAG(int, log_level, spdlog::level::info, "The level of the log.");
-
 // Disable debugging.
 ABSL_FLAG(bool, disable_debugging, true, "Hide secret on the server.");
 
-std::shared_ptr<spdlog::logger> logger = spdlog::stdout_color_mt("oram_client");
+std::shared_ptr<spdlog::logger> logger = spdlog::stdout_color_mt("ods_client");
 
 void Handler(int signal) {
   logger->info("Client stopped.");
@@ -75,16 +81,11 @@ int main(int argc, char** argv) {
       static_cast<spdlog::level::level_enum>(absl::GetFlag(FLAGS_log_level)));
   spdlog::flush_every(std::chrono::seconds(3));
 
-  std::unique_ptr<Client> client =
-      std::make_unique<Client>(
-          absl::GetFlag(FLAGS_address), absl::GetFlag(FLAGS_port),
-          absl::GetFlag(FLAGS_crt_path), absl::GetFlag(FLAGS_bucket_size),
-          absl::GetFlag(FLAGS_block_num));
-  client->Run();
-  client->StartKeyExchange();
-  client->InitOram();
-  client->TestOram();
-  client->CloseConnection();
+  std::unique_ptr<Client> client = std::make_unique<Client>(
+      absl::GetFlag(FLAGS_address), absl::GetFlag(FLAGS_port),
+      absl::GetFlag(FLAGS_crt_path), absl::GetFlag(FLAGS_odict_size),
+      absl::GetFlag(FLAGS_client_cache_max_size),absl::GetFlag(FLAGS_x),
+      absl::GetFlag(FLAGS_block_num), absl::GetFlag(FLAGS_bucket_size));
 
   return 0;
 }

@@ -9,7 +9,7 @@ add_library(oram_controller SHARED
   square_root_oram_controller.cc
 )
 
-add_library(ods_controller SHARED ods_controller.cc ods_cache.cc)
+add_library(ods_controller SHARED odict_controller.cc ods_cache.cc)
 
 target_include_directories(oram_controller PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(oram_controller PRIVATE messages spdlog base absl::base absl::flags absl::flags_parse)

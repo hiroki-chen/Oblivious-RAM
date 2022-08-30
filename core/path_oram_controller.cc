@@ -206,12 +206,8 @@ OramStatus PathOramController::FillWithData(
     }
   }
 
-  // Print the oram tree on the server side.
-  grpc::ClientContext context;
-  PrintOramTreeRequest request;
-  google::protobuf::Empty empty;
-
-  request.set_id(id_);
+  // Set initialized.
+  is_initialized_ = true;
 
   return OramStatus::kOK;
 }
@@ -330,6 +326,13 @@ OramStatus PathOramController::InternalAccess(Operation op_type,
                                               uint32_t address,
                                               oram_block_t* const data,
                                               bool dummy) {
+  if (!is_initialized_) {
+    logger->error(
+        "[-] Cannot access ORAM before it is initialized."
+        " You may need to call InitOram() method first.");
+    return OramStatus::kInvalidOperation;
+  }
+
   logger->debug("ORAM ID: {}, Accessing address {}, op_type {}, dummy {} ", id_,
                 address, (int)op_type, dummy);
   // First we do a sanity check.

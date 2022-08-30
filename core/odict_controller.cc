@@ -16,7 +16,7 @@
  */
 #include <cmath>
 
-#include "ods_controller.h"
+#include "odict_controller.h"
 #include "base/oram_utils.h"
 
 #include <spdlog/logger.h>
@@ -374,6 +374,14 @@ OdictController::OdictController(
   ods_cache_ =
       std::make_unique<OdsCache>(client_cache_max_size, oram_controller);
 
+  // Abort if it is not initialized.
+  if (!oram_controller->IsInitialized()) {
+    logger->error(
+        "[-] You cannot use oblivious dictionary when the backbone ORAM "
+        "controller is not properly initialized!");
+    abort();
+  }
+
   OramStatus status = InitOds();
   if (status != OramStatus::kOK) {
     logger->error("[-] Initialize ODS controller failed: {}",
@@ -422,7 +430,8 @@ TreeNode* OdictController::InternalInsert(TreeNode* node, uint32_t root_id) {
 
   oram_utils::CheckStatus(OdsAccess(OdsOperation::kWrite, root),
                           "ReadOram W failed");
-
+                          
+  delete root;
   return Balance(root_id);
 }
 

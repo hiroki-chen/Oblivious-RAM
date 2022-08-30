@@ -14,17 +14,6 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "oram_controller.h"
+#include "flat_oram_storage.h"
 
-namespace oram_impl {
-OramController::OramController(uint32_t id, bool standalone, size_t block_num,
-                               OramType oram_type)
-    : id_(id),
-      standalone_(standalone),
-      block_num_(block_num),
-      oram_type_(oram_type),
-      is_initialized_(false) {
-  cryptor_ = oram_crypto::Cryptor::GetInstance();
-}
-
-}  // namespace oram_impl
+namespace oram_impl {}

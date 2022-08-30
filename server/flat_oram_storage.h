@@ -14,17 +14,26 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "oram_controller.h"
+#ifndef ORAM_IMPL_SERVER_FLAT_ORAM_STORAGE_H_
+#define ORAM_IMPL_SERVER_FLAT_ORAM_STORAGE_H_
+
+#include "base_oram_storage.h"
 
 namespace oram_impl {
-OramController::OramController(uint32_t id, bool standalone, size_t block_num,
-                               OramType oram_type)
-    : id_(id),
-      standalone_(standalone),
-      block_num_(block_num),
-      oram_type_(oram_type),
-      is_initialized_(false) {
-  cryptor_ = oram_crypto::Cryptor::GetInstance();
-}
+class FlatOramServerStorage : public BaseOramServerStorage {
+  server_flat_storage_t storage_;
 
+ public:
+  FlatOramServerStorage(uint32_t id, size_t capacity, size_t block_size)
+      : BaseOramServerStorage(id, capacity, block_size,
+                              OramStorageType::kFlatStorage) {}
+
+  virtual server_flat_storage_t GetStorage(void) { return storage_; }
+  virtual void ResetStorage(void) { storage_.clear(); }
+  virtual void From(const server_flat_storage_t& storage) {
+    storage_ = storage;
+  }
+};
 }  // namespace oram_impl
+
+#endif  // ORAM_IMPL_SERVER_FLAT_ORAM_STORAGE_H_
