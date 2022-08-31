@@ -25,15 +25,8 @@ std::string TreeNode::ToString(void) const {
   std::string ans;
 
   ans.append(std::to_string(id_) + "_");
-  ans.append(std::to_string(pos_tag_) + "_");
-  ans.append(std::to_string(old_tag_) + "_");
   ans.append(std::to_string(kv_pair_.first) + "_");
   ans.append(kv_pair_.second + "_");
-
-  for (size_t i = 0; i < 2; i++) {
-    ans.append(std::to_string(children_pos_[i].id_) + "_");
-    ans.append(std::to_string(children_pos_[i].pos_tag_) + "_");
-  }
 
   ans.append(std::to_string(left_id_) + "_");
   ans.append(std::to_string(right_id_) + "_");
@@ -51,18 +44,12 @@ TreeNode TreeNode::FromString(const std::string& str) {
            "Deserialized string is corrupted.");
 
   out_node.id_ = std::stoul(data[0]);
-  out_node.pos_tag_ = std::stoul(data[1]);
-  out_node.old_tag_ = std::stoul(data[2]);
-  out_node.kv_pair_.first = std::stoul(data[3]);
-  out_node.kv_pair_.second = (data[4]);
-  out_node.children_pos_[0].id_ = std::stoul(data[5]);
-  out_node.children_pos_[0].pos_tag_ = std::stoul(data[6]);
-  out_node.children_pos_[1].id_ = std::stoul(data[7]);
-  out_node.children_pos_[1].pos_tag_ = std::stoul(data[8]);
-  out_node.left_id_ = std::stoul(data[9]);
-  out_node.right_id_ = std::stoul(data[10]);
-  out_node.left_height_ = std::stoul(data[11]);
-  out_node.right_height_ = std::stoul(data[12]);
+  out_node.kv_pair_.first = std::stoul(data[1]);
+  out_node.kv_pair_.second = (data[2]);
+  out_node.left_id_ = std::stoul(data[3]);
+  out_node.right_id_ = std::stoul(data[4]);
+  out_node.left_height_ = std::stoul(data[5]);
+  out_node.right_height_ = std::stoul(data[6]);
 
   return out_node;
 }

@@ -24,18 +24,6 @@ void OdsCache::Clear(void) {
   cache_items_.clear();
 }
 
-uint32_t OdsCache::FindPosById(uint32_t id) {
-  for (auto iter = cache_items_.begin(); iter != cache_items_.end(); iter++) {
-    TreeNode* const node = iter->second;
-    
-    if (node->id_ == id) {
-      return node->old_tag_;
-    }
-  }
-
-  return 0XFFFFFFFF;
-}
-
 TreeNode* OdsCache::Get(uint32_t id) {
   auto iter = cache_items_.find(id);
 
@@ -78,31 +66,6 @@ TreeNode* OdsCache::Put(uint32_t id, TreeNode* const item) {
   }
 
   return ret;
-}
-
-uint32_t OdsCache::UpdatePos(uint32_t root_id) {
-  std::map<uint32_t, uint32_t> position_tag;
-
-  for (auto iter = cache_items_.begin(); iter != cache_items_.end(); iter++) {
-    TreeNode* const node = iter->second;
-    // Generate a random position tag.
-    position_tag[node->id_] = oram_controller_->RandomPosition();
-
-    if (node->old_tag_ == invalid_mask) {
-      node->old_tag_ = position_tag[node->id_];
-    }
-
-    node->pos_tag_ = position_tag[node->id_];
-  }
-
-  for (auto iter = cache_items_.begin(); iter != cache_items_.end(); iter++) {
-    TreeNode* const node = iter->second;
-    // Reallocate the position tag for each child node.
-    node->children_pos_[0].pos_tag_ = position_tag[node->left_id_];
-    node->children_pos_[1].pos_tag_ = position_tag[node->right_id_];
-  }
-
-  return position_tag[root_id];
 }
 
 void OdsCache::Pop(void) {

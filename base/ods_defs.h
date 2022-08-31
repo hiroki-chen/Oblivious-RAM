@@ -30,7 +30,7 @@
 #endif
 
 namespace oram_impl::ods {
-static const uint32_t deserialized_str_size = 13ul;
+static const uint32_t deserialized_str_size = 7ul;
 static const uint32_t invalid_mask = 0ul;
 
 static const std::string pad_val_err =

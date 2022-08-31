@@ -33,18 +33,14 @@ class OdictController {
   std::unique_ptr<OdsCache> ods_cache_;
 
   uint32_t root_id_;
-  uint32_t root_pos_;
-  uint32_t x_;  // A parameter for padding.
   size_t node_count_;
+  size_t odict_size_;
 
   // Some counters for padding.
   uint32_t read_count_;
   uint32_t write_count_;
 
   OramStatus CacheHelper(uint32_t id, TreeNode* const node);
-  uint32_t FindPosById(uint32_t id) {
-    return id == root_id_ ? root_pos_ : ods_cache_->FindPosById(id);
-  }
 
   OramStatus InitOds(void);
 
@@ -79,6 +75,7 @@ class OdictController {
   OramStatus Remove(uint32_t key);
 
   size_t CurrentSize(void) { return node_count_; }
+  size_t MaxSize(void) { return odict_size_; }
 
   void SetStub(const std::shared_ptr<oram_server::Stub>& stub) {
     oram_controller_->SetStub(stub);
@@ -87,7 +84,7 @@ class OdictController {
   // To construct the controller for oblivious dictionary, the user needs to
   // first create an instance of the underlying oblivious RAM controller. We
   // currently designate PathOram as the backbone ORAM.
-  OdictController(size_t odict_size, size_t client_cache_max_size, uint32_t x,
+  OdictController(size_t odict_size, size_t client_cache_max_size,
                   const std::shared_ptr<PathOramController>& oram_controller);
 };
 }  // namespace oram_impl::ods
