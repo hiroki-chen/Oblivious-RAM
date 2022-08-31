@@ -27,10 +27,9 @@ void OdsCache::Clear(void) {
 uint32_t OdsCache::FindPosById(uint32_t id) {
   for (auto iter = cache_items_.begin(); iter != cache_items_.end(); iter++) {
     TreeNode* const node = iter->second;
-    if (node->left_id_ == id) {
-      return node->children_pos_[0].pos_tag_;
-    } else if (node->right_id_ == id) {
-      return node->children_pos_[1].pos_tag_;
+    
+    if (node->id_ == id) {
+      return node->old_tag_;
     }
   }
 

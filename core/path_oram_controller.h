@@ -32,6 +32,9 @@ class PathOramController : public OramController {
   // stash size.
   size_t stash_size_;
 
+  // For ODS.
+  bool need_position_map_;
+
   p_oram_position_t position_map_;
   // The stash should be tied to the slots of Partition ORAM, so we use
   // pointers to manipulate the stash.
@@ -80,9 +83,8 @@ class PathOramController : public OramController {
                : InternalAccessDirect(op_type, address, position, data, false);
   }
 
-  virtual uint32_t GetPosition(uint32_t address);
-  virtual void UpdatePosition(uint32_t address, uint32_t pos);
-
+  void NoNeedForPositionMap(void) { need_position_map_ = false; }
+  p_oram_position_t GetPositionMap(void) const { return position_map_; }
   uint32_t GetTreeLevel(void) const { return tree_level_; }
   size_t ReportClientStorage(void) const;
   size_t ReportStashSize(void) const { return stash_size_; }

@@ -322,47 +322,4 @@ std::vector<std::string> split(const std::string& str, char delim) {
 
   return result;
 }
-
-// A very simple function that converts all the fields of node into string and
-// concatenate them by underscore.
-std::string TreeNodeSerialize(oram_impl::ods::TreeNode* const node) {
-  std::string ans;
-
-  ans.append(std::to_string(node->id_) + "_");
-  ans.append(std::to_string(node->pos_tag_) + "_");
-  ans.append(std::to_string(node->old_tag_) + "_");
-  ans.append(std::to_string(node->kv_pair_.first) + "_");
-  ans.append(node->kv_pair_.second + "_");
-
-  for (size_t i = 0; i < 2; i++) {
-    ans.append(std::to_string(node->children_pos_[i].id_) + "_");
-    ans.append(std::to_string(node->children_pos_[i].pos_tag_) + "_");
-  }
-
-  ans.append(std::to_string(node->left_id_) + "_");
-  ans.append(std::to_string(node->right_id_) + "_");
-  ans.append(std::to_string(node->left_height_) + "_");
-  ans.append(std::to_string(node->right_height_));
-
-  return ans;
-}
-
-void TreeNodeDeserialize(const std::string& str,
-                         oram_impl::ods::TreeNode* const out_node) {
-  const std::vector<std::string> data = split(str, '_');
-
-  out_node->id_ = std::stoul(data[0]);
-  out_node->pos_tag_ = std::stoul(data[1]);
-  out_node->old_tag_ = std::stoul(data[2]);
-  out_node->kv_pair_.first = std::stoul(data[3]);
-  out_node->kv_pair_.second = (data[4]);
-  out_node->children_pos_[0].id_ = std::stoul(data[5]);
-  out_node->children_pos_[0].pos_tag_ = std::stoul(data[6]);
-  out_node->children_pos_[1].id_ = std::stoul(data[7]);
-  out_node->children_pos_[1].pos_tag_ = std::stoul(data[8]);
-  out_node->left_id_ = std::stoul(data[9]);
-  out_node->right_id_ = std::stoul(data[10]);
-  out_node->left_height_ = std::stoul(data[11]);
-  out_node->right_height_ = std::stoul(data[12]);
-}
 }  // namespace oram_utils
