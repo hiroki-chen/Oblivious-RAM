@@ -47,14 +47,71 @@ enum class StatusCode : int {
   // user cannot perform linear read when the remote server storage type is a
   // tree-like one.
   kInvalidOperation = 2,
+
+  // StatusCode::kOutOfMemory
+  //
+  // kOutOfMemory indicates an error typically occurring when the system
+  // cannot allocate memory upon invocation of `malloc`, `calloc`, or `realloc`
+  // functions. When the system is OOM, any allocation will fail.
   kOutOfMemory = 3,
+
+  // StatusCode::kFileNotFound
+  //
+  // kFileNotFound indicates an error when the file / path does not exist on the
+  // target filesystem. Often this is related to misspelled path.
   kFileNotFound = 4,
+
+  // StatusCode::kFileIOError
+  //
+  // Unlike `kFileNotFound`, this error indicates the file pointer is busy or
+  // temporarily occupied by other processes and may cause data race, or the
+  // file / path cannot be properly read due to corruption.
   kFileIOError = 5,
+
+  // StatusCode::kOutOfRange
+  //
+  // kOutOfRange indicates the request contains some targets that exceed the
+  // expected boundary. For example, if the ORAM only has three blocks but the
+  // client is requesting the non-existing fourth block, then the controller
+  // should report `kOutOfRange` error to the client.
   kOutOfRange = 6,
+
+  // StatusCode::kServerError
+  //
+  // kServerError usually happens when the remote server reports an unexpetec
+  // error by `grpc::Status`. We simply do not convert `grpc::Status` to
+  // `oram_impl::StatuCode` because `grpc::Status` carries sufficient error
+  // information and details for the client to figure out what happened so that
+  // it can solve the problem, or it can let the cloud administrator to fix the
+  // server error.
   kServerError = 7,
+
+  // StatusCode::kObjectNotFound
+  //
+  // kObjectNotFound indicates an error that will occur if the desired target is
+  // not found. This is slightly different from `StatusCode::kOutOfRange`.
   kObjectNotFound = 8,
+
+  // StatusCode::kUnkownError
+  //
+  // The error is peculiar so that we cannot figure out what is happening. If
+  // the program crashes in a totally unexpected way, this error should be
+  // reported to the client. Since this error carries less information and can
+  // be hard to deal with, the error reporter should avoid using this error.
   kUnknownError = 9,
+
+  // StatusCode::kVersionMismatch
+  //
+  // Currently this error is reserved only when the client ORAM version
+  // mismatches with that of the remote storage. In future, we may develop more
+  // APIs that have different versions, and this errir will indicate that the
+  // request to the API cannot be fulfilled due to version mismatch: e.g., the
+  // client cannot use APIs with v1 when it is constructing an object with v2.
   kVersionMismatch = 10,
+
+  // StatusCode::kUnimplemented
+  //
+  // kUnimplemented indicates an unimplemented interface.
   kUnimplemented = 11,
 };
 
@@ -94,7 +151,7 @@ class OramStatus final {
   // Updates the current `OramStatus` type if `status->ok()` returns true.
   // If the existing status already contains a non-OK error, this update has no
   // effect and preserves the current data.
-  void Update(const StatusCode& new_status) { code_ = new_status; }
+  void Update(const StatusCode& new_status);
 
   // Returns true if the current status matches `OramStatus::OK`.
   // If the functions returns false, then the user may need to check the error
@@ -107,6 +164,13 @@ class OramStatus final {
 
   std::string ToString(void) const { return kErrorList.at(code_); }
 };
+
+inline void OramStatus::Update(const StatusCode& new_status) {
+  // Only OK status is allowed to transmute.
+  if (code_ == StatusCode::kOK) {
+    code_ = new_status;
+  }
+}
 }  // namespace oram_impl
 
 #endif  // ORAM_IMPL_BASE_ORAM_STATUS_H_
