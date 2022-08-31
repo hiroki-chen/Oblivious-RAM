@@ -66,6 +66,9 @@ struct TreeNode {
         right_height_(invalid_mask) {}
 
   const char* GetType(void) const { return "AvlNode"; }
+  std::string ToString(void) const;
+  static TreeNode FromString(const std::string& str);
+
 };
 
 using ods_client_cache_t = std::vector<TreeNode*>;

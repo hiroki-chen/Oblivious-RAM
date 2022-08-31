@@ -46,6 +46,7 @@ PathOramController::PathOramController(uint32_t id, uint32_t block_num,
     : OramController(id, standalone, block_num, OramType::kPathOram),
       bucket_size_(bucket_size),
       stash_size_(0ul),
+      need_position_map_(true),
       network_time_(0us),
       network_communication_(0ul) {
   const size_t bucket_num = std::ceil(block_num * 1.0 / bucket_size);
@@ -308,8 +309,22 @@ p_oram_stash_t PathOramController::FindSubsetOf(uint32_t current_path) {
 
   auto iter = stash_.begin();
   while (iter != stash_.end()) {
-    // For Odict, we can directly read the position tag from its data.
-    const uint32_t block_path = position_map_[iter->header.block_id];
+    uint32_t block_path = 0xffffffff;
+    if (need_position_map_) {
+      block_path = position_map_[iter->header.block_id];
+    } else {
+      // For Odict, we can directly read the position tag from its data.
+      // Parse the node.
+      const ods::TreeNode* const node =
+          reinterpret_cast<const ods::TreeNode*>(iter->data);
+      block_path = node->pos_tag_;
+
+      // If the block_path is read from an invalid node, we generate a fresh one.
+      if (block_path >= number_of_leafs_) {
+        block_path = RandomPosition();
+      }
+    }
+
     if (subset.size() < bucket_size_) {
       if (block_path == current_path) {
         subset.emplace_back(*iter);
@@ -455,20 +470,6 @@ OramStatus PathOramController::InternalAccessDirect(Operation op_type,
   }
 
   return OramStatus::OK;
-}
-
-uint32_t PathOramController::GetPosition(uint32_t address) {
-  if (position_map_.count(address) != 0) {
-    return position_map_.at(address);
-  } else {
-    return 0xffffffff;
-  }
-}
-
-void PathOramController::UpdatePosition(uint32_t address, uint32_t pos) {
-  if (position_map_.count(address) != 0) {
-    position_map_[address] = pos;
-  }
 }
 
 }  // namespace oram_impl

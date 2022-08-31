@@ -29,7 +29,7 @@
 
 namespace oram_impl::ods {
 class OdictController {
-  std::shared_ptr<PathOramController> oram_contrller_;
+  std::shared_ptr<PathOramController> oram_controller_;
   std::unique_ptr<OdsCache> ods_cache_;
 
   uint32_t root_id_;
@@ -56,6 +56,7 @@ class OdictController {
   void OdsStart(void) { ods_cache_->Clear(); }
   OramStatus OdsAccess(OdsOperation op_type, TreeNode* const node);
   OramStatus OdsFinalize(size_t pad_val);
+  OramStatus DoPad(Operation op_type, size_t num);
 
   // Helper functions for AVL tree operations.
   // Because public interfaces are arkward if they are implemented recursively,
@@ -80,7 +81,7 @@ class OdictController {
   size_t CurrentSize(void) { return node_count_; }
 
   void SetStub(const std::shared_ptr<oram_server::Stub>& stub) {
-    oram_contrller_->SetStub(stub);
+    oram_controller_->SetStub(stub);
   }
 
   // To construct the controller for oblivious dictionary, the user needs to
