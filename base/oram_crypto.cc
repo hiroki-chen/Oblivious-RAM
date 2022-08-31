@@ -93,7 +93,6 @@ oram_impl::OramStatus Cryptor::Decrypt(const uint8_t* message, size_t length,
   size_t message_len = length - crypto_aead_aes256gcm_ABYTES;
   uint8_t* const decrypted = (uint8_t*)malloc(message_len);
 
-  unsigned long long decrypted_len;
   int ret = crypto_aead_aes256gcm_decrypt(decrypted, (ull*)&message_len,
                                           nullptr, message, length, nullptr, 0,
                                           iv, session_key_rx_);
