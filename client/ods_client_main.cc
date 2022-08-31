@@ -34,7 +34,6 @@ ABSL_FLAG(std::string, crt_path, "../key/sslcred.crt",
 // ODS PARAMS.
 ABSL_FLAG(uint32_t, odict_size, 1e6, "The size of oblivious dictionary.");
 ABSL_FLAG(uint32_t, client_cache_max_size, 32, "The size of cache.");
-ABSL_FLAG(uint32_t, x, 2, "The param for padding.");
 
 // ORAM PARAMS.
 ABSL_FLAG(uint32_t, block_num, 1e6, "The number of blocks.");
@@ -83,13 +82,14 @@ int main(int argc, char** argv) {
   std::unique_ptr<Client> client = std::make_unique<Client>(
       absl::GetFlag(FLAGS_address), absl::GetFlag(FLAGS_port),
       absl::GetFlag(FLAGS_crt_path), absl::GetFlag(FLAGS_odict_size),
-      absl::GetFlag(FLAGS_client_cache_max_size), absl::GetFlag(FLAGS_x),
+      absl::GetFlag(FLAGS_client_cache_max_size),
       absl::GetFlag(FLAGS_block_num), absl::GetFlag(FLAGS_bucket_size));
 
   for (size_t i = 0; i < 100; i++) {
     // Insert some nodes.
 
-    auto ret = client->controller_->Insert(std::make_pair(i, std::to_string(i)));
+    auto ret =
+        client->controller_->Insert(std::make_pair(i, std::to_string(i)));
     logger->info("OK");
   }
 

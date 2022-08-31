@@ -42,8 +42,6 @@ class OdsCache {
   TreeNode* Get(void);
   TreeNode* Get(uint32_t id);
   TreeNode* Put(uint32_t id, TreeNode* const item);
-  uint32_t FindPosById(uint32_t id);
-  uint32_t UpdatePos(uint32_t root_id);
   void Clear(void);
   void Pop(void);
   bool IsEmpty(void) { return cache_items_.empty(); }

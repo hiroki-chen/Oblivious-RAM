@@ -294,8 +294,6 @@ OramStatus OdictController::DoPad(Operation op_type, size_t num) {
 
 OramStatus OdictController::OdsFinalize(size_t pad_val) {
   logger->debug("pad val: {}", pad_val);
-  // Update rootPos based on rootId / generate new position tags.
-  // root_pos_ = ods_cache_->UpdatePos(root_id_);
 
   // Pad the read operation. This is simple because we can read arbitrary
   // blocks based on our preference.
@@ -339,13 +337,12 @@ OramStatus OdictController::OdsFinalize(size_t pad_val) {
 OramStatus OdictController::InitOds(void) { return OramStatus::OK; }
 
 OdictController::OdictController(
-    size_t odict_size, size_t client_cache_max_size, uint32_t x,
+    size_t odict_size, size_t client_cache_max_size,
     const std::shared_ptr<PathOramController>& oram_controller)
     : oram_controller_(oram_controller),
       root_id_(invalid_mask),
-      root_pos_(invalid_mask),
-      x_(x),
       node_count_(1ul),
+      odict_size_(odict_size),
       read_count_(0ul),
       write_count_(0ul) {
   // Initialize the cache.

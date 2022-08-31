@@ -8,7 +8,7 @@ Currently, we consider implmenting the following oblivious RAMs.
 * (Ongoing) [Basic sqaure root ORAM](https://dl.acm.org/doi/pdf/10.1145/28395.28416)
 * (Implemented) [Path ORAM](https://eprint.iacr.org/2013/280.pdf)
 * (Implemented) [Partition-based ORAM](https://www.ndss-symposium.org/wp-content/uploads/2017/09/04_4.pdf)
-* (Ongoing) [Path ORAM-based Oblivious dictionary](https://eprint.iacr.org/2014/185.pdf) (Currently the implementation of the position map free version is problemsome.)
+* (Implemented) [Path ORAM-based Oblivious dictionary](https://eprint.iacr.org/2014/185.pdf)
 * (TODO) [Cuckoo-hashing-based ORAM](https://arxiv.org/pdf/1007.1259v1.pdf)
 
 In future development, the project may be migrated to an equivalent Rust version with enclave support.
@@ -101,7 +101,7 @@ path_oram_controller->SetStub(stub_);
 
 // Initialize the oram.
 OramStatus status = path_oram_controller->InitOram();
-if (status != Status::kOK) {
+if (!status.ok()) {
   logger->error("Unexpected error: {}", status.ErrorMessage());
 }
 

@@ -34,7 +34,7 @@ class Client {
  public:
   Client(const std::string address, const std::string port,
          const std::string crt_path, size_t odict_size,
-         size_t client_cache_max_size, uint32_t x, uint32_t block_num,
+         size_t client_cache_max_size, uint32_t block_num,
          uint32_t bucket_size);
 
   std::unique_ptr<OdictController> controller_;

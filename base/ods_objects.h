@@ -25,24 +25,12 @@
 #include "ods_defs.h"
 
 namespace oram_impl::ods {
-struct ChildrenPos {
-  uint32_t id_;
-  uint32_t pos_tag_;
-
-  ChildrenPos(): id_(invalid_mask), pos_tag_(invalid_mask) {}
-  ChildrenPos(int id, int pos_tag) : id_(id), pos_tag_(pos_tag) {}
-};
-
 struct TreeNode {
   uint32_t id_;  // id is the logical address.
-  uint32_t pos_tag_;
-  uint32_t old_tag_ = invalid_mask;
 
   std::pair<uint32_t, std::string> kv_pair_;
   // An AVL Tree is a binary search tree.
-  // So it needs to store the pointers to its children; but in an ORAM, the
-  // pointer is the position tag that locate the unique path of each child.
-  ChildrenPos children_pos_[2];
+  // So it needs to store the pointers to its children.
   uint32_t left_id_;
   uint32_t right_id_;
   uint32_t left_height_;
@@ -52,14 +40,6 @@ struct TreeNode {
 
   TreeNode(uint32_t id)
       : id_(id),
-        pos_tag_(invalid_mask),
-        left_id_(invalid_mask),
-        right_id_(invalid_mask),
-        left_height_(invalid_mask),
-        right_height_(invalid_mask) {}
-  TreeNode(uint32_t id, uint32_t pos_tag)
-      : id_(id),
-        pos_tag_(pos_tag),
         left_id_(invalid_mask),
         right_id_(invalid_mask),
         left_height_(invalid_mask),

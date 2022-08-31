@@ -20,10 +20,9 @@
 
 extern std::shared_ptr<spdlog::logger> logger;
 
-
 Client::Client(const std::string address, const std::string port,
                const std::string crt_path, size_t odict_size,
-               size_t client_cache_max_size, uint32_t x, uint32_t block_num,
+               size_t client_cache_max_size, uint32_t block_num,
                uint32_t bucket_size) {
   // We temporarily set it to a standalone one for compatibility because we do
   // not want to really remove the item when reading something.
@@ -56,6 +55,6 @@ Client::Client(const std::string address, const std::string port,
       oram_utils::SampleRandomBucket(block_num, block_num, 0ul));
 
   controller_ = std::make_unique<OdictController>(
-      odict_size, client_cache_max_size, x, controller);
+      odict_size, client_cache_max_size, controller);
   controller_->SetStub(stub_);
 }
