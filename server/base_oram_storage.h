@@ -38,8 +38,8 @@ class BaseOramServerStorage {
                         OramStorageType oram_storage_type)
       : id_(id),
         capacity_(capacity),
-        block_size_(block_size),
-        oram_storage_type_(oram_storage_type) {}
+        oram_storage_type_(oram_storage_type),
+        block_size_(block_size) {}
 
   virtual uint32_t GetId(void) const { return id_; }
   virtual size_t GetCapacity(void) const { return capacity_; }
@@ -47,7 +47,7 @@ class BaseOramServerStorage {
     return oram_storage_type_;
   }
   virtual size_t GetBlockSize(void) const { return block_size_; }
-  virtual float ReportStorage(void) const { UNIMPLEMENTED_FUNC; }
+  virtual float ReportStorage(void) const { return 0.0; }
 
   virtual ~BaseOramServerStorage() = 0;
 };

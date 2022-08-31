@@ -45,9 +45,9 @@ PathOramController::PathOramController(uint32_t id, uint32_t block_num,
                                        uint32_t bucket_size, bool standalone)
     : OramController(id, standalone, block_num, OramType::kPathOram),
       bucket_size_(bucket_size),
+      stash_size_(0ul),
       network_time_(0us),
-      network_communication_(0ul),
-      stash_size_(0ul) {
+      network_communication_(0ul) {
   const size_t bucket_num = std::ceil(block_num * 1.0 / bucket_size);
   // Note that the level starts from 0.
   tree_level_ = std::ceil(LOG_BASE(bucket_num + 1, 2)) - 1;
@@ -420,6 +420,8 @@ OramStatus PathOramController::InternalAccessDirect(Operation op_type,
   // Update the block.
   if (op_type == Operation::kWrite) {
     memcpy(iter->data, data->data, DEFAULT_ORAM_DATA_SIZE);
+    // Write the data length as well.
+    iter->header.data_len = data->header.data_len;
   } else {
     memcpy(data, &(*iter), ORAM_BLOCK_SIZE);
 

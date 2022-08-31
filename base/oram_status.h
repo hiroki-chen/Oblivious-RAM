@@ -55,6 +55,7 @@ enum class StatusCode : int {
   kObjectNotFound = 8,
   kUnknownError = 9,
   kVersionMismatch = 10,
+  kUnimplemented = 11,
 };
 
 static const std::unordered_map<StatusCode, std::string> kErrorList = {

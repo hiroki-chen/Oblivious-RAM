@@ -58,13 +58,13 @@ TreeNode* OdsCache::Put(uint32_t id, TreeNode* const item) {
   auto iter = cache_items_.find(id);
   auto it = std::find_if(lru_table_.begin(), lru_table_.end(),
                          [id](uint32_t item_id) { return item_id == id; });
-  lru_table_.push_front(id);
 
   if (iter != cache_items_.end() && it != lru_table_.end()) {
     cache_items_.erase(iter);
     lru_table_.erase(it);
   }
 
+  lru_table_.push_front(id);
   cache_items_[id] = item;
   TreeNode* ret = nullptr;
 
@@ -114,4 +114,11 @@ void OdsCache::Pop(void) {
   // Remove the element from both the LRU table and the item table.
   lru_table_.pop_front();
   cache_items_.erase(iter);
+}
+
+TreeNode* OdsCache::Get(void) {
+  const uint32_t front = lru_table_.front();
+  // Find the element in the item table.
+  auto iter = cache_items_.find(front);
+  return iter->second;
 }

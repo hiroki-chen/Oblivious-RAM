@@ -39,7 +39,7 @@ class OdsCache {
            const std::shared_ptr<OramController>& oram_controller)
       : max_size_(max_size), oram_controller_(oram_controller) {}
 
-  TreeNode* Get(void) { return cache_items_.begin()->second; }
+  TreeNode* Get(void);
   TreeNode* Get(uint32_t id);
   TreeNode* Put(uint32_t id, TreeNode* const item);
   uint32_t FindPosById(uint32_t id);

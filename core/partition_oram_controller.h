@@ -50,7 +50,7 @@ class PartitionOramController final : public OramController {
   virtual OramStatus InternalAccess(Operation op_type, uint32_t address,
                                     oram_block_t* const data,
                                     bool dummy = false) {
-    UNIMPLEMENTED_FUNC;
+    return OramStatus(StatusCode::kUnimplemented, "Not implemeneted");
   }
 
  public:
@@ -86,4 +86,4 @@ class PartitionOramController final : public OramController {
 };
 }  // namespace oram_impl
 
-#endif // ORAM_IMPL_CORE_PARTITION_ORAM_CONTROLLER_H_
+#endif  // ORAM_IMPL_CORE_PARTITION_ORAM_CONTROLLER_H_

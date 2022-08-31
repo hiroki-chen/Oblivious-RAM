@@ -26,7 +26,7 @@
 #include <utility>
 #include <vector>
 
-#define DEFAULT_ORAM_METADATA_SIZE sizeof(oram_impl::BlockType)
+#define DEFAULT_ORAM_METADATA_SIZE sizeof(oram_impl::BlockType) + sizeof(size_t)
 #define DEFAULT_ORAM_DATA_SIZE 512
 #define DEFAULT_COMPRESSED_BUF_SIZE 8192
 #define DEFAULT_ORAM_ENCSKIP_SIZE                                  \
@@ -34,7 +34,7 @@
       sizeof(uint32_t)
 
 #define ORAM_BLOCK_SIZE sizeof(oram_impl::oram_block_t)
-#define UNIMPLEMENTED_FUNC crash(__PRETTY_FUNCTION__, " not implemented yet")
+#define CRASH(msg) crash(__PRETTY_FUNCTION__, msg)
 
 #if !defined(POW2)
 #define POW2(x) (1 << (x))
@@ -87,6 +87,7 @@ typedef struct _oram_block_header_t {
 
   // Encrypted fields only accessible to client.
   BlockType type;
+  size_t data_len;
 } oram_block_header_t;
 
 // The block for ORAM storage.
