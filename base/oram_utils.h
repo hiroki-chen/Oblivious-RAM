@@ -33,9 +33,8 @@ namespace oram_utils {
 std::string ReadKeyCrtFile(const std::string& path);
 
 template <typename... Args>
-std::string StrCat(const std::string& s, Args&&... args) {
+std::string StrCat(Args&&... args) {
   std::ostringstream oss;
-  oss << s;
   // Recursively concatenate the rest of the arguments using argument pack
   // expansion and perfect forwarding.
   (oss << ... << std::forward<Args>(args));

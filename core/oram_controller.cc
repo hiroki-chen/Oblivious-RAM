@@ -16,6 +16,10 @@
  */
 #include "oram_controller.h"
 
+#include <spdlog/logger.h>
+
+extern std::shared_ptr<spdlog::logger> logger;
+
 namespace oram_impl {
 OramController::OramController(uint32_t id, bool standalone, size_t block_num,
                                OramType oram_type)
@@ -25,6 +29,15 @@ OramController::OramController(uint32_t id, bool standalone, size_t block_num,
       oram_type_(oram_type),
       is_initialized_(false) {
   cryptor_ = oram_crypto::Cryptor::GetInstance();
+
+  // Intialize the hash of this instance.
+  OramStatus status;
+  if (!(status = cryptor_->RandomBytes(instance_hash_, 32ul)).ok()) {
+    logger->error(
+        "[-] OramController failed to generated random instance id : {}",
+        status.ErrorMessage());
+    abort();
+  }
 }
 
 }  // namespace oram_impl

@@ -51,6 +51,10 @@ class OramController {
   // Cryptography manager.
   std::shared_ptr<oram_crypto::Cryptor> cryptor_;
 
+  // This hash is automatically generated upon the oram instance is created to
+  // mark uniqueness for each instance.
+  uint8_t instance_hash_[32];
+
   // This interface is reserved for other ORAMs that use this ORAM controller as
   // its backbone; sometimes the high-level ORAM will need to perform some fake
   // operations (e.g., the Partition ORAM).
@@ -74,6 +78,7 @@ class OramController {
   virtual OramStatus FromFile(const std::string& file_path);
   virtual uint32_t RandomPosition(void) { return 0ul; }
 
+  virtual const uint8_t* GetInstanceHash(void) const { return instance_hash_;}
   virtual uint32_t GetId(void) const { return id_; }
   virtual OramType GetOramType(void) const { return oram_type_; }
   virtual size_t GetBlockNum(void) const { return block_num_; }

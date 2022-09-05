@@ -78,6 +78,9 @@ extern ReadPathRequestDefaultTypeInternal _ReadPathRequest_default_instance_;
 class ReadPathResponse;
 struct ReadPathResponseDefaultTypeInternal;
 extern ReadPathResponseDefaultTypeInternal _ReadPathResponse_default_instance_;
+class RequestHeader;
+struct RequestHeaderDefaultTypeInternal;
+extern RequestHeaderDefaultTypeInternal _RequestHeader_default_instance_;
 class WritePathRequest;
 struct WritePathRequestDefaultTypeInternal;
 extern WritePathRequestDefaultTypeInternal _WritePathRequest_default_instance_;
@@ -96,6 +99,7 @@ template<> ::oram_impl::PrintOramTreeRequest* Arena::CreateMaybeMessage<::oram_i
 template<> ::oram_impl::ReadFlatRequest* Arena::CreateMaybeMessage<::oram_impl::ReadFlatRequest>(Arena*);
 template<> ::oram_impl::ReadPathRequest* Arena::CreateMaybeMessage<::oram_impl::ReadPathRequest>(Arena*);
 template<> ::oram_impl::ReadPathResponse* Arena::CreateMaybeMessage<::oram_impl::ReadPathResponse>(Arena*);
+template<> ::oram_impl::RequestHeader* Arena::CreateMaybeMessage<::oram_impl::RequestHeader>(Arena*);
 template<> ::oram_impl::WritePathRequest* Arena::CreateMaybeMessage<::oram_impl::WritePathRequest>(Arena*);
 template<> ::oram_impl::WritePathResponse* Arena::CreateMaybeMessage<::oram_impl::WritePathResponse>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
@@ -129,6 +133,186 @@ inline bool Type_Parse(
     Type_descriptor(), name, value);
 }
 // ===================================================================
+
+class RequestHeader final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:oram_impl.RequestHeader) */ {
+ public:
+  inline RequestHeader() : RequestHeader(nullptr) {}
+  ~RequestHeader() override;
+  explicit PROTOBUF_CONSTEXPR RequestHeader(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  RequestHeader(const RequestHeader& from);
+  RequestHeader(RequestHeader&& from) noexcept
+    : RequestHeader() {
+    *this = ::std::move(from);
+  }
+
+  inline RequestHeader& operator=(const RequestHeader& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline RequestHeader& operator=(RequestHeader&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const RequestHeader& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const RequestHeader* internal_default_instance() {
+    return reinterpret_cast<const RequestHeader*>(
+               &_RequestHeader_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    0;
+
+  friend void swap(RequestHeader& a, RequestHeader& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(RequestHeader* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(RequestHeader* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  RequestHeader* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<RequestHeader>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const RequestHeader& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const RequestHeader& from) {
+    RequestHeader::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(RequestHeader* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "oram_impl.RequestHeader";
+  }
+  protected:
+  explicit RequestHeader(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kInstanceHashFieldNumber = 1,
+    kVersionFieldNumber = 2,
+    kIdFieldNumber = 3,
+  };
+  // bytes instance_hash = 1;
+  void clear_instance_hash();
+  const std::string& instance_hash() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_instance_hash(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_instance_hash();
+  PROTOBUF_NODISCARD std::string* release_instance_hash();
+  void set_allocated_instance_hash(std::string* instance_hash);
+  private:
+  const std::string& _internal_instance_hash() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_instance_hash(const std::string& value);
+  std::string* _internal_mutable_instance_hash();
+  public:
+
+  // bytes version = 2;
+  void clear_version();
+  const std::string& version() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_version(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_version();
+  PROTOBUF_NODISCARD std::string* release_version();
+  void set_allocated_version(std::string* version);
+  private:
+  const std::string& _internal_version() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_version(const std::string& value);
+  std::string* _internal_mutable_version();
+  public:
+
+  // uint32 id = 3;
+  void clear_id();
+  uint32_t id() const;
+  void set_id(uint32_t value);
+  private:
+  uint32_t _internal_id() const;
+  void _internal_set_id(uint32_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:oram_impl.RequestHeader)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr instance_hash_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr version_;
+    uint32_t id_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_messages_2eproto;
+};
+// -------------------------------------------------------------------
 
 class PrintOramTreeRequest final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:oram_impl.PrintOramTreeRequest) */ {
@@ -178,7 +362,7 @@ class PrintOramTreeRequest final :
                &_PrintOramTreeRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    0;
+    1;
 
   friend void swap(PrintOramTreeRequest& a, PrintOramTreeRequest& b) {
     a.Swap(&b);
@@ -326,7 +510,7 @@ class HelloMessage final :
                &_HelloMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    1;
+    2;
 
   friend void swap(HelloMessage& a, HelloMessage& b) {
     a.Swap(&b);
@@ -495,7 +679,7 @@ class KeyExchangeRequest final :
                &_KeyExchangeRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    3;
 
   friend void swap(KeyExchangeRequest& a, KeyExchangeRequest& b) {
     a.Swap(&b);
@@ -648,7 +832,7 @@ class KeyExchangeResponse final :
                &_KeyExchangeResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    4;
 
   friend void swap(KeyExchangeResponse& a, KeyExchangeResponse& b) {
     a.Swap(&b);
@@ -801,7 +985,7 @@ class InitFlatOramRequest final :
                &_InitFlatOramRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    5;
 
   friend void swap(InitFlatOramRequest& a, InitFlatOramRequest& b) {
     a.Swap(&b);
@@ -874,18 +1058,27 @@ class InitFlatOramRequest final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kIdFieldNumber = 1,
+    kHeaderFieldNumber = 1,
     kCapacityFieldNumber = 2,
     kBlockSizeFieldNumber = 3,
   };
-  // uint32 id = 1;
-  void clear_id();
-  uint32_t id() const;
-  void set_id(uint32_t value);
+  // .oram_impl.RequestHeader header = 1;
+  bool has_header() const;
   private:
-  uint32_t _internal_id() const;
-  void _internal_set_id(uint32_t value);
+  bool _internal_has_header() const;
   public:
+  void clear_header();
+  const ::oram_impl::RequestHeader& header() const;
+  PROTOBUF_NODISCARD ::oram_impl::RequestHeader* release_header();
+  ::oram_impl::RequestHeader* mutable_header();
+  void set_allocated_header(::oram_impl::RequestHeader* header);
+  private:
+  const ::oram_impl::RequestHeader& _internal_header() const;
+  ::oram_impl::RequestHeader* _internal_mutable_header();
+  public:
+  void unsafe_arena_set_allocated_header(
+      ::oram_impl::RequestHeader* header);
+  ::oram_impl::RequestHeader* unsafe_arena_release_header();
 
   // uint32 capacity = 2;
   void clear_capacity();
@@ -913,7 +1106,7 @@ class InitFlatOramRequest final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    uint32_t id_;
+    ::oram_impl::RequestHeader* header_;
     uint32_t capacity_;
     uint32_t block_size_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
@@ -971,7 +1164,7 @@ class FlatVectorMessage final :
                &_FlatVectorMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    6;
 
   friend void swap(FlatVectorMessage& a, FlatVectorMessage& b) {
     a.Swap(&b);
@@ -1045,7 +1238,7 @@ class FlatVectorMessage final :
 
   enum : int {
     kContentFieldNumber = 2,
-    kIdFieldNumber = 1,
+    kHeaderFieldNumber = 1,
   };
   // bytes content = 2;
   void clear_content();
@@ -1061,14 +1254,23 @@ class FlatVectorMessage final :
   std::string* _internal_mutable_content();
   public:
 
-  // uint32 id = 1;
-  void clear_id();
-  uint32_t id() const;
-  void set_id(uint32_t value);
+  // .oram_impl.RequestHeader header = 1;
+  bool has_header() const;
   private:
-  uint32_t _internal_id() const;
-  void _internal_set_id(uint32_t value);
+  bool _internal_has_header() const;
   public:
+  void clear_header();
+  const ::oram_impl::RequestHeader& header() const;
+  PROTOBUF_NODISCARD ::oram_impl::RequestHeader* release_header();
+  ::oram_impl::RequestHeader* mutable_header();
+  void set_allocated_header(::oram_impl::RequestHeader* header);
+  private:
+  const ::oram_impl::RequestHeader& _internal_header() const;
+  ::oram_impl::RequestHeader* _internal_mutable_header();
+  public:
+  void unsafe_arena_set_allocated_header(
+      ::oram_impl::RequestHeader* header);
+  ::oram_impl::RequestHeader* unsafe_arena_release_header();
 
   // @@protoc_insertion_point(class_scope:oram_impl.FlatVectorMessage)
  private:
@@ -1079,7 +1281,7 @@ class FlatVectorMessage final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr content_;
-    uint32_t id_;
+    ::oram_impl::RequestHeader* header_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -1135,7 +1337,7 @@ class InitTreeOramRequest final :
                &_InitTreeOramRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   friend void swap(InitTreeOramRequest& a, InitTreeOramRequest& b) {
     a.Swap(&b);
@@ -1208,19 +1410,28 @@ class InitTreeOramRequest final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kIdFieldNumber = 1,
+    kHeaderFieldNumber = 1,
     kBucketSizeFieldNumber = 2,
     kBucketNumFieldNumber = 3,
     kBlockSizeFieldNumber = 4,
   };
-  // uint32 id = 1;
-  void clear_id();
-  uint32_t id() const;
-  void set_id(uint32_t value);
+  // .oram_impl.RequestHeader header = 1;
+  bool has_header() const;
   private:
-  uint32_t _internal_id() const;
-  void _internal_set_id(uint32_t value);
+  bool _internal_has_header() const;
   public:
+  void clear_header();
+  const ::oram_impl::RequestHeader& header() const;
+  PROTOBUF_NODISCARD ::oram_impl::RequestHeader* release_header();
+  ::oram_impl::RequestHeader* mutable_header();
+  void set_allocated_header(::oram_impl::RequestHeader* header);
+  private:
+  const ::oram_impl::RequestHeader& _internal_header() const;
+  ::oram_impl::RequestHeader* _internal_mutable_header();
+  public:
+  void unsafe_arena_set_allocated_header(
+      ::oram_impl::RequestHeader* header);
+  ::oram_impl::RequestHeader* unsafe_arena_release_header();
 
   // uint32 bucket_size = 2;
   void clear_bucket_size();
@@ -1257,7 +1468,7 @@ class InitTreeOramRequest final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    uint32_t id_;
+    ::oram_impl::RequestHeader* header_;
     uint32_t bucket_size_;
     uint32_t bucket_num_;
     uint32_t block_size_;
@@ -1316,7 +1527,7 @@ class ReadFlatRequest final :
                &_ReadFlatRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   friend void swap(ReadFlatRequest& a, ReadFlatRequest& b) {
     a.Swap(&b);
@@ -1389,16 +1600,25 @@ class ReadFlatRequest final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kIdFieldNumber = 1,
+    kHeaderFieldNumber = 1,
   };
-  // uint32 id = 1;
-  void clear_id();
-  uint32_t id() const;
-  void set_id(uint32_t value);
+  // .oram_impl.RequestHeader header = 1;
+  bool has_header() const;
   private:
-  uint32_t _internal_id() const;
-  void _internal_set_id(uint32_t value);
+  bool _internal_has_header() const;
   public:
+  void clear_header();
+  const ::oram_impl::RequestHeader& header() const;
+  PROTOBUF_NODISCARD ::oram_impl::RequestHeader* release_header();
+  ::oram_impl::RequestHeader* mutable_header();
+  void set_allocated_header(::oram_impl::RequestHeader* header);
+  private:
+  const ::oram_impl::RequestHeader& _internal_header() const;
+  ::oram_impl::RequestHeader* _internal_mutable_header();
+  public:
+  void unsafe_arena_set_allocated_header(
+      ::oram_impl::RequestHeader* header);
+  ::oram_impl::RequestHeader* unsafe_arena_release_header();
 
   // @@protoc_insertion_point(class_scope:oram_impl.ReadFlatRequest)
  private:
@@ -1408,7 +1628,7 @@ class ReadFlatRequest final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    uint32_t id_;
+    ::oram_impl::RequestHeader* header_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -1464,7 +1684,7 @@ class ReadPathRequest final :
                &_ReadPathRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   friend void swap(ReadPathRequest& a, ReadPathRequest& b) {
     a.Swap(&b);
@@ -1537,18 +1757,27 @@ class ReadPathRequest final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kIdFieldNumber = 1,
+    kHeaderFieldNumber = 1,
     kPathFieldNumber = 2,
     kLevelFieldNumber = 3,
   };
-  // uint32 id = 1;
-  void clear_id();
-  uint32_t id() const;
-  void set_id(uint32_t value);
+  // .oram_impl.RequestHeader header = 1;
+  bool has_header() const;
   private:
-  uint32_t _internal_id() const;
-  void _internal_set_id(uint32_t value);
+  bool _internal_has_header() const;
   public:
+  void clear_header();
+  const ::oram_impl::RequestHeader& header() const;
+  PROTOBUF_NODISCARD ::oram_impl::RequestHeader* release_header();
+  ::oram_impl::RequestHeader* mutable_header();
+  void set_allocated_header(::oram_impl::RequestHeader* header);
+  private:
+  const ::oram_impl::RequestHeader& _internal_header() const;
+  ::oram_impl::RequestHeader* _internal_mutable_header();
+  public:
+  void unsafe_arena_set_allocated_header(
+      ::oram_impl::RequestHeader* header);
+  ::oram_impl::RequestHeader* unsafe_arena_release_header();
 
   // uint32 path = 2;
   void clear_path();
@@ -1576,7 +1805,7 @@ class ReadPathRequest final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    uint32_t id_;
+    ::oram_impl::RequestHeader* header_;
     uint32_t path_;
     uint32_t level_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
@@ -1634,7 +1863,7 @@ class ReadPathResponse final :
                &_ReadPathResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    10;
 
   friend void swap(ReadPathResponse& a, ReadPathResponse& b) {
     a.Swap(&b);
@@ -1797,7 +2026,7 @@ class WritePathRequest final :
                &_WritePathRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    11;
 
   friend void swap(WritePathRequest& a, WritePathRequest& b) {
     a.Swap(&b);
@@ -1871,7 +2100,7 @@ class WritePathRequest final :
 
   enum : int {
     kBucketFieldNumber = 4,
-    kIdFieldNumber = 1,
+    kHeaderFieldNumber = 1,
     kPathFieldNumber = 2,
     kLevelFieldNumber = 3,
     kTypeFieldNumber = 5,
@@ -1901,14 +2130,23 @@ class WritePathRequest final :
   std::string* _internal_add_bucket();
   public:
 
-  // uint32 id = 1;
-  void clear_id();
-  uint32_t id() const;
-  void set_id(uint32_t value);
+  // .oram_impl.RequestHeader header = 1;
+  bool has_header() const;
   private:
-  uint32_t _internal_id() const;
-  void _internal_set_id(uint32_t value);
+  bool _internal_has_header() const;
   public:
+  void clear_header();
+  const ::oram_impl::RequestHeader& header() const;
+  PROTOBUF_NODISCARD ::oram_impl::RequestHeader* release_header();
+  ::oram_impl::RequestHeader* mutable_header();
+  void set_allocated_header(::oram_impl::RequestHeader* header);
+  private:
+  const ::oram_impl::RequestHeader& _internal_header() const;
+  ::oram_impl::RequestHeader* _internal_mutable_header();
+  public:
+  void unsafe_arena_set_allocated_header(
+      ::oram_impl::RequestHeader* header);
+  ::oram_impl::RequestHeader* unsafe_arena_release_header();
 
   // uint32 path = 2;
   void clear_path();
@@ -1965,7 +2203,7 @@ class WritePathRequest final :
     ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> bucket_;
-    uint32_t id_;
+    ::oram_impl::RequestHeader* header_;
     uint32_t path_;
     uint32_t level_;
     int type_;
@@ -2023,7 +2261,7 @@ class WritePathResponse final :
                &_WritePathResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    12;
 
   friend void swap(WritePathResponse& a, WritePathResponse& b) {
     a.Swap(&b);
@@ -2101,6 +2339,130 @@ class WritePathResponse final :
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
+// RequestHeader
+
+// bytes instance_hash = 1;
+inline void RequestHeader::clear_instance_hash() {
+  _impl_.instance_hash_.ClearToEmpty();
+}
+inline const std::string& RequestHeader::instance_hash() const {
+  // @@protoc_insertion_point(field_get:oram_impl.RequestHeader.instance_hash)
+  return _internal_instance_hash();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void RequestHeader::set_instance_hash(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.instance_hash_.SetBytes(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:oram_impl.RequestHeader.instance_hash)
+}
+inline std::string* RequestHeader::mutable_instance_hash() {
+  std::string* _s = _internal_mutable_instance_hash();
+  // @@protoc_insertion_point(field_mutable:oram_impl.RequestHeader.instance_hash)
+  return _s;
+}
+inline const std::string& RequestHeader::_internal_instance_hash() const {
+  return _impl_.instance_hash_.Get();
+}
+inline void RequestHeader::_internal_set_instance_hash(const std::string& value) {
+  
+  _impl_.instance_hash_.Set(value, GetArenaForAllocation());
+}
+inline std::string* RequestHeader::_internal_mutable_instance_hash() {
+  
+  return _impl_.instance_hash_.Mutable(GetArenaForAllocation());
+}
+inline std::string* RequestHeader::release_instance_hash() {
+  // @@protoc_insertion_point(field_release:oram_impl.RequestHeader.instance_hash)
+  return _impl_.instance_hash_.Release();
+}
+inline void RequestHeader::set_allocated_instance_hash(std::string* instance_hash) {
+  if (instance_hash != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.instance_hash_.SetAllocated(instance_hash, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.instance_hash_.IsDefault()) {
+    _impl_.instance_hash_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:oram_impl.RequestHeader.instance_hash)
+}
+
+// bytes version = 2;
+inline void RequestHeader::clear_version() {
+  _impl_.version_.ClearToEmpty();
+}
+inline const std::string& RequestHeader::version() const {
+  // @@protoc_insertion_point(field_get:oram_impl.RequestHeader.version)
+  return _internal_version();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void RequestHeader::set_version(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.version_.SetBytes(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:oram_impl.RequestHeader.version)
+}
+inline std::string* RequestHeader::mutable_version() {
+  std::string* _s = _internal_mutable_version();
+  // @@protoc_insertion_point(field_mutable:oram_impl.RequestHeader.version)
+  return _s;
+}
+inline const std::string& RequestHeader::_internal_version() const {
+  return _impl_.version_.Get();
+}
+inline void RequestHeader::_internal_set_version(const std::string& value) {
+  
+  _impl_.version_.Set(value, GetArenaForAllocation());
+}
+inline std::string* RequestHeader::_internal_mutable_version() {
+  
+  return _impl_.version_.Mutable(GetArenaForAllocation());
+}
+inline std::string* RequestHeader::release_version() {
+  // @@protoc_insertion_point(field_release:oram_impl.RequestHeader.version)
+  return _impl_.version_.Release();
+}
+inline void RequestHeader::set_allocated_version(std::string* version) {
+  if (version != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.version_.SetAllocated(version, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.version_.IsDefault()) {
+    _impl_.version_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:oram_impl.RequestHeader.version)
+}
+
+// uint32 id = 3;
+inline void RequestHeader::clear_id() {
+  _impl_.id_ = 0u;
+}
+inline uint32_t RequestHeader::_internal_id() const {
+  return _impl_.id_;
+}
+inline uint32_t RequestHeader::id() const {
+  // @@protoc_insertion_point(field_get:oram_impl.RequestHeader.id)
+  return _internal_id();
+}
+inline void RequestHeader::_internal_set_id(uint32_t value) {
+  
+  _impl_.id_ = value;
+}
+inline void RequestHeader::set_id(uint32_t value) {
+  _internal_set_id(value);
+  // @@protoc_insertion_point(field_set:oram_impl.RequestHeader.id)
+}
+
+// -------------------------------------------------------------------
+
 // PrintOramTreeRequest
 
 // uint32 id = 1;
@@ -2339,24 +2701,94 @@ inline void KeyExchangeResponse::set_allocated_public_key_server(std::string* pu
 
 // InitFlatOramRequest
 
-// uint32 id = 1;
-inline void InitFlatOramRequest::clear_id() {
-  _impl_.id_ = 0u;
+// .oram_impl.RequestHeader header = 1;
+inline bool InitFlatOramRequest::_internal_has_header() const {
+  return this != internal_default_instance() && _impl_.header_ != nullptr;
 }
-inline uint32_t InitFlatOramRequest::_internal_id() const {
-  return _impl_.id_;
+inline bool InitFlatOramRequest::has_header() const {
+  return _internal_has_header();
 }
-inline uint32_t InitFlatOramRequest::id() const {
-  // @@protoc_insertion_point(field_get:oram_impl.InitFlatOramRequest.id)
-  return _internal_id();
+inline void InitFlatOramRequest::clear_header() {
+  if (GetArenaForAllocation() == nullptr && _impl_.header_ != nullptr) {
+    delete _impl_.header_;
+  }
+  _impl_.header_ = nullptr;
 }
-inline void InitFlatOramRequest::_internal_set_id(uint32_t value) {
+inline const ::oram_impl::RequestHeader& InitFlatOramRequest::_internal_header() const {
+  const ::oram_impl::RequestHeader* p = _impl_.header_;
+  return p != nullptr ? *p : reinterpret_cast<const ::oram_impl::RequestHeader&>(
+      ::oram_impl::_RequestHeader_default_instance_);
+}
+inline const ::oram_impl::RequestHeader& InitFlatOramRequest::header() const {
+  // @@protoc_insertion_point(field_get:oram_impl.InitFlatOramRequest.header)
+  return _internal_header();
+}
+inline void InitFlatOramRequest::unsafe_arena_set_allocated_header(
+    ::oram_impl::RequestHeader* header) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.header_);
+  }
+  _impl_.header_ = header;
+  if (header) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:oram_impl.InitFlatOramRequest.header)
+}
+inline ::oram_impl::RequestHeader* InitFlatOramRequest::release_header() {
   
-  _impl_.id_ = value;
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
 }
-inline void InitFlatOramRequest::set_id(uint32_t value) {
-  _internal_set_id(value);
-  // @@protoc_insertion_point(field_set:oram_impl.InitFlatOramRequest.id)
+inline ::oram_impl::RequestHeader* InitFlatOramRequest::unsafe_arena_release_header() {
+  // @@protoc_insertion_point(field_release:oram_impl.InitFlatOramRequest.header)
+  
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+  return temp;
+}
+inline ::oram_impl::RequestHeader* InitFlatOramRequest::_internal_mutable_header() {
+  
+  if (_impl_.header_ == nullptr) {
+    auto* p = CreateMaybeMessage<::oram_impl::RequestHeader>(GetArenaForAllocation());
+    _impl_.header_ = p;
+  }
+  return _impl_.header_;
+}
+inline ::oram_impl::RequestHeader* InitFlatOramRequest::mutable_header() {
+  ::oram_impl::RequestHeader* _msg = _internal_mutable_header();
+  // @@protoc_insertion_point(field_mutable:oram_impl.InitFlatOramRequest.header)
+  return _msg;
+}
+inline void InitFlatOramRequest::set_allocated_header(::oram_impl::RequestHeader* header) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.header_;
+  }
+  if (header) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(header);
+    if (message_arena != submessage_arena) {
+      header = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, header, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.header_ = header;
+  // @@protoc_insertion_point(field_set_allocated:oram_impl.InitFlatOramRequest.header)
 }
 
 // uint32 capacity = 2;
@@ -2403,24 +2835,94 @@ inline void InitFlatOramRequest::set_block_size(uint32_t value) {
 
 // FlatVectorMessage
 
-// uint32 id = 1;
-inline void FlatVectorMessage::clear_id() {
-  _impl_.id_ = 0u;
+// .oram_impl.RequestHeader header = 1;
+inline bool FlatVectorMessage::_internal_has_header() const {
+  return this != internal_default_instance() && _impl_.header_ != nullptr;
 }
-inline uint32_t FlatVectorMessage::_internal_id() const {
-  return _impl_.id_;
+inline bool FlatVectorMessage::has_header() const {
+  return _internal_has_header();
 }
-inline uint32_t FlatVectorMessage::id() const {
-  // @@protoc_insertion_point(field_get:oram_impl.FlatVectorMessage.id)
-  return _internal_id();
+inline void FlatVectorMessage::clear_header() {
+  if (GetArenaForAllocation() == nullptr && _impl_.header_ != nullptr) {
+    delete _impl_.header_;
+  }
+  _impl_.header_ = nullptr;
 }
-inline void FlatVectorMessage::_internal_set_id(uint32_t value) {
+inline const ::oram_impl::RequestHeader& FlatVectorMessage::_internal_header() const {
+  const ::oram_impl::RequestHeader* p = _impl_.header_;
+  return p != nullptr ? *p : reinterpret_cast<const ::oram_impl::RequestHeader&>(
+      ::oram_impl::_RequestHeader_default_instance_);
+}
+inline const ::oram_impl::RequestHeader& FlatVectorMessage::header() const {
+  // @@protoc_insertion_point(field_get:oram_impl.FlatVectorMessage.header)
+  return _internal_header();
+}
+inline void FlatVectorMessage::unsafe_arena_set_allocated_header(
+    ::oram_impl::RequestHeader* header) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.header_);
+  }
+  _impl_.header_ = header;
+  if (header) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:oram_impl.FlatVectorMessage.header)
+}
+inline ::oram_impl::RequestHeader* FlatVectorMessage::release_header() {
   
-  _impl_.id_ = value;
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
 }
-inline void FlatVectorMessage::set_id(uint32_t value) {
-  _internal_set_id(value);
-  // @@protoc_insertion_point(field_set:oram_impl.FlatVectorMessage.id)
+inline ::oram_impl::RequestHeader* FlatVectorMessage::unsafe_arena_release_header() {
+  // @@protoc_insertion_point(field_release:oram_impl.FlatVectorMessage.header)
+  
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+  return temp;
+}
+inline ::oram_impl::RequestHeader* FlatVectorMessage::_internal_mutable_header() {
+  
+  if (_impl_.header_ == nullptr) {
+    auto* p = CreateMaybeMessage<::oram_impl::RequestHeader>(GetArenaForAllocation());
+    _impl_.header_ = p;
+  }
+  return _impl_.header_;
+}
+inline ::oram_impl::RequestHeader* FlatVectorMessage::mutable_header() {
+  ::oram_impl::RequestHeader* _msg = _internal_mutable_header();
+  // @@protoc_insertion_point(field_mutable:oram_impl.FlatVectorMessage.header)
+  return _msg;
+}
+inline void FlatVectorMessage::set_allocated_header(::oram_impl::RequestHeader* header) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.header_;
+  }
+  if (header) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(header);
+    if (message_arena != submessage_arena) {
+      header = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, header, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.header_ = header;
+  // @@protoc_insertion_point(field_set_allocated:oram_impl.FlatVectorMessage.header)
 }
 
 // bytes content = 2;
@@ -2477,24 +2979,94 @@ inline void FlatVectorMessage::set_allocated_content(std::string* content) {
 
 // InitTreeOramRequest
 
-// uint32 id = 1;
-inline void InitTreeOramRequest::clear_id() {
-  _impl_.id_ = 0u;
+// .oram_impl.RequestHeader header = 1;
+inline bool InitTreeOramRequest::_internal_has_header() const {
+  return this != internal_default_instance() && _impl_.header_ != nullptr;
 }
-inline uint32_t InitTreeOramRequest::_internal_id() const {
-  return _impl_.id_;
+inline bool InitTreeOramRequest::has_header() const {
+  return _internal_has_header();
 }
-inline uint32_t InitTreeOramRequest::id() const {
-  // @@protoc_insertion_point(field_get:oram_impl.InitTreeOramRequest.id)
-  return _internal_id();
+inline void InitTreeOramRequest::clear_header() {
+  if (GetArenaForAllocation() == nullptr && _impl_.header_ != nullptr) {
+    delete _impl_.header_;
+  }
+  _impl_.header_ = nullptr;
 }
-inline void InitTreeOramRequest::_internal_set_id(uint32_t value) {
+inline const ::oram_impl::RequestHeader& InitTreeOramRequest::_internal_header() const {
+  const ::oram_impl::RequestHeader* p = _impl_.header_;
+  return p != nullptr ? *p : reinterpret_cast<const ::oram_impl::RequestHeader&>(
+      ::oram_impl::_RequestHeader_default_instance_);
+}
+inline const ::oram_impl::RequestHeader& InitTreeOramRequest::header() const {
+  // @@protoc_insertion_point(field_get:oram_impl.InitTreeOramRequest.header)
+  return _internal_header();
+}
+inline void InitTreeOramRequest::unsafe_arena_set_allocated_header(
+    ::oram_impl::RequestHeader* header) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.header_);
+  }
+  _impl_.header_ = header;
+  if (header) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:oram_impl.InitTreeOramRequest.header)
+}
+inline ::oram_impl::RequestHeader* InitTreeOramRequest::release_header() {
   
-  _impl_.id_ = value;
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
 }
-inline void InitTreeOramRequest::set_id(uint32_t value) {
-  _internal_set_id(value);
-  // @@protoc_insertion_point(field_set:oram_impl.InitTreeOramRequest.id)
+inline ::oram_impl::RequestHeader* InitTreeOramRequest::unsafe_arena_release_header() {
+  // @@protoc_insertion_point(field_release:oram_impl.InitTreeOramRequest.header)
+  
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+  return temp;
+}
+inline ::oram_impl::RequestHeader* InitTreeOramRequest::_internal_mutable_header() {
+  
+  if (_impl_.header_ == nullptr) {
+    auto* p = CreateMaybeMessage<::oram_impl::RequestHeader>(GetArenaForAllocation());
+    _impl_.header_ = p;
+  }
+  return _impl_.header_;
+}
+inline ::oram_impl::RequestHeader* InitTreeOramRequest::mutable_header() {
+  ::oram_impl::RequestHeader* _msg = _internal_mutable_header();
+  // @@protoc_insertion_point(field_mutable:oram_impl.InitTreeOramRequest.header)
+  return _msg;
+}
+inline void InitTreeOramRequest::set_allocated_header(::oram_impl::RequestHeader* header) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.header_;
+  }
+  if (header) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(header);
+    if (message_arena != submessage_arena) {
+      header = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, header, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.header_ = header;
+  // @@protoc_insertion_point(field_set_allocated:oram_impl.InitTreeOramRequest.header)
 }
 
 // uint32 bucket_size = 2;
@@ -2561,48 +3133,188 @@ inline void InitTreeOramRequest::set_block_size(uint32_t value) {
 
 // ReadFlatRequest
 
-// uint32 id = 1;
-inline void ReadFlatRequest::clear_id() {
-  _impl_.id_ = 0u;
+// .oram_impl.RequestHeader header = 1;
+inline bool ReadFlatRequest::_internal_has_header() const {
+  return this != internal_default_instance() && _impl_.header_ != nullptr;
 }
-inline uint32_t ReadFlatRequest::_internal_id() const {
-  return _impl_.id_;
+inline bool ReadFlatRequest::has_header() const {
+  return _internal_has_header();
 }
-inline uint32_t ReadFlatRequest::id() const {
-  // @@protoc_insertion_point(field_get:oram_impl.ReadFlatRequest.id)
-  return _internal_id();
+inline void ReadFlatRequest::clear_header() {
+  if (GetArenaForAllocation() == nullptr && _impl_.header_ != nullptr) {
+    delete _impl_.header_;
+  }
+  _impl_.header_ = nullptr;
 }
-inline void ReadFlatRequest::_internal_set_id(uint32_t value) {
+inline const ::oram_impl::RequestHeader& ReadFlatRequest::_internal_header() const {
+  const ::oram_impl::RequestHeader* p = _impl_.header_;
+  return p != nullptr ? *p : reinterpret_cast<const ::oram_impl::RequestHeader&>(
+      ::oram_impl::_RequestHeader_default_instance_);
+}
+inline const ::oram_impl::RequestHeader& ReadFlatRequest::header() const {
+  // @@protoc_insertion_point(field_get:oram_impl.ReadFlatRequest.header)
+  return _internal_header();
+}
+inline void ReadFlatRequest::unsafe_arena_set_allocated_header(
+    ::oram_impl::RequestHeader* header) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.header_);
+  }
+  _impl_.header_ = header;
+  if (header) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:oram_impl.ReadFlatRequest.header)
+}
+inline ::oram_impl::RequestHeader* ReadFlatRequest::release_header() {
   
-  _impl_.id_ = value;
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
 }
-inline void ReadFlatRequest::set_id(uint32_t value) {
-  _internal_set_id(value);
-  // @@protoc_insertion_point(field_set:oram_impl.ReadFlatRequest.id)
+inline ::oram_impl::RequestHeader* ReadFlatRequest::unsafe_arena_release_header() {
+  // @@protoc_insertion_point(field_release:oram_impl.ReadFlatRequest.header)
+  
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+  return temp;
+}
+inline ::oram_impl::RequestHeader* ReadFlatRequest::_internal_mutable_header() {
+  
+  if (_impl_.header_ == nullptr) {
+    auto* p = CreateMaybeMessage<::oram_impl::RequestHeader>(GetArenaForAllocation());
+    _impl_.header_ = p;
+  }
+  return _impl_.header_;
+}
+inline ::oram_impl::RequestHeader* ReadFlatRequest::mutable_header() {
+  ::oram_impl::RequestHeader* _msg = _internal_mutable_header();
+  // @@protoc_insertion_point(field_mutable:oram_impl.ReadFlatRequest.header)
+  return _msg;
+}
+inline void ReadFlatRequest::set_allocated_header(::oram_impl::RequestHeader* header) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.header_;
+  }
+  if (header) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(header);
+    if (message_arena != submessage_arena) {
+      header = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, header, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.header_ = header;
+  // @@protoc_insertion_point(field_set_allocated:oram_impl.ReadFlatRequest.header)
 }
 
 // -------------------------------------------------------------------
 
 // ReadPathRequest
 
-// uint32 id = 1;
-inline void ReadPathRequest::clear_id() {
-  _impl_.id_ = 0u;
+// .oram_impl.RequestHeader header = 1;
+inline bool ReadPathRequest::_internal_has_header() const {
+  return this != internal_default_instance() && _impl_.header_ != nullptr;
 }
-inline uint32_t ReadPathRequest::_internal_id() const {
-  return _impl_.id_;
+inline bool ReadPathRequest::has_header() const {
+  return _internal_has_header();
 }
-inline uint32_t ReadPathRequest::id() const {
-  // @@protoc_insertion_point(field_get:oram_impl.ReadPathRequest.id)
-  return _internal_id();
+inline void ReadPathRequest::clear_header() {
+  if (GetArenaForAllocation() == nullptr && _impl_.header_ != nullptr) {
+    delete _impl_.header_;
+  }
+  _impl_.header_ = nullptr;
 }
-inline void ReadPathRequest::_internal_set_id(uint32_t value) {
+inline const ::oram_impl::RequestHeader& ReadPathRequest::_internal_header() const {
+  const ::oram_impl::RequestHeader* p = _impl_.header_;
+  return p != nullptr ? *p : reinterpret_cast<const ::oram_impl::RequestHeader&>(
+      ::oram_impl::_RequestHeader_default_instance_);
+}
+inline const ::oram_impl::RequestHeader& ReadPathRequest::header() const {
+  // @@protoc_insertion_point(field_get:oram_impl.ReadPathRequest.header)
+  return _internal_header();
+}
+inline void ReadPathRequest::unsafe_arena_set_allocated_header(
+    ::oram_impl::RequestHeader* header) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.header_);
+  }
+  _impl_.header_ = header;
+  if (header) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:oram_impl.ReadPathRequest.header)
+}
+inline ::oram_impl::RequestHeader* ReadPathRequest::release_header() {
   
-  _impl_.id_ = value;
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
 }
-inline void ReadPathRequest::set_id(uint32_t value) {
-  _internal_set_id(value);
-  // @@protoc_insertion_point(field_set:oram_impl.ReadPathRequest.id)
+inline ::oram_impl::RequestHeader* ReadPathRequest::unsafe_arena_release_header() {
+  // @@protoc_insertion_point(field_release:oram_impl.ReadPathRequest.header)
+  
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+  return temp;
+}
+inline ::oram_impl::RequestHeader* ReadPathRequest::_internal_mutable_header() {
+  
+  if (_impl_.header_ == nullptr) {
+    auto* p = CreateMaybeMessage<::oram_impl::RequestHeader>(GetArenaForAllocation());
+    _impl_.header_ = p;
+  }
+  return _impl_.header_;
+}
+inline ::oram_impl::RequestHeader* ReadPathRequest::mutable_header() {
+  ::oram_impl::RequestHeader* _msg = _internal_mutable_header();
+  // @@protoc_insertion_point(field_mutable:oram_impl.ReadPathRequest.header)
+  return _msg;
+}
+inline void ReadPathRequest::set_allocated_header(::oram_impl::RequestHeader* header) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.header_;
+  }
+  if (header) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(header);
+    if (message_arena != submessage_arena) {
+      header = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, header, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.header_ = header;
+  // @@protoc_insertion_point(field_set_allocated:oram_impl.ReadPathRequest.header)
 }
 
 // uint32 path = 2;
@@ -2728,24 +3440,94 @@ ReadPathResponse::mutable_bucket() {
 
 // WritePathRequest
 
-// uint32 id = 1;
-inline void WritePathRequest::clear_id() {
-  _impl_.id_ = 0u;
+// .oram_impl.RequestHeader header = 1;
+inline bool WritePathRequest::_internal_has_header() const {
+  return this != internal_default_instance() && _impl_.header_ != nullptr;
 }
-inline uint32_t WritePathRequest::_internal_id() const {
-  return _impl_.id_;
+inline bool WritePathRequest::has_header() const {
+  return _internal_has_header();
 }
-inline uint32_t WritePathRequest::id() const {
-  // @@protoc_insertion_point(field_get:oram_impl.WritePathRequest.id)
-  return _internal_id();
+inline void WritePathRequest::clear_header() {
+  if (GetArenaForAllocation() == nullptr && _impl_.header_ != nullptr) {
+    delete _impl_.header_;
+  }
+  _impl_.header_ = nullptr;
 }
-inline void WritePathRequest::_internal_set_id(uint32_t value) {
+inline const ::oram_impl::RequestHeader& WritePathRequest::_internal_header() const {
+  const ::oram_impl::RequestHeader* p = _impl_.header_;
+  return p != nullptr ? *p : reinterpret_cast<const ::oram_impl::RequestHeader&>(
+      ::oram_impl::_RequestHeader_default_instance_);
+}
+inline const ::oram_impl::RequestHeader& WritePathRequest::header() const {
+  // @@protoc_insertion_point(field_get:oram_impl.WritePathRequest.header)
+  return _internal_header();
+}
+inline void WritePathRequest::unsafe_arena_set_allocated_header(
+    ::oram_impl::RequestHeader* header) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.header_);
+  }
+  _impl_.header_ = header;
+  if (header) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:oram_impl.WritePathRequest.header)
+}
+inline ::oram_impl::RequestHeader* WritePathRequest::release_header() {
   
-  _impl_.id_ = value;
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
 }
-inline void WritePathRequest::set_id(uint32_t value) {
-  _internal_set_id(value);
-  // @@protoc_insertion_point(field_set:oram_impl.WritePathRequest.id)
+inline ::oram_impl::RequestHeader* WritePathRequest::unsafe_arena_release_header() {
+  // @@protoc_insertion_point(field_release:oram_impl.WritePathRequest.header)
+  
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+  return temp;
+}
+inline ::oram_impl::RequestHeader* WritePathRequest::_internal_mutable_header() {
+  
+  if (_impl_.header_ == nullptr) {
+    auto* p = CreateMaybeMessage<::oram_impl::RequestHeader>(GetArenaForAllocation());
+    _impl_.header_ = p;
+  }
+  return _impl_.header_;
+}
+inline ::oram_impl::RequestHeader* WritePathRequest::mutable_header() {
+  ::oram_impl::RequestHeader* _msg = _internal_mutable_header();
+  // @@protoc_insertion_point(field_mutable:oram_impl.WritePathRequest.header)
+  return _msg;
+}
+inline void WritePathRequest::set_allocated_header(::oram_impl::RequestHeader* header) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.header_;
+  }
+  if (header) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(header);
+    if (message_arena != submessage_arena) {
+      header = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, header, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.header_ = header;
+  // @@protoc_insertion_point(field_set_allocated:oram_impl.WritePathRequest.header)
 }
 
 // uint32 path = 2;
@@ -2926,6 +3708,8 @@ inline void WritePathRequest::set_offset(uint32_t value) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

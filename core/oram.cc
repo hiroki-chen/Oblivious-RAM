@@ -16,6 +16,11 @@
  */
 #include "oram.h"
 
+#include "base/oram_utils.h"
+
 namespace oram_impl {
-std::string GetVersion(void) { return "v1.1.0"; }
+std::string GetVersion(void) {
+  return oram_utils::StrCat(major_version, ".", minor_version, ".",
+                            patch_version);
+}
 }  // namespace oram_impl

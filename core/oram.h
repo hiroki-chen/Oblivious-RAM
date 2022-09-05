@@ -28,7 +28,11 @@
 #include "square_root_oram_controller.h"
 
 namespace oram_impl {
+static const uint8_t major_version = 1;
+static const uint8_t minor_version = 1;
+static const uint8_t patch_version = 1;
+
 std::string GetVersion(void);
-} // namespace oram_impl
+}  // namespace oram_impl
 
 #endif  // ORAM_IMPL_CORE_ORAM_H_

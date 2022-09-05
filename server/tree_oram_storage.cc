@@ -25,8 +25,9 @@ extern std::shared_ptr<spdlog::logger> logger;
 namespace oram_impl {
 TreeOramServerStorage::TreeOramServerStorage(uint32_t id, size_t capacity,
                                              size_t block_size,
-                                             size_t bucket_size)
-    : BaseOramServerStorage(id, capacity, block_size,
+                                             size_t bucket_size,
+                                             const std::string& instance_hash)
+    : BaseOramServerStorage(id, capacity, block_size, instance_hash,
                             OramStorageType::kTreeStorage),
       bucket_size_(bucket_size) {
   level_ = std::ceil(LOG_BASE(capacity_ + 1, 2)) - 1;

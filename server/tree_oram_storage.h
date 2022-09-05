@@ -32,7 +32,7 @@ class TreeOramServerStorage : public BaseOramServerStorage {
 
  public:
   TreeOramServerStorage(uint32_t id, size_t capacity, size_t block_size,
-                        size_t bucket_size);
+                        size_t bucket_size, const std::string& instance_hash);
 
   OramStatus ReadPath(uint32_t level, uint32_t path,
                       p_oram_bucket_t* const out_bucket);
