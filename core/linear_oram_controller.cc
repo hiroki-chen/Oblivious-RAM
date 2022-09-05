@@ -19,6 +19,8 @@
 #include <spdlog/fmt/bin_to_hex.h>
 #include <spdlog/spdlog.h>
 
+#include "oram.h"
+
 extern std::shared_ptr<spdlog::logger> logger;
 
 namespace oram_impl {
@@ -26,7 +28,11 @@ grpc::Status LinearOramController::ReadFromServer(std::string* const out) {
   grpc::ClientContext context;
   ReadFlatRequest request;
   FlatVectorMessage response;
-  request.set_id(id_);
+
+  request.mutable_header()->set_id(id_);
+  request.mutable_header()->set_instance_hash(
+      std::string(reinterpret_cast<char*>(instance_hash_), 32));
+  request.mutable_header()->set_version(GetVersion());
 
   // Read the whole storage from the remote storage.
   grpc::Status status = stub_->ReadFlatMemory(&context, request, &response);
@@ -42,7 +48,11 @@ grpc::Status LinearOramController::WriteToServer(const std::string& input) {
   grpc::ClientContext context;
   FlatVectorMessage request;
   google::protobuf::Empty empty;
-  request.set_id(id_);
+
+  request.mutable_header()->set_id(id_);
+  request.mutable_header()->set_instance_hash(
+      std::string(reinterpret_cast<char*>(instance_hash_), 32));
+  request.mutable_header()->set_version(GetVersion());
   request.set_content(input);
 
   return stub_->WriteFlatMemory(&context, request, &empty);
@@ -101,7 +111,10 @@ OramStatus LinearOramController::InitOram(void) {
   InitFlatOramRequest request;
   google::protobuf::Empty empty;
 
-  request.set_id(id_);
+  request.mutable_header()->set_id(id_);
+  request.mutable_header()->set_instance_hash(
+      std::string(reinterpret_cast<char*>(instance_hash_), 32));
+  request.mutable_header()->set_version(GetVersion());
   request.set_capacity(block_num_);
   request.set_block_size(ORAM_BLOCK_SIZE);
 
@@ -117,7 +130,11 @@ OramStatus LinearOramController::FillWithData(
   grpc::ClientContext context;
   FlatVectorMessage request;
   google::protobuf::Empty empty;
-  request.set_id(id_);
+
+  request.mutable_header()->set_id(id_);
+  request.mutable_header()->set_instance_hash(
+      std::string(reinterpret_cast<char*>(instance_hash_), 32));
+  request.mutable_header()->set_version(GetVersion());
 
   std::string content;
   for (size_t i = 0; i < data.size(); i++) {

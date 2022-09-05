@@ -32,20 +32,25 @@ class BaseOramServerStorage {
   OramStorageType oram_storage_type_;
   // The size of the block.
   const size_t block_size_;
+  // The hash of the instance.
+  const std::string instance_hash_;
 
  public:
   BaseOramServerStorage(uint32_t id, size_t capacity, size_t block_size,
+                        const std::string& instance_hash,
                         OramStorageType oram_storage_type)
       : id_(id),
         capacity_(capacity),
         oram_storage_type_(oram_storage_type),
-        block_size_(block_size) {}
+        block_size_(block_size),
+        instance_hash_(instance_hash) {}
 
   virtual uint32_t GetId(void) const { return id_; }
   virtual size_t GetCapacity(void) const { return capacity_; }
   virtual OramStorageType GetOramStorageType(void) const {
     return oram_storage_type_;
   }
+  virtual std::string GetInstanceHash(void) const { return instance_hash_; }
   virtual size_t GetBlockSize(void) const { return block_size_; }
   virtual float ReportStorage(void) const { return 0.0; }
 

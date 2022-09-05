@@ -24,8 +24,9 @@ class FlatOramServerStorage : public BaseOramServerStorage {
   server_flat_storage_t storage_;
 
  public:
-  FlatOramServerStorage(uint32_t id, size_t capacity, size_t block_size)
-      : BaseOramServerStorage(id, capacity, block_size,
+  FlatOramServerStorage(uint32_t id, size_t capacity, size_t block_size,
+                        const std::string& instance_hash)
+      : BaseOramServerStorage(id, capacity, block_size, instance_hash,
                               OramStorageType::kFlatStorage) {}
 
   virtual server_flat_storage_t GetStorage(void) { return storage_; }

@@ -45,6 +45,12 @@ enum Type {
   kNormal = 3;
 }
 
+message RequestHeader {
+  bytes instance_hash = 1;
+  bytes version = 2;
+  uint32 id = 3;
+}
+
 message PrintOramTreeRequest {
   uint32 id = 1;
 }
@@ -63,29 +69,29 @@ message KeyExchangeResponse {
 };
 
 message InitFlatOramRequest {
-  uint32 id = 1;
+  RequestHeader header = 1;
   uint32 capacity = 2;
   uint32 block_size = 3;
 }
 
 message FlatVectorMessage {
-  uint32 id = 1;
+  RequestHeader header = 1;
   bytes content = 2;
 }
 
 message InitTreeOramRequest {
-  uint32 id = 1;
+  RequestHeader header = 1;
   uint32 bucket_size = 2;
   uint32 bucket_num = 3;
   uint32 block_size = 4;
 }
 
 message ReadFlatRequest {
-  uint32 id = 1;
+  RequestHeader header = 1;
 }
 
 message ReadPathRequest {
-  uint32 id = 1;
+  RequestHeader header = 1;
   uint32 path = 2;
   uint32 level = 3;
 }
@@ -95,7 +101,7 @@ message ReadPathResponse {
 }
 
 message WritePathRequest {
-  uint32 id = 1;
+  RequestHeader header = 1;
   // Whether this write operation is triggered by an eviction operation.
   uint32 path = 2;
   uint32 level = 3;

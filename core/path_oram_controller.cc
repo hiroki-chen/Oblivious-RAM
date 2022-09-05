@@ -23,6 +23,7 @@
 #include <chrono>
 #include <cmath>
 
+#include "oram.h"
 #include "base/oram_crypto.h"
 #include "base/oram_utils.h"
 
@@ -93,7 +94,10 @@ OramStatus PathOramController::AccurateWriteBucket(
   WritePathRequest request;
   WritePathResponse response;
 
-  request.set_id(id_);
+  request.mutable_header()->set_id(id_);
+  request.mutable_header()->set_instance_hash(
+      std::string(reinterpret_cast<char*>(instance_hash_), 32));
+  request.mutable_header()->set_version(GetVersion());
   request.set_level(level);
   request.set_offset(offset);
   request.set_type(Type::kInit);
@@ -123,7 +127,10 @@ OramStatus PathOramController::InitOram(void) {
   InitTreeOramRequest request;
   google::protobuf::Empty empty;
 
-  request.set_id(id_);
+  request.mutable_header()->set_id(id_);
+  request.mutable_header()->set_instance_hash(
+      std::string(reinterpret_cast<char*>(instance_hash_), 32));
+  request.mutable_header()->set_version(GetVersion());
   request.set_bucket_size(bucket_size_);
   request.set_bucket_num(number_of_leafs_);
   request.set_block_size(ORAM_BLOCK_SIZE);
@@ -227,7 +234,11 @@ OramStatus PathOramController::ReadBucket(uint32_t path, uint32_t level,
   // Then prepare for RPC call.
   ReadPathRequest request;
   ReadPathResponse response;
-  request.set_id(id_);
+
+  request.mutable_header()->set_id(id_);
+  request.mutable_header()->set_instance_hash(
+      std::string(reinterpret_cast<char*>(instance_hash_), 32));
+  request.mutable_header()->set_version(GetVersion());
   request.set_path(path);
   request.set_level(level);
 
@@ -270,7 +281,10 @@ OramStatus PathOramController::WriteBucket(uint32_t path, uint32_t level,
   WritePathRequest request;
   WritePathResponse response;
 
-  request.set_id(id_);
+  request.mutable_header()->set_id(id_);
+  request.mutable_header()->set_instance_hash(
+      std::string(reinterpret_cast<char*>(instance_hash_), 32));
+  request.mutable_header()->set_version(GetVersion());
   request.set_path(path);
   request.set_level(level);
   request.set_type(Type::kNormal);

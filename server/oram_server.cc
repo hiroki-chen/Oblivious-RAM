@@ -58,7 +58,8 @@ grpc::Status OramService::InitTreeOram(grpc::ServerContext* context,
                context->peer());
 
   // Intialize the Tree ORAM storage.
-  const uint32_t id = request->id();
+  const uint32_t id = request->header().id();
+  const std::string instance_hash = request->header().instance_hash();
   const uint32_t bucket_size = request->bucket_size();
   const uint32_t bucket_num = request->bucket_num();
   const size_t block_size = request->block_size();
@@ -71,7 +72,7 @@ grpc::Status OramService::InitTreeOram(grpc::ServerContext* context,
 
   // Create a new storage and initialize it.
   storages_.emplace_back(std::make_unique<TreeOramServerStorage>(
-      id, bucket_num, block_size, bucket_size));
+      id, bucket_num, block_size, bucket_size, instance_hash));
 
   logger->info("Tree ORAM successfully created. ID = {}", id);
 
@@ -85,7 +86,8 @@ grpc::Status OramService::InitFlatOram(grpc::ServerContext* context,
                context->peer());
 
   // Initialize the Flat ORAM storage.
-  const uint32_t id = request->id();
+  const uint32_t id = request->header().id();
+  const std::string instance_hash = request->header().instance_hash();
   const size_t capacity = request->capacity();
   const size_t block_size = request->block_size();
 
@@ -95,8 +97,8 @@ grpc::Status OramService::InitFlatOram(grpc::ServerContext* context,
     return status;
   }
 
-  storages_.emplace_back(
-      std::make_unique<FlatOramServerStorage>(id, capacity, block_size));
+  storages_.emplace_back(std::make_unique<FlatOramServerStorage>(
+      id, capacity, block_size, instance_hash));
 
   logger->info("Flat ORAM successfully created. ID = {}", id);
 
@@ -109,7 +111,8 @@ grpc::Status OramService::ReadFlatMemory(grpc::ServerContext* context,
   logger->info("From peer: {}, ReadFlagMemory request received.",
                context->peer());
 
-  const uint32_t id = request->id();
+  const uint32_t id = request->header().id();
+  const std::string instance_hash = request->header().instance_hash();
 
   grpc::Status status = grpc::Status::OK;
   if (!(status = CheckIdValid(id)).ok()) {
@@ -121,10 +124,11 @@ grpc::Status OramService::ReadFlatMemory(grpc::ServerContext* context,
   if (storage == nullptr ||
       storage->GetOramStorageType() != OramStorageType::kFlatStorage) {
     return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
+  } else if (storage->GetInstanceHash().compare(instance_hash)) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
   }
 
   const server_flat_storage_t blocks = storage->GetStorage();
-  response->set_id(id);
   response->set_content(blocks);
 
   return status;
@@ -136,7 +140,8 @@ grpc::Status OramService::WriteFlatMemory(grpc::ServerContext* context,
   logger->info("From peer: {}, WriteFlatMemory request received.",
                context->peer());
 
-  const uint32_t id = request->id();
+  const uint32_t id = request->header().id();
+  const std::string instance_hash = request->header().instance_hash();
 
   grpc::Status status = grpc::Status::OK;
   if (!(status = CheckIdValid(id)).ok()) {
@@ -148,6 +153,8 @@ grpc::Status OramService::WriteFlatMemory(grpc::ServerContext* context,
   if (storage == nullptr ||
       storage->GetOramStorageType() != OramStorageType::kFlatStorage) {
     return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
+  } else if (storage->GetInstanceHash().compare(instance_hash)) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
   }
 
   storage->ResetStorage();
@@ -198,7 +205,8 @@ grpc::Status OramService::ReadPath(grpc::ServerContext* context,
                                    ReadPathResponse* response) {
   logger->info("From peer: {}, ReadPath request received.", context->peer());
 
-  const uint32_t id = request->id();
+  const uint32_t id = request->header().id();
+  const std::string instance_hash = request->header().instance_hash();
   const uint32_t path = request->path();
   const uint32_t level = request->level();
 
@@ -215,6 +223,8 @@ grpc::Status OramService::ReadPath(grpc::ServerContext* context,
   if (storage == nullptr ||
       storage->GetOramStorageType() != OramStorageType::kTreeStorage) {
     return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
+  }else if (storage->GetInstanceHash().compare(instance_hash)) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
   }
 
   // Read the path and record the time it used.
@@ -253,7 +263,8 @@ grpc::Status OramService::WritePath(grpc::ServerContext* context,
   logger->info("From peer: {}, WritePath request received.", context->peer());
   Type type = request->type();
 
-  const uint32_t id = request->id();
+  const uint32_t id = request->header().id();
+  const std::string instance_hash = request->header().instance_hash();
   const uint32_t level = request->level();
   const uint32_t path = request->path();
   const uint32_t offset = request->offset();
@@ -269,6 +280,8 @@ grpc::Status OramService::WritePath(grpc::ServerContext* context,
   if (storage == nullptr ||
       storage->GetOramStorageType() != OramStorageType::kTreeStorage) {
     return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
+  } else if (storage->GetInstanceHash().compare(instance_hash)) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
   }
 
   // Deserialize the bucket from the string.
