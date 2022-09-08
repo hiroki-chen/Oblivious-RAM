@@ -107,9 +107,7 @@ void PadStash(oram_impl::p_oram_stash_t* const stash,
     for (size_t i = stash_size; i < bucket_size; ++i) {
       oram_impl::oram_block_t dummy;
 
-      if (!oram_crypto::Cryptor::RandomBytes((uint8_t*)(&dummy),
-                                             ORAM_BLOCK_SIZE)
-               .ok()) {
+      if (!oram_crypto::RandomBytes((uint8_t*)(&dummy), ORAM_BLOCK_SIZE).ok()) {
         logger->error("Failed to generate random bytes");
         abort();
       }
@@ -131,8 +129,7 @@ oram_impl::p_oram_bucket_t SampleRandomBucket(size_t size, size_t tree_size,
         i < size ? oram_impl::BlockType::kNormal : oram_impl::BlockType::kDummy;
     block.data[0] = i + initial_offset;
 
-    if (!oram_crypto::Cryptor::RandomBytes(block.data + 1,
-                                           DEFAULT_ORAM_DATA_SIZE - 1)
+    if (!oram_crypto::RandomBytes(block.data + 1, DEFAULT_ORAM_DATA_SIZE - 1)
              .ok()) {
       logger->error("Failed to generate random bytes");
       abort();
@@ -142,9 +139,8 @@ oram_impl::p_oram_bucket_t SampleRandomBucket(size_t size, size_t tree_size,
   }
 
   // Do a shuffle.
-  CheckStatus(
-      oram_crypto::Cryptor::RandomShuffle<oram_impl::oram_block_t>(bucket),
-      "Random shuffle failed due to internal error.");
+  CheckStatus(oram_crypto::RandomShuffle<oram_impl::oram_block_t>(bucket),
+              "Random shuffle failed due to internal error.");
 
   return bucket;
 }
@@ -207,7 +203,7 @@ void EncryptBlock(oram_impl::oram_block_t* const block,
                   oram_crypto::Cryptor* const cryptor) {
   // First let us generate the iv.
   oram_impl::OramStatus status =
-      cryptor->RandomBytes(block->header.iv, ORAM_CRYPTO_RANDOM_SIZE);
+      oram_crypto::RandomBytes(block->header.iv, ORAM_CRYPTO_RANDOM_SIZE);
   CheckStatus(status, "Failed to generate iv!");
 
   // Second prepare the buffer. The buffer includes part of the header.
@@ -321,5 +317,31 @@ std::vector<std::string> split(const std::string& str, char delim) {
   }
 
   return result;
+}
+
+std::string IntoBinary(uint32_t num) {
+  std::string ans;
+
+  while (num != 0) {
+    ans.push_back('0' + num % 2);
+    num /= 2;
+  }
+
+  std::reverse(ans.begin(), ans.end());
+  return ans;
+}
+
+uint32_t FromBinary(const std::string& bin) {
+  uint32_t ans = 0;
+  uint32_t base = 1;
+
+  for (auto iter = bin.cbegin(); iter != bin.cend(); iter++) {
+    if (*iter != '0') {
+      ans += base;
+    }
+    base *= 2;
+  }
+
+  return ans;
 }
 }  // namespace oram_utils

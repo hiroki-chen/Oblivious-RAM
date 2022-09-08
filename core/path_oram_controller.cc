@@ -37,7 +37,7 @@ uint32_t PathOramController::RandomPosition(void) {
   uint32_t x;
   // We sample a random path in advance to handle the case when dummy = true.
   oram_utils::CheckStatus(
-      oram_crypto::Cryptor::UniformRandom(0, number_of_leafs_ - 1, &x),
+      oram_crypto::UniformRandom(0, number_of_leafs_ - 1, &x),
       "UniformRandom error");
   return x;
 }
@@ -197,7 +197,7 @@ OramStatus PathOramController::FillWithData(
         if (data[p_data].header.type == BlockType::kNormal) {
           uint32_t path;
           oram_utils::CheckStatus(
-              oram_crypto::Cryptor::UniformRandom(begin, end, &path),
+              oram_crypto::UniformRandom(begin, end, &path),
               "UniformRandom error");
           bucket_this_level.emplace_back(data[p_data]);
           // Update the position map.

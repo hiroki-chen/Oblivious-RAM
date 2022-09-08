@@ -3,4 +3,7 @@
 	url = https://github.com/gabime/spdlog.git
 [submodule "libsodium"]
 	path = libsodium
-	url = git@github.com:jedisct1/libsodium.git
+	url = https://github.com/jedisct1/libsodium.git
+[submodule "format-preserving-encryption"]
+	path = format-preserving-encryption
+	url = https://github.com/hiroki-chen/format-preserving-encryption.git

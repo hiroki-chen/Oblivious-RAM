@@ -63,6 +63,12 @@ int main(int argc, char** argv) {
   // Ignore the https proxy for gRPC client.
   unsetenv("https_proxy");
 
+  std::vector<uint32_t> test_arr = {1,2,3,4,5,6,7,8};
+  oram_crypto::RandomPermutation(test_arr);
+
+  for (auto i : test_arr) 
+    logger->info("{} ", i);
+
   // Register the signal handler.
   signal(SIGINT, Handler);
   signal(SIGABRT, Handler);

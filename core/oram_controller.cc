@@ -32,7 +32,7 @@ OramController::OramController(uint32_t id, bool standalone, size_t block_num,
 
   // Intialize the hash of this instance.
   OramStatus status;
-  if (!(status = cryptor_->RandomBytes(instance_hash_, 32ul)).ok()) {
+  if (!(status = oram_crypto::RandomBytes(instance_hash_, 32ul)).ok()) {
     logger->error(
         "[-] OramController failed to generated random instance id : {}",
         status.ErrorMessage());

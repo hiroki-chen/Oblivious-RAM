@@ -24,7 +24,7 @@ class SquareRootOramController : public OramController {
   // The layout of the square root ORAM is:
   // ------------------ | ------- | -------|
   //    m main sotrage    sqrt(m)   sqrt(m)
-  //                      dummy     shelter
+  //                      dummy     shelter (local)
   // |       permuted memory      |
   //
   // Select a permutation \pi over the integers 1, ..., m + \sqrt{m} and
