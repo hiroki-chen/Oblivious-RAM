@@ -74,6 +74,8 @@ mkdir build && cd build
 cmake .. && make -j
 ```
 
+Alternatively, we recommend `mold` as the linker for better build performance.
+
 ## Run the binaries
 
 All the compiled binaries are located under `./build/bin` directory. Sample usage of the binaries is given as follows.

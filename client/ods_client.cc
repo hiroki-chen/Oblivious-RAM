@@ -20,8 +20,8 @@
 
 extern std::shared_ptr<spdlog::logger> logger;
 
-Client::Client(const std::string address, const std::string port,
-               const std::string crt_path, size_t odict_size,
+Client::Client(const std::string& address, const std::string& port,
+               const std::string& crt_path, size_t odict_size,
                size_t client_cache_max_size, uint32_t block_num,
                uint32_t bucket_size) {
   // We temporarily set it to a standalone one for compatibility because we do
@@ -31,8 +31,8 @@ Client::Client(const std::string address, const std::string port,
 
   const std::string addr = oram_utils::StrCat(address, ":", port);
 
-  logger->info("Client started, and the address is given as {}:{}.",
-               address, port);
+  logger->info("Client started, and the address is given as {}:{}.", address,
+               port);
 
   // Configure the SSL connection.
   const std::string crt_file = oram_utils::ReadKeyCrtFile(crt_path);
@@ -41,10 +41,9 @@ Client::Client(const std::string address, const std::string port,
   std::shared_ptr<grpc::ChannelCredentials> ssl_creds =
       grpc::SslCredentials(ssl_opts);
 
-  stub_ =
-      std::move(oram_server::NewStub(grpc::CreateChannel(addr, ssl_creds)));
+  stub_ = std::move(oram_server::NewStub(grpc::CreateChannel(addr, ssl_creds)));
   controller->SetStub(stub_);
-  
+
   auto cryptor = oram_crypto::Cryptor::GetInstance();
   cryptor->NoNeedForSessionKey();
 

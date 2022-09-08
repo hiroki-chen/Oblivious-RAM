@@ -28,6 +28,7 @@
 
 #define ORAM_CRYPTO_KEY_SIZE crypto_aead_aes256gcm_KEYBYTES
 #define ORAM_CRYPTO_RANDOM_SIZE crypto_aead_aes256gcm_NPUBBYTES
+#define ORAM_PRP_KEY_SIZE 32ul
 
 #define ull unsigned long long
 
@@ -50,31 +51,7 @@ class Cryptor {
   void CryptoPrelogue(void);
 
  public:
-  // Use Fisher-Yates shuffle to generate a random permutation.
-  template <typename Tp>
-  static oram_impl::OramStatus RandomShuffle(std::vector<Tp>& array) {
-    if (array.empty()) {
-      return oram_impl::OramStatus(oram_impl::StatusCode::kInvalidArgument,
-                                   "The input array is empty");
-    }
-
-    for (size_t i = array.size() - 1; i > 0; --i) {
-      uint32_t j;
-      oram_impl::OramStatus status;
-      if (!(status = Cryptor::UniformRandom(0, i, &j)).ok()) {
-        return status;
-      }
-      std::swap(array[i], array[j]);
-    }
-
-    return oram_impl::OramStatus::OK;
-  }
-
   static std::shared_ptr<Cryptor> GetInstance(void);
-
-  static oram_impl::OramStatus UniformRandom(uint32_t min, uint32_t max,
-                                             uint32_t* const out);
-  static oram_impl::OramStatus RandomBytes(uint8_t* const out, size_t size);
 
   oram_impl::OramStatus Encrypt(const uint8_t* message, size_t length,
                                 uint8_t* const iv, std::string* const out);
@@ -92,6 +69,50 @@ class Cryptor {
 
   virtual ~Cryptor();
 };
+
+oram_impl::OramStatus RandomBytes(uint8_t* const out, size_t size);
+
+oram_impl::OramStatus UniformRandom(uint32_t min, uint32_t max,
+                                    uint32_t* const out);
+
+// Use Fisher-Yates shuffle to generate a random shuffle.
+template <typename Tp>
+oram_impl::OramStatus RandomShuffle(std::vector<Tp>& array) {
+  if (array.empty()) {
+    return oram_impl::OramStatus(oram_impl::StatusCode::kInvalidArgument,
+                                 "The input array is empty");
+  }
+
+  for (size_t i = array.size() - 1; i > 0; --i) {
+    uint32_t j;
+    oram_impl::OramStatus status;
+    if (!(status = UniformRandom(0, i, &j)).ok()) {
+      return status;
+    }
+    std::swap(array[i], array[j]);
+  }
+
+  return oram_impl::OramStatus::OK;
+}
+
+// Implementation of random permutation (or shuffle).
+// By default, this function will always generate a new PRP key upon
+// invocation.
+//
+// Basically, although C++ standard library does ship with `random`, the
+// security of the library is not guaranteed to a cryptographic level, which
+// means algorithms in `random` cannot be cryptographically secure; we must
+// resort to other implementations of crypto libraries to bypass this
+// drawback. Libsodium, for example, is a good choice.
+//
+// We often want to give a permutation on a very limited region of 1 - N,
+// which can be regarded as a problem of how to encipher messages on a small
+// domain. In CRYPTO 2009, Morris et al. introduced a notion called Thorp
+// shuffle that takes use of deterministic encryption, which was a special
+// case of Format-Preserving Encryption (FPE).
+//
+// Note that the input array's size should be some power of 2.
+oram_impl::OramStatus RandomPermutation(std::vector<uint32_t>& array);
 }  // namespace oram_crypto
 
 #endif  // ORAM_IMPL_BASE_ORAM_CRYPTO_H_

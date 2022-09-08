@@ -50,7 +50,7 @@ OramStatus PartitionOramController::Access(Operation op_type, uint32_t address,
   oram_block_t block;
   // Sample a new random slot id for this block.
   uint32_t new_slot_id;
-  OramStatus status = oram_crypto::Cryptor::UniformRandom(
+  OramStatus status = oram_crypto::UniformRandom(
       0, path_oram_controllers_.size() - 1, &new_slot_id);
   oram_utils::CheckStatus(status, "Failed to sample a new slot id.");
 
@@ -140,7 +140,7 @@ OramStatus PartitionOramController::RandomEvict(void) {
   // For simplicity, we use uniform random sampling.
   for (size_t i = 0; i < nu_; i++) {
     uint32_t id;
-    oram_utils::CheckStatus(oram_crypto::Cryptor::UniformRandom(
+    oram_utils::CheckStatus(oram_crypto::UniformRandom(
                                 0, path_oram_controllers_.size() - 1, &id),
                             "Failed to sample a new slot id.");
 
@@ -160,7 +160,7 @@ OramStatus PartitionOramController::RandomEvict(void) {
 OramStatus PartitionOramController::SequentialEvict(void) {
   size_t evict_num;
   oram_utils::CheckStatus(
-      oram_crypto::Cryptor::UniformRandom(0, path_oram_controllers_.size() - 1,
+      oram_crypto::UniformRandom(0, path_oram_controllers_.size() - 1,
                                           (uint32_t*)&evict_num),
       "Failed to sample eviction number.");
   for (size_t i = 0; i < evict_num; i++) {

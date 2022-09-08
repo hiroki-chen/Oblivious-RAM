@@ -85,6 +85,10 @@ size_t DataDecompress(const uint8_t* data, size_t data_size,
 std::string TypeToName(oram_impl::OramType oram_type);
 
 std::vector<std::string> split(const std::string& str, char delim);
+
+std::string IntoBinary(uint32_t num);
+
+uint32_t FromBinary(const std::string& str);
 }  // namespace oram_utils
 
 #endif  // ORAM_IMPL_BASE_ORAM_UTILS_H_
