@@ -41,6 +41,21 @@ std::string StrCat(Args&&... args) {
   return oss.str();
 }
 
+template <typename Fn>
+oram_impl::OramStatus TryExec(Fn&& target_func) {
+  try {
+    // Run the function that probably throws exception.
+    target_func();
+  } catch (const std::exception& e) {
+    // Cast this exception to status code.
+    return oram_impl::OramStatus(
+        oram_impl::StatusCode::kUnknownError, e.what());
+  }
+
+  // OK.
+  return oram_impl::OramStatus::OK;
+}
+
 std::vector<std::string> ReadDataFromFile(const std::string& path);
 
 std::vector<std::string> SerializeToStringVector(

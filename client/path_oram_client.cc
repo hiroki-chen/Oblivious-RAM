@@ -21,6 +21,7 @@
 #include <spdlog/spdlog.h>
 
 #include "base/oram_utils.h"
+#include "parse/oram_parser.h"
 
 extern std::shared_ptr<spdlog::logger> logger;
 
@@ -130,6 +131,10 @@ int Client::InitOram(void) {
 
 int Client::TestOram(void) {
   logger->info("[+] Tesing Path ORAM...");
+
+  oram_parse::YamlParser parser;
+  OramConfig config;
+  parser.Parse(config);
 
   // FIXME: Get block num is incorrect...?
   for (size_t i = 0; i < controller_->GetBlockNum() >> 1; i++) {

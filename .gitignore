@@ -3,6 +3,7 @@ out
 backup
 test
 data
+key
 .vscode
 
 *.o

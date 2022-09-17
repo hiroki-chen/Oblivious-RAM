@@ -19,6 +19,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <stdexcept>
 
 namespace oram_impl {
 enum class StatusCode : int {

@@ -31,6 +31,8 @@ cmake -DCMAKE_CXX_STANDARD=17 <arguments>
 
 * `Libsodium` for cryptographic algorithms.
 
+* `yaml-cpp` for config file parsing.
+
 * `liblz4` for compression. (Can be installed via `sudo apt install liblz4-dev`)
 
 ## Build
@@ -64,6 +66,15 @@ cd grpc
 git submodule update --init
 mkdir -p ./cmake/build && cd build
 cmake .. -DCMAKE_CXX_STANDARD=CXX17 -DgRPC_INSTALL=ON -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=<installation/path>
+make -j && sudo make install
+```
+
+Build `yaml-cpp`.
+
+```shell
+cd Oblivious-RAM/yaml-cpp
+mkdir build && cd build
+cmake -DCMAKE_CXX_STANDARD=17 -DYAML_BUILD_SHARED_LIBS=on ..
 make -j && sudo make install
 ```
 
@@ -118,10 +129,41 @@ status = path_oram_controller->ReadData(Operation::kRead, 0, &block, false);
 
 For further interface reference please check the corresponding header files.
 
-# About the secret key negotiation
+## Providing the ORAM with Configuration Details
+
+Currently, we offer two ways of passing parameters to Oblivious ORAM server instances and client controllers.
+
+* The first way is to use command line argument as follows.
+
+```shell
+./bin/server --log_level=2 --address=0.0.0.0 --port=1234
+```
+
+This seems to be very easy, but is hard to manage when the argument number grows, and the project may also get more complexer.
+
+* (**Experimental**) The second way is to provide the instance with configuration file in YAML format (currently we only support `*.yaml` / `*.yml`). You can set the environment variable `ORAM_CONFIG_PATH` (default is set to `"./config.yml"`) so that the oram controller will read the corresponding config file. The detailed config flags will be explained in the coming future. Note that once this configuration is provided, all the command line flags will be **OVERRIDDEN**.
+
+A simple example:
+
+```yml
+# Configurations for PathOram.
+OramType: "PathOram"
+BlockNum: 100000
+
+DisableDebugging: true
+LogLevel: "INFO"
+
+# Configurations for connection.
+ServerAddress: "127.0.0.1"
+ServerPort: 1234
+ServerCrtPath: "~/key/server.crt"
+ServerKeyPath: "~/key/server.key"
+```
+
+## About the secret key negotiation
 
 In fact, there is no need to negotiate a session key with the server, here the purpose of doing so is solely for the convenience of debugging and illustration of how to use `libsodium`. A session key will allow the server to decrypt the block on the cloud, and we can check if there is anything wrong.
 
-# Claim
+## Claim
 
 This project was intiated as a personal research project and has nothing to do with the authors that originally proposed the ORAM constructions. Furthermore, the code quality and robustness are not guaranteed. Please refer to the licence for further information.
