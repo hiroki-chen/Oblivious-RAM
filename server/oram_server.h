@@ -51,6 +51,10 @@ class OramService final : public oram_server::Service {
                             const InitFlatOramRequest* request,
                             google::protobuf::Empty* empty) override;
 
+  grpc::Status InitSqrtOram(grpc::ServerContext* context,
+                            const InitSqrtOramRequest* request,
+                            google::protobuf::Empty* empty) override;
+
   grpc::Status PrintOramTree(grpc::ServerContext* context,
                              const PrintOramTreeRequest* request,
                              google::protobuf::Empty* response) override;
@@ -70,6 +74,18 @@ class OramService final : public oram_server::Service {
   grpc::Status WriteFlatMemory(grpc::ServerContext* context,
                                const FlatVectorMessage* request,
                                google::protobuf::Empty* empty) override;
+
+  grpc::Status ReadSqrtMemory(grpc::ServerContext* context,
+                              const ReadSqrtRequest* request,
+                              SqrtMessage* response) override;
+
+  grpc::Status WriteSqrtMemory(grpc::ServerContext* context,
+                               const SqrtMessage* request,
+                               google::protobuf::Empty* empty) override;
+
+  grpc::Status SqrtPermute(grpc::ServerContext* context,
+                           const SqrtPermMessage* message,
+                           google::protobuf::Empty* empty) override;
 
   grpc::Status CloseConnection(grpc::ServerContext* context,
                                const google::protobuf::Empty* request,

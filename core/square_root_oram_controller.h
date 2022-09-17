@@ -24,19 +24,37 @@ class SquareRootOramController : public OramController {
   // The layout of the square root ORAM is:
   // ------------------ | ------- | -------|
   //    m main sotrage    sqrt(m)   sqrt(m)
-  //                      dummy     shelter (local)
+  //                      dummy     shelter
   // |       permuted memory      |
   //
   // Select a permutation \pi over the integers 1, ..., m + \sqrt{m} and
   // obliviously relocate the words according to the permutation.
-  sqrt_oram_storage_t shelter_;
+  //
+  // In our implementation, we make two modifications:
+  // 1. We will use an alternative algorithm for achieving pseudorandom
+  // permutation: the format-preserving encryption that maps each value within
+  // the plaintext domain.
+  // 2. We will locally maintain the position map with O(sizeof(uint32_t) * N)
+  // storage.
+  
+  size_t sqrt_m_;
 
+  p_oram_position_t position_map_;
+
+  // After m operations, we will permute the whole ORAM storage.
+  uint32_t counter_;
  protected:
   virtual OramStatus InternalAccess(Operation op_type, uint32_t address,
                                     oram_block_t* const data,
                                     bool dummy = false) override;
 
+  virtual OramStatus ReadBlock(uint32_t position, oram_block_t* const data);
+  virtual OramStatus WriteBlock(uint32_t position, oram_block_t* const data);
+  virtual OramStatus PermuteOnFull(void);
+
  public:
+  // For the convenience of format-preserving encryption, we will round up the
+  // block_num to a value such that m + \sqrt{m} =  2^{n}, for some integer n.
   SquareRootOramController(uint32_t id, bool standalone, size_t block_num);
 };
 }  // namespace oram_impl
