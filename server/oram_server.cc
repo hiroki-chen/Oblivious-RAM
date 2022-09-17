@@ -105,6 +105,38 @@ grpc::Status OramService::InitFlatOram(grpc::ServerContext* context,
   return grpc::Status::OK;
 }
 
+grpc::Status OramService::InitSqrtOram(grpc::ServerContext* context,
+                                       const InitSqrtOramRequest* request,
+                                       google::protobuf::Empty* empty) {
+  // TODO.
+  
+  return grpc::Status::OK;
+}
+
+grpc::Status OramService::ReadSqrtMemory(grpc::ServerContext* context,
+                                         const ReadSqrtRequest* request,
+                                         SqrtMessage* response) {
+  // TODO.
+
+  return grpc::Status::OK;
+}
+
+grpc::Status OramService::WriteSqrtMemory(grpc::ServerContext* context,
+                                          const SqrtMessage* request,
+                                          google::protobuf::Empty* empty) {
+  // TODO.
+
+  return grpc::Status::OK;
+}
+
+grpc::Status OramService::SqrtPermute(grpc::ServerContext* context,
+                                      const SqrtPermMessage* message,
+                                      google::protobuf::Empty* empty) {
+  // TODO.
+
+  return grpc::Status::OK;
+}
+
 grpc::Status OramService::ReadFlatMemory(grpc::ServerContext* context,
                                          const ReadFlatRequest* request,
                                          FlatVectorMessage* response) {
@@ -223,7 +255,7 @@ grpc::Status OramService::ReadPath(grpc::ServerContext* context,
   if (storage == nullptr ||
       storage->GetOramStorageType() != OramStorageType::kTreeStorage) {
     return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
-  }else if (storage->GetInstanceHash().compare(instance_hash)) {
+  } else if (storage->GetInstanceHash().compare(instance_hash)) {
     return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
   }
 

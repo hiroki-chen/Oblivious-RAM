@@ -24,11 +24,15 @@ namespace oram_impl {
 static const char* oram_server_method_names[] = {
   "/oram_impl.oram_server/InitTreeOram",
   "/oram_impl.oram_server/InitFlatOram",
+  "/oram_impl.oram_server/InitSqrtOram",
   "/oram_impl.oram_server/PrintOramTree",
   "/oram_impl.oram_server/ReadPath",
   "/oram_impl.oram_server/WritePath",
   "/oram_impl.oram_server/ReadFlatMemory",
   "/oram_impl.oram_server/WriteFlatMemory",
+  "/oram_impl.oram_server/ReadSqrtMemory",
+  "/oram_impl.oram_server/WriteSqrtMemory",
+  "/oram_impl.oram_server/SqrtPermute",
   "/oram_impl.oram_server/CloseConnection",
   "/oram_impl.oram_server/KeyExchange",
   "/oram_impl.oram_server/SendHello",
@@ -45,16 +49,20 @@ std::unique_ptr< oram_server::Stub> oram_server::NewStub(const std::shared_ptr< 
 oram_server::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options)
   : channel_(channel), rpcmethod_InitTreeOram_(oram_server_method_names[0], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_InitFlatOram_(oram_server_method_names[1], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_PrintOramTree_(oram_server_method_names[2], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_ReadPath_(oram_server_method_names[3], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_WritePath_(oram_server_method_names[4], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_ReadFlatMemory_(oram_server_method_names[5], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_WriteFlatMemory_(oram_server_method_names[6], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_CloseConnection_(oram_server_method_names[7], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_KeyExchange_(oram_server_method_names[8], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_SendHello_(oram_server_method_names[9], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_ReportServerInformation_(oram_server_method_names[10], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_ResetServer_(oram_server_method_names[11], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_InitSqrtOram_(oram_server_method_names[2], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_PrintOramTree_(oram_server_method_names[3], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_ReadPath_(oram_server_method_names[4], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_WritePath_(oram_server_method_names[5], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_ReadFlatMemory_(oram_server_method_names[6], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_WriteFlatMemory_(oram_server_method_names[7], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_ReadSqrtMemory_(oram_server_method_names[8], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_WriteSqrtMemory_(oram_server_method_names[9], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_SqrtPermute_(oram_server_method_names[10], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_CloseConnection_(oram_server_method_names[11], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_KeyExchange_(oram_server_method_names[12], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_SendHello_(oram_server_method_names[13], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_ReportServerInformation_(oram_server_method_names[14], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_ResetServer_(oram_server_method_names[15], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   {}
 
 ::grpc::Status oram_server::Stub::InitTreeOram(::grpc::ClientContext* context, const ::oram_impl::InitTreeOramRequest& request, ::google::protobuf::Empty* response) {
@@ -99,6 +107,29 @@ void oram_server::Stub::async::InitFlatOram(::grpc::ClientContext* context, cons
 ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* oram_server::Stub::AsyncInitFlatOramRaw(::grpc::ClientContext* context, const ::oram_impl::InitFlatOramRequest& request, ::grpc::CompletionQueue* cq) {
   auto* result =
     this->PrepareAsyncInitFlatOramRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
+::grpc::Status oram_server::Stub::InitSqrtOram(::grpc::ClientContext* context, const ::oram_impl::InitSqrtOramRequest& request, ::google::protobuf::Empty* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::oram_impl::InitSqrtOramRequest, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_InitSqrtOram_, context, request, response);
+}
+
+void oram_server::Stub::async::InitSqrtOram(::grpc::ClientContext* context, const ::oram_impl::InitSqrtOramRequest* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::oram_impl::InitSqrtOramRequest, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_InitSqrtOram_, context, request, response, std::move(f));
+}
+
+void oram_server::Stub::async::InitSqrtOram(::grpc::ClientContext* context, const ::oram_impl::InitSqrtOramRequest* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_InitSqrtOram_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* oram_server::Stub::PrepareAsyncInitSqrtOramRaw(::grpc::ClientContext* context, const ::oram_impl::InitSqrtOramRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::google::protobuf::Empty, ::oram_impl::InitSqrtOramRequest, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_InitSqrtOram_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* oram_server::Stub::AsyncInitSqrtOramRaw(::grpc::ClientContext* context, const ::oram_impl::InitSqrtOramRequest& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsyncInitSqrtOramRaw(context, request, cq);
   result->StartCall();
   return result;
 }
@@ -214,6 +245,75 @@ void oram_server::Stub::async::WriteFlatMemory(::grpc::ClientContext* context, c
 ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* oram_server::Stub::AsyncWriteFlatMemoryRaw(::grpc::ClientContext* context, const ::oram_impl::FlatVectorMessage& request, ::grpc::CompletionQueue* cq) {
   auto* result =
     this->PrepareAsyncWriteFlatMemoryRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
+::grpc::Status oram_server::Stub::ReadSqrtMemory(::grpc::ClientContext* context, const ::oram_impl::ReadSqrtRequest& request, ::oram_impl::SqrtMessage* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::oram_impl::ReadSqrtRequest, ::oram_impl::SqrtMessage, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_ReadSqrtMemory_, context, request, response);
+}
+
+void oram_server::Stub::async::ReadSqrtMemory(::grpc::ClientContext* context, const ::oram_impl::ReadSqrtRequest* request, ::oram_impl::SqrtMessage* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::oram_impl::ReadSqrtRequest, ::oram_impl::SqrtMessage, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_ReadSqrtMemory_, context, request, response, std::move(f));
+}
+
+void oram_server::Stub::async::ReadSqrtMemory(::grpc::ClientContext* context, const ::oram_impl::ReadSqrtRequest* request, ::oram_impl::SqrtMessage* response, ::grpc::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_ReadSqrtMemory_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::oram_impl::SqrtMessage>* oram_server::Stub::PrepareAsyncReadSqrtMemoryRaw(::grpc::ClientContext* context, const ::oram_impl::ReadSqrtRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::oram_impl::SqrtMessage, ::oram_impl::ReadSqrtRequest, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_ReadSqrtMemory_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::oram_impl::SqrtMessage>* oram_server::Stub::AsyncReadSqrtMemoryRaw(::grpc::ClientContext* context, const ::oram_impl::ReadSqrtRequest& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsyncReadSqrtMemoryRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
+::grpc::Status oram_server::Stub::WriteSqrtMemory(::grpc::ClientContext* context, const ::oram_impl::SqrtMessage& request, ::google::protobuf::Empty* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::oram_impl::SqrtMessage, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_WriteSqrtMemory_, context, request, response);
+}
+
+void oram_server::Stub::async::WriteSqrtMemory(::grpc::ClientContext* context, const ::oram_impl::SqrtMessage* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::oram_impl::SqrtMessage, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_WriteSqrtMemory_, context, request, response, std::move(f));
+}
+
+void oram_server::Stub::async::WriteSqrtMemory(::grpc::ClientContext* context, const ::oram_impl::SqrtMessage* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_WriteSqrtMemory_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* oram_server::Stub::PrepareAsyncWriteSqrtMemoryRaw(::grpc::ClientContext* context, const ::oram_impl::SqrtMessage& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::google::protobuf::Empty, ::oram_impl::SqrtMessage, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_WriteSqrtMemory_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* oram_server::Stub::AsyncWriteSqrtMemoryRaw(::grpc::ClientContext* context, const ::oram_impl::SqrtMessage& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsyncWriteSqrtMemoryRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
+::grpc::Status oram_server::Stub::SqrtPermute(::grpc::ClientContext* context, const ::oram_impl::SqrtPermMessage& request, ::google::protobuf::Empty* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::oram_impl::SqrtPermMessage, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_SqrtPermute_, context, request, response);
+}
+
+void oram_server::Stub::async::SqrtPermute(::grpc::ClientContext* context, const ::oram_impl::SqrtPermMessage* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::oram_impl::SqrtPermMessage, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_SqrtPermute_, context, request, response, std::move(f));
+}
+
+void oram_server::Stub::async::SqrtPermute(::grpc::ClientContext* context, const ::oram_impl::SqrtPermMessage* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_SqrtPermute_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* oram_server::Stub::PrepareAsyncSqrtPermuteRaw(::grpc::ClientContext* context, const ::oram_impl::SqrtPermMessage& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::google::protobuf::Empty, ::oram_impl::SqrtPermMessage, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_SqrtPermute_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* oram_server::Stub::AsyncSqrtPermuteRaw(::grpc::ClientContext* context, const ::oram_impl::SqrtPermMessage& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsyncSqrtPermuteRaw(context, request, cq);
   result->StartCall();
   return result;
 }
@@ -357,6 +457,16 @@ oram_server::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       oram_server_method_names[2],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< oram_server::Service, ::oram_impl::InitSqrtOramRequest, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](oram_server::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::oram_impl::InitSqrtOramRequest* req,
+             ::google::protobuf::Empty* resp) {
+               return service->InitSqrtOram(ctx, req, resp);
+             }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      oram_server_method_names[3],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< oram_server::Service, ::oram_impl::PrintOramTreeRequest, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](oram_server::Service* service,
              ::grpc::ServerContext* ctx,
@@ -365,7 +475,7 @@ oram_server::Service::Service() {
                return service->PrintOramTree(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      oram_server_method_names[3],
+      oram_server_method_names[4],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< oram_server::Service, ::oram_impl::ReadPathRequest, ::oram_impl::ReadPathResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](oram_server::Service* service,
@@ -375,7 +485,7 @@ oram_server::Service::Service() {
                return service->ReadPath(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      oram_server_method_names[4],
+      oram_server_method_names[5],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< oram_server::Service, ::oram_impl::WritePathRequest, ::oram_impl::WritePathResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](oram_server::Service* service,
@@ -385,7 +495,7 @@ oram_server::Service::Service() {
                return service->WritePath(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      oram_server_method_names[5],
+      oram_server_method_names[6],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< oram_server::Service, ::oram_impl::ReadFlatRequest, ::oram_impl::FlatVectorMessage, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](oram_server::Service* service,
@@ -395,7 +505,7 @@ oram_server::Service::Service() {
                return service->ReadFlatMemory(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      oram_server_method_names[6],
+      oram_server_method_names[7],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< oram_server::Service, ::oram_impl::FlatVectorMessage, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](oram_server::Service* service,
@@ -405,7 +515,37 @@ oram_server::Service::Service() {
                return service->WriteFlatMemory(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      oram_server_method_names[7],
+      oram_server_method_names[8],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< oram_server::Service, ::oram_impl::ReadSqrtRequest, ::oram_impl::SqrtMessage, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](oram_server::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::oram_impl::ReadSqrtRequest* req,
+             ::oram_impl::SqrtMessage* resp) {
+               return service->ReadSqrtMemory(ctx, req, resp);
+             }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      oram_server_method_names[9],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< oram_server::Service, ::oram_impl::SqrtMessage, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](oram_server::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::oram_impl::SqrtMessage* req,
+             ::google::protobuf::Empty* resp) {
+               return service->WriteSqrtMemory(ctx, req, resp);
+             }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      oram_server_method_names[10],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< oram_server::Service, ::oram_impl::SqrtPermMessage, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](oram_server::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::oram_impl::SqrtPermMessage* req,
+             ::google::protobuf::Empty* resp) {
+               return service->SqrtPermute(ctx, req, resp);
+             }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      oram_server_method_names[11],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< oram_server::Service, ::google::protobuf::Empty, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](oram_server::Service* service,
@@ -415,7 +555,7 @@ oram_server::Service::Service() {
                return service->CloseConnection(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      oram_server_method_names[8],
+      oram_server_method_names[12],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< oram_server::Service, ::oram_impl::KeyExchangeRequest, ::oram_impl::KeyExchangeResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](oram_server::Service* service,
@@ -425,7 +565,7 @@ oram_server::Service::Service() {
                return service->KeyExchange(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      oram_server_method_names[9],
+      oram_server_method_names[13],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< oram_server::Service, ::oram_impl::HelloMessage, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](oram_server::Service* service,
@@ -435,7 +575,7 @@ oram_server::Service::Service() {
                return service->SendHello(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      oram_server_method_names[10],
+      oram_server_method_names[14],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< oram_server::Service, ::google::protobuf::Empty, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](oram_server::Service* service,
@@ -445,7 +585,7 @@ oram_server::Service::Service() {
                return service->ReportServerInformation(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      oram_server_method_names[11],
+      oram_server_method_names[15],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< oram_server::Service, ::google::protobuf::Empty, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](oram_server::Service* service,
@@ -467,6 +607,13 @@ oram_server::Service::~Service() {
 }
 
 ::grpc::Status oram_server::Service::InitFlatOram(::grpc::ServerContext* context, const ::oram_impl::InitFlatOramRequest* request, ::google::protobuf::Empty* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status oram_server::Service::InitSqrtOram(::grpc::ServerContext* context, const ::oram_impl::InitSqrtOramRequest* request, ::google::protobuf::Empty* response) {
   (void) context;
   (void) request;
   (void) response;
@@ -502,6 +649,27 @@ oram_server::Service::~Service() {
 }
 
 ::grpc::Status oram_server::Service::WriteFlatMemory(::grpc::ServerContext* context, const ::oram_impl::FlatVectorMessage* request, ::google::protobuf::Empty* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status oram_server::Service::ReadSqrtMemory(::grpc::ServerContext* context, const ::oram_impl::ReadSqrtRequest* request, ::oram_impl::SqrtMessage* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status oram_server::Service::WriteSqrtMemory(::grpc::ServerContext* context, const ::oram_impl::SqrtMessage* request, ::google::protobuf::Empty* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status oram_server::Service::SqrtPermute(::grpc::ServerContext* context, const ::oram_impl::SqrtPermMessage* request, ::google::protobuf::Empty* response) {
   (void) context;
   (void) request;
   (void) response;
