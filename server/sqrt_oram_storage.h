@@ -14,8 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef ORAM_IMPL_SERVER_SQRT_ORAM_STORAGE_
-#define ORAM_IMPL_SERVER_SQRT_ORAM_STORAGE_
+#ifndef ORAM_IMPL_SERVER_SQRT_ORAM_STORAGE_H_
+#define ORAM_IMPL_SERVER_SQRT_ORAM_STORAGE_H_
 
 #include "base_oram_storage.h"
 

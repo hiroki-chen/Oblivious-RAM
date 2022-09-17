@@ -7,3 +7,6 @@
 [submodule "format-preserving-encryption"]
 	path = format-preserving-encryption
 	url = https://github.com/hiroki-chen/format-preserving-encryption.git
+[submodule "yaml-cpp"]
+	path = yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp.git
