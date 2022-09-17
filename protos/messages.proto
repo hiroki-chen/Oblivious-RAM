@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package oram_impl;
+
+import "google/protobuf/empty.proto";
+
+// The Oram interface is the interface that must be implemented by
+// any ORAM implementation. It is used to interact with the ORAM.
+service oram_server {
+  // Initialize the ORAM by sending the client's configurations.
+  rpc InitTreeOram(InitTreeOramRequest) returns (google.protobuf.Empty) {}
+
+  rpc InitFlatOram(InitFlatOramRequest) returns (google.protobuf.Empty) {}
+
+  rpc InitSqrtOram(InitSqrtOramRequest) returns (google.protobuf.Empty) {}
+
+  rpc PrintOramTree(PrintOramTreeRequest) returns (google.protobuf.Empty) {}
+
+  rpc ReadPath(ReadPathRequest) returns (ReadPathResponse) {}
+
+  rpc WritePath(WritePathRequest) returns (WritePathResponse) {}
+
+  rpc ReadFlatMemory(ReadFlatRequest) returns (FlatVectorMessage) {}
+
+  rpc WriteFlatMemory(FlatVectorMessage) returns (google.protobuf.Empty) {}
+
+  rpc ReadSqrtMemory(ReadSqrtRequest) returns (SqrtMessage) {}
+
+  rpc WriteSqrtMemory(SqrtMessage) returns (google.protobuf.Empty) {}
+
+  rpc SqrtPermute(SqrtPermMessage) returns (google.protobuf.Empty) {}
+
+  rpc CloseConnection(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+
+  // ============ Key Exchange Using Diffie-Hellman ============ //
+  // For evaluating the performance when encryption is introduced, 
+  // we do not verify the public key sent from the client, i.e., 
+  // we assume that there is no man-in-the-middle attacker :)
+  rpc KeyExchange(KeyExchangeRequest) returns (KeyExchangeResponse) {}
+
+  rpc SendHello(HelloMessage) returns (google.protobuf.Empty) {}
+
+  rpc ReportServerInformation(google.protobuf.Empty) 
+    returns (google.protobuf.Empty) {}
+
+  rpc ResetServer(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+}
+
+enum Type {
+  kSequential = 0;
+  kRandom = 1;
+  kInit = 2;
+  kNormal = 3;
+}
+
+message RequestHeader {
+  bytes instance_hash = 1;
+  bytes version = 2;
+  uint32 id = 3;
+}
+
+message PrintOramTreeRequest {
+  uint32 id = 1;
+}
+
+message HelloMessage {
+  bytes content = 1;
+  bytes iv = 2;
+}
+
+message KeyExchangeRequest {
+  bytes public_key_client = 1;
+};
+
+message KeyExchangeResponse {
+  bytes public_key_server = 1;
+};
+
+message InitFlatOramRequest {
+  RequestHeader header = 1;
+  uint32 capacity = 2;
+  uint32 block_size = 3;
+}
+
+message InitSqrtOramRequest {
+  RequestHeader header = 1;
+  uint32 capacity = 2;
+  uint32 squared_m = 3;
+  uint32 block_size = 4;
+}
+
+message FlatVectorMessage {
+  RequestHeader header = 1;
+  bytes content = 2;
+}
+
+message SqrtMessage {
+  RequestHeader header = 1;
+  bytes content = 2;
+}
+
+message SqrtPermMessage {
+  RequestHeader header = 1;
+  repeated bytes content = 2;
+}
+
+message InitTreeOramRequest {
+  RequestHeader header = 1;
+  uint32 bucket_size = 2;
+  uint32 bucket_num = 3;
+  uint32 block_size = 4;
+}
+
+message ReadFlatRequest {
+  RequestHeader header = 1;
+}
+
+message ReadSqrtRequest {
+  RequestHeader header = 1;
+}
+
+message ReadPathRequest {
+  RequestHeader header = 1;
+  uint32 path = 2;
+  uint32 level = 3;
+}
+
+message ReadPathResponse {
+  repeated bytes bucket = 1;
+}
+
+message WritePathRequest {
+  RequestHeader header = 1;
+  // Whether this write operation is triggered by an eviction operation.
+  uint32 path = 2;
+  uint32 level = 3;
+  repeated bytes bucket = 4;
+  optional Type type = 5;
+  optional uint32 offset = 6;
+}
+
+message WritePathResponse {
+
+}

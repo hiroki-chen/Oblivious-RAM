@@ -1,0 +1,11 @@
+build
+out
+backup
+test
+data
+.vscode
+
+*.o
+*.so
+*.d
+*.out
