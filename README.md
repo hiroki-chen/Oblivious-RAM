@@ -110,6 +110,7 @@ const std::unique_ptr<PathOramController> path_oram_controller =
   std::make_unique<PathOramController>(id, block_num, bucket_size));
  
 // Create the gRPC stub and pass it to the controller.
+// The creation of the stub is documented in gRPC official website.
 path_oram_controller->SetStub(stub_);
 
 // Initialize the oram.
