@@ -104,6 +104,8 @@ std::vector<std::string> split(const std::string& str, char delim);
 std::string IntoBinary(uint32_t num);
 
 uint32_t FromBinary(const std::string& str);
+
+oram_impl::OramType StrToType(const std::string& type);
 }  // namespace oram_utils
 
 #endif  // ORAM_IMPL_BASE_ORAM_UTILS_H_

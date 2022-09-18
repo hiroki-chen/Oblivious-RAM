@@ -19,6 +19,8 @@
 
 #include "oram_controller.h"
 
+#include "base/oram_config.h"
+
 namespace oram_impl {
 
 // This class is the implementation of the ORAM controller for Path ORAM.

@@ -68,7 +68,8 @@ enum class OramType {
   kPathOram = 2,
   kPartitionOram = 3,
   kCuckooOram = 4,
-  kInvalidStorage = 5,
+  kOds = 5,
+  kInvalid = 6,
 };
 
 enum class OramStorageType {

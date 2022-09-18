@@ -196,9 +196,8 @@ OramStatus PathOramController::FillWithData(
         // Sample a random path for the block.
         if (data[p_data].header.type == BlockType::kNormal) {
           uint32_t path;
-          oram_utils::CheckStatus(
-              oram_crypto::UniformRandom(begin, end, &path),
-              "UniformRandom error");
+          oram_utils::CheckStatus(oram_crypto::UniformRandom(begin, end, &path),
+                                  "UniformRandom error");
           bucket_this_level.emplace_back(data[p_data]);
           // Update the position map.
           position_map_[data[p_data].header.block_id] = path;

@@ -344,4 +344,22 @@ uint32_t FromBinary(const std::string& bin) {
 
   return ans;
 }
+
+oram_impl::OramType StrToType(const std::string& type) {
+  if (type == "PathOram") {
+    return oram_impl::OramType::kPathOram;
+  } else if (type == "SquareRootOram") {
+    return oram_impl::OramType::kSquareOram;
+  } else if (type == "LinearOram") {
+    return oram_impl::OramType::kLinearOram;
+  } else if (type == "PartitionOram") {
+    return oram_impl::OramType::kPartitionOram;
+  } else if (type == "CuckooOram") {
+    return oram_impl::OramType::kCuckooOram;
+  } else if (type == "ODS") {
+    return oram_impl::OramType::kOds;
+  } else {
+    return oram_impl::OramType::kInvalid;
+  }
+}
 }  // namespace oram_utils
