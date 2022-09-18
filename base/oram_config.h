@@ -25,17 +25,48 @@
 static const std::string default_config_path = "./config.yaml";
 
 namespace oram_impl {
-  // Read from the file or command line.
-  struct OramConfig {
-    OramType oram_type;
+// Read from the file or command line.
+struct OramConfig {
+  OramType oram_type;
 
-    size_t block_num;
-    size_t block_size;
+  size_t block_num;
+  size_t bucket_size;
 
-    // For SSL configuration.
-    std::string crt_path;
-    std::string key_path;
-  };
-}
+  // For SSL configuration.
+  std::string crt_path;
+  std::string key_path;
+
+  // For server-client connection.
+  std::string server_address;
+  bool enable_proxy;
+  std::string proxy_address;
+  uint32_t port;
+
+  // For ODS.
+  size_t odict_size;
+  size_t client_cache_max_size;
+
+  bool disable_debugging;
+};
+
+static const OramConfig default_config = {
+    OramType::kPathOram,
+    100000,
+    4,
+
+    "./key/server.crt",
+    "./key/server.key",
+
+    "0.0.0.0",
+    false,
+    "",
+    1234,
+
+    100000,
+    32,
+
+    false,
+};
+}  // namespace oram_impl
 
 #endif  // ORAM_IMPL_BASE_ORAM_CONFIG_H_

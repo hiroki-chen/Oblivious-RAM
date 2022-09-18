@@ -30,12 +30,18 @@ namespace oram_parse {
 //
 // The Yaml config file is case-sensitive.
 class YamlParser {
+  bool ignore_command_line_args_;
+
  protected:
-  oram_impl::OramConfig EmitDefault(void);
+  oram_impl::OramStatus DoParse(const YAML::const_iterator& cur_iter,
+                                oram_impl::OramConfig& config);
 
  public:
   // Parse the file.
   oram_impl::OramStatus Parse(oram_impl::OramConfig& config);
+  bool IgnoreCommandLineArgs(void) { return ignore_command_line_args_; }
+
+  YamlParser() : ignore_command_line_args_(false) {}
 };
 
 }  // namespace oram_parse

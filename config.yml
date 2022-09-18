@@ -15,6 +15,14 @@
 
 # Edit the configuration file here.
 # Hungarian style.
-Type: "PathOram"
-BlockNum8: 100000
-LogLevel: "INFO"
+OramType: "PathOram"
+
+BlockNum: 100000
+BucketSize: 4
+
+ServerCrtPath: "../../key/server.crt"
+ServerKeyPath: "../../key/server.key"
+
+ServerAddress: "0.0.0.0"
+EnableProxy: false
+Port: 1234
