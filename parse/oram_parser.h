@@ -30,6 +30,7 @@ namespace oram_parse {
 //
 // The Yaml config file is case-sensitive.
 class YamlParser {
+
   bool ignore_command_line_args_;
 
  protected:
@@ -39,6 +40,7 @@ class YamlParser {
  public:
   // Parse the file.
   oram_impl::OramStatus Parse(oram_impl::OramConfig& config);
+
   bool IgnoreCommandLineArgs(void) { return ignore_command_line_args_; }
 
   YamlParser() : ignore_command_line_args_(false) {}

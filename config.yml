@@ -15,6 +15,7 @@
 
 # Edit the configuration file here.
 # Hungarian style.
+
 OramType: "PathOram"
 
 BlockNum: 100000
