@@ -47,6 +47,10 @@ oram_impl::OramStatus YamlParser::DoParse(const YAML::const_iterator& cur_iter,
     return oram_utils::TryExec(
         [&]() { config.bucket_size = cur_iter->second.as<size_t>(); });
 
+  } else if (key == "Id") {
+    return oram_utils::TryExec(
+        [&]() { config.crt_path = cur_iter->second.as<uint32_t>(); });
+
   } else if (key == "ServerCrtPath") {
     return oram_utils::TryExec(
         [&]() { config.crt_path = cur_iter->second.as<std::string>(); });
@@ -89,7 +93,7 @@ oram_impl::OramStatus YamlParser::DoParse(const YAML::const_iterator& cur_iter,
 
 oram_impl::OramStatus YamlParser::Parse(oram_impl::OramConfig& config) {
   oram_impl::OramStatus status = oram_impl::OramStatus::OK;
-  
+
   // Get default configuration.
   config = oram_impl::default_config;
 
@@ -118,7 +122,7 @@ oram_impl::OramStatus YamlParser::Parse(oram_impl::OramConfig& config) {
 
   // Configuration file detected.
   ignore_command_line_args_ = true;
-  
+
   // If is this is yaml file?
   std::string ext = config_path.filename().string();
   ext = ext.substr(ext.find_last_of(".") + 1);

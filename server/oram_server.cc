@@ -28,7 +28,7 @@ std::atomic_bool server_running;
 
 namespace oram_impl {
 grpc::Status OramService::CheckInitRequest(uint32_t id) {
-  if (id < storages_.size()) {
+  if (storages_.find(id) != storages_.end()) {
     const std::string error_message =
         oram_utils::StrCat("ORAM id: ", id, " already exists.");
     return grpc::Status(grpc::StatusCode::ALREADY_EXISTS, error_message);
@@ -43,7 +43,7 @@ grpc::Status OramService::CheckInitRequest(uint32_t id) {
 }
 
 grpc::Status OramService::CheckIdValid(uint32_t id) {
-  if (id >= storages_.size()) {
+  if (storages_.find(id) == storages_.end()) {
     const std::string error_message =
         oram_utils::StrCat("ORAM id: ", id, " does not exist.");
     return grpc::Status(grpc::StatusCode::NOT_FOUND, error_message);
@@ -71,8 +71,8 @@ grpc::Status OramService::InitTreeOram(grpc::ServerContext* context,
   }
 
   // Create a new storage and initialize it.
-  storages_.emplace_back(std::make_unique<TreeOramServerStorage>(
-      id, bucket_num, block_size, bucket_size, instance_hash));
+  storages_[id] = std::make_unique<TreeOramServerStorage>(
+      id, bucket_num, block_size, bucket_size, instance_hash);
 
   logger->info("Tree ORAM successfully created. ID = {}", id);
 
@@ -97,8 +97,8 @@ grpc::Status OramService::InitFlatOram(grpc::ServerContext* context,
     return status;
   }
 
-  storages_.emplace_back(std::make_unique<FlatOramServerStorage>(
-      id, capacity, block_size, instance_hash));
+  storages_[id] = std::make_unique<FlatOramServerStorage>(
+      id, capacity, block_size, instance_hash);
 
   logger->info("Flat ORAM successfully created. ID = {}", id);
 
@@ -109,7 +109,7 @@ grpc::Status OramService::InitSqrtOram(grpc::ServerContext* context,
                                        const InitSqrtOramRequest* request,
                                        google::protobuf::Empty* empty) {
   // TODO.
-  
+
   return grpc::Status::OK;
 }
 
@@ -408,7 +408,7 @@ grpc::Status OramService::ReportServerInformation(
 
   double storage_size = 0;
   for (const auto& storage : storages_) {
-    storage_size += storage->ReportStorage();
+    storage_size += storage.second->ReportStorage();
   }
 
   logger->info("The total storage size is {} MB.", storage_size);

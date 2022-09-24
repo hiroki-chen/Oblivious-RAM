@@ -31,6 +31,7 @@ struct OramConfig {
 
   size_t block_num;
   size_t bucket_size;
+  uint32_t id;
 
   // For SSL configuration.
   std::string crt_path;
@@ -53,6 +54,7 @@ static const OramConfig default_config = {
     OramType::kPathOram,
     100000,
     4,
+    0,
 
     "./key/server.crt",
     "./key/server.key",
