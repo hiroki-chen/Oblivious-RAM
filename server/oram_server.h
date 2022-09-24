@@ -23,6 +23,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "base/oram_crypto.h"
 #include "oram_storage.h"
@@ -37,7 +38,7 @@ class OramService final : public oram_server::Service {
   friend class ServerRunner;
 
   std::shared_ptr<oram_crypto::Cryptor> cryptor_;
-  std::vector<std::unique_ptr<BaseOramServerStorage>> storages_;
+  std::unordered_map<uint32_t, std::unique_ptr<BaseOramServerStorage>> storages_;
 
   grpc::Status CheckInitRequest(uint32_t id);
   grpc::Status CheckIdValid(uint32_t id);
