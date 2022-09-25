@@ -65,7 +65,18 @@ cd ~ && git clone -b v1.49.x https://github.com/grpc/grpc.git
 cd grpc
 git submodule update --init
 mkdir -p ./cmake/build && cd build
-cmake .. -DCMAKE_CXX_STANDARD=CXX17 -DgRPC_INSTALL=ON -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=<installation/path>
+cmake ../..   -DgRPC_INSTALL=ON                \
+              -DCMAKE_BUILD_TYPE=Release       \
+              -DgRPC_ABSL_PROVIDER=package     \
+              -DgRPC_CARES_PROVIDER=package    \
+              -DgRPC_PROTOBUF_PROVIDER=package \
+              -DgRPC_RE2_PROVIDER=package      \
+              -DgRPC_SSL_PROVIDER=package      \
+              -DgRPC_ZLIB_PROVIDER=package     \
+              -DCMAKE_CXX_STANDARD=17          \
+              -DBUILD_SHARED_LIBS=on           \
+              -DCMAKE_INSTALL_PREFIX=<installation/path>
+              
 make -j && sudo make install
 ```
 
