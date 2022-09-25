@@ -1,0 +1,3 @@
+add_executable(oram_test_client oram_test_client.cc)
+target_include_directories(oram_test_client PUBLIC ${CMAKE_SOURCE_DIR})
+target_link_libraries(oram_test_client PRIVATE oram_base oram_parse oram_client)
