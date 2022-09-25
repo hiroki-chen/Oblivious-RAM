@@ -110,10 +110,19 @@ enum class StatusCode : int {
   // client cannot use APIs with v1 when it is constructing an object with v2.
   kVersionMismatch = 10,
 
+  // StatusCode::kAlreadyUsed
+  //
+  // The error indicates an error that typically occurs when we are trying to
+  // access / modify an exclusive resource, or we need to configure something
+  // that can only be edited once. Sometimes this error does not mean that we
+  // actually encounter an error; rather, it could be regarded as a warning if
+  // there is no logic error.
+  kAlreadyUsed = 11,
+
   // StatusCode::kUnimplemented
   //
   // kUnimplemented indicates an unimplemented interface.
-  kUnimplemented = 11,
+  kUnimplemented = 12,
 };
 
 static const std::unordered_map<StatusCode, std::string> kErrorList = {

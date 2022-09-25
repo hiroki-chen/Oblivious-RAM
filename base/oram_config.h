@@ -39,9 +39,14 @@ struct OramConfig {
 
   // For server-client connection.
   std::string server_address;
+  uint32_t server_port;
   bool enable_proxy;
   std::string proxy_address;
-  uint32_t port;
+  uint32_t proxy_port;
+
+  // Log settings.
+  uint8_t log_level;
+  uint8_t log_frequency;
 
   // For ODS.
   size_t odict_size;
@@ -60,14 +65,18 @@ static const OramConfig default_config = {
     "./key/server.key",
 
     "0.0.0.0",
+    1234,
     false,
     "",
-    1234,
+    0,
+
+    2,
+    3,
 
     100000,
     32,
 
-    false,
+    true,
 };
 }  // namespace oram_impl
 
