@@ -14,29 +14,19 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include <absl/flags/flag.h>
-#include <absl/flags/parse.h>
 #include <execinfo.h>
 #include <signal.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include <memory>
 
 #include "base/oram_utils.h"
+#include "base/oram_config.h"
+#include "parse/oram_parse.h"
 #include "oram_server.h"
-
-// Configurations for the server.
-ABSL_FLAG(std::string, address, "0.0.0.0", "The server's IP address.");
-ABSL_FLAG(std::string, port, "1234", "The server's port.");
-ABSL_FLAG(std::string, key_path, "../key/sslcred.key",
-          "The path to the key file.");
-ABSL_FLAG(std::string, crt_path, "../key/sslcred.crt",
-          "The path to the certificate file.");
-ABSL_FLAG(int, log_level, spdlog::level::info, "The severity of the logger.");
 
 std::shared_ptr<spdlog::logger> logger = spdlog::stdout_color_mt("oram_server");
 
@@ -61,19 +51,26 @@ int main(int argc, char* argv[]) {
   signal(SIGSEGV, handler);
   signal(SIGABRT, handler);
   signal(SIGINT, handler);
-  // Parse the command line arguments.
-  absl::ParseCommandLine(argc, argv);
+
+  // Create a parser.
+  oram_parse::YamlParser parser;
+  oram_impl::OramConfig config;
+  // Try configuration file.
+  oram_impl::OramStatus status = parser.Parse(config);
+  if (status.ErrorCode() == oram_impl::StatusCode::kFileNotFound &&
+      !parser.IgnoreCommandLineArgs()) {
+    parser.FromCommandLine(argc, argv, config);
+  }
 
   // Initialize the logger.
   spdlog::set_default_logger(logger);
-  spdlog::set_level(
-      static_cast<spdlog::level::level_enum>(absl::GetFlag(FLAGS_log_level)));
-  spdlog::flush_every(std::chrono::seconds(3));
+  spdlog::set_level(static_cast<spdlog::level::level_enum>(config.log_level));
+  spdlog::flush_every(std::chrono::seconds(config.log_frequency));
 
   std::unique_ptr<oram_impl::ServerRunner> server_runner =
       std::make_unique<oram_impl::ServerRunner>(
-          absl::GetFlag(FLAGS_address), absl::GetFlag(FLAGS_port),
-          absl::GetFlag(FLAGS_key_path), absl::GetFlag(FLAGS_crt_path));
+          config.server_address, config.server_port, config.key_path,
+          config.crt_path);
   server_runner->Run();
 
   return 0;

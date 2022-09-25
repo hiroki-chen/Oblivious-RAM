@@ -416,7 +416,7 @@ grpc::Status OramService::ReportServerInformation(
   return grpc::Status::OK;
 }
 
-ServerRunner::ServerRunner(const std::string& address, const std::string& port,
+ServerRunner::ServerRunner(const std::string& address, uint32_t port,
                            const std::string& key_path,
                            const std::string& crt_path)
     : address_(address), port_(port) {
@@ -424,6 +424,8 @@ ServerRunner::ServerRunner(const std::string& address, const std::string& port,
   const std::string crt_file = oram_utils::ReadKeyCrtFile(crt_path);
 
   if (key_file.empty() || crt_file.empty()) {
+    logger->error("[-] Neither the certificate nor the key cannot be empty.");
+    
     abort();
   }
 

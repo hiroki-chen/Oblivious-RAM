@@ -115,13 +115,13 @@ class ServerRunner {
 
   // Networking configurations.
   std::string address_;
-  std::string port_;
+  uint32_t port_;
   std::shared_ptr<grpc::ServerCredentials> creds_;
 
   bool is_initialized;
 
  public:
-  ServerRunner(const std::string& address, const std::string& port,
+  ServerRunner(const std::string& address, uint32_t port,
                const std::string& key_path, const std::string& crt_path);
 
   void Run(void);
