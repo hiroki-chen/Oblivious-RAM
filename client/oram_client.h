@@ -14,30 +14,27 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef ORAM_IMPL_CLIENT_ODS_CLIENT_H_
-#define ORAM_IMPL_CLIENT_ODS_CLIENT_H_
+#ifndef ORAM_IMPL_CLIENT_ORAM_CLIENT_H_
+#define ORAM_IMPL_CLIENT_ORAM_CLIENT_H_
 
-#include <memory>
+#include "core/oram.h"
 
-#include <grpc++/grpc++.h>
-
-#include "core/odict_controller.h"
-#include "protos/messages.grpc.pb.h"
-#include "protos/messages.pb.h"
-
-using namespace oram_impl;
-using namespace ods;
-
-class Client {
-  std::shared_ptr<oram_server::Stub> stub_;
+namespace oram_impl {
+class OramClient {
+  std::unique_ptr<OramController> oram_controller_;
 
  public:
-  Client(const std::string& address, const std::string& port,
-         const std::string& crt_path, size_t odict_size,
-         size_t client_cache_max_size, uint32_t block_num,
-         uint32_t bucket_size);
+  // The only way to construct an ORAM client.
+  OramClient(const OramConfig& config);
 
-  std::unique_ptr<OdictController> controller_;
+  // READ / WRITE Interfaces.
+  OramStatus Read(uint32_t address, oram_block_t* const block) {
+    return oram_controller_->Access(Operation::kRead, address, block);
+  }
+  OramStatus Write(uint32_t address, oram_block_t* const block) {
+    return oram_controller_->Access(Operation::kWrite, address, block);
+  }
 };
+}  // namespace oram_impl
 
-#endif  // ORAM_IMPL_CLIENT_ODS_CLIENT_H_
+#endif  // ORAM_IMPL_CLIENT_ORAM_CLIENT_H_
