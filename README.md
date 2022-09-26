@@ -152,7 +152,7 @@ Currently, we offer two ways of passing parameters to Oblivious ORAM server inst
 
 This seems to be very easy, but is hard to manage when the argument number grows, and the project may also get more complexer.
 
-* (**Experimental**) The second way is to provide the instance with configuration file in YAML format (currently we only support `*.yaml` / `*.yml`). You can set the environment variable `ORAM_CONFIG_PATH` (default is set to `"./config.yml"`) so that the oram controller will read the corresponding config file. The detailed config flags will be explained in the coming future. Note that once this configuration is provided, all the command line flags will be **OVERRIDDEN**.
+* The second way is to provide the instance with configuration file in YAML format (currently we only support `*.yaml` / `*.yml`). You can set the environment variable `ORAM_CONFIG_PATH` (default is set to `"./config.yml"`) so that the oram controller will read the corresponding config file. The detailed config flags will be explained in the coming future. Note that once this configuration is provided, all the command line flags will be **OVERRIDDEN**.
 
 A simple example:
 
@@ -170,6 +170,26 @@ ServerPort: 1234
 ServerCrtPath: "~/key/server.crt"
 ServerKeyPath: "~/key/server.key"
 ```
+
+|   Config Key          |         Description                         |     Default Value      |
+| --------------------- | ------------------------------------------- | ---------------------- |
+|   `OramType`          | The type of the ORAM.                       |      `PathOram`        |
+|   `BlockNum`          | The number of total blocks.                 |       `100000`         |
+|   `BucketSize`        | The size of each bucket in TreeOram.        |          `4`           |
+|   `Id`                | Identifier for this ORAM (used on server).  |          `0`           |
+|   `ServerCrtPath`     | The path to the server certificate.         |  `./key/server.crt`    |
+|   `ServerKeyPath`     | The path to the server's private key.       |  `./key/server.key`    |
+|   `ServerAddress`     | Listening address of the server.            |      `0.0.0.0`         |
+|   `ServerPort`        | Listening port of the server.               |       `1234`           |
+|   `EnableProxy`       | Enable proxy settings for gRPC.             |         `false`        |
+|   `ProxyAddress`      | Listening address of the proxy server.      |         `None`         |
+|   `ProxyPort`         | Listening port of the proxy server.         |         `0`            |
+|   `LogLevel`          | Default log level for `spdlog`.             |          `INFO`        |
+|   `LogFrequency`      | Default log flush interval (in second).     |          `3`           |
+|   `FilePath`          | The path to the data file.                  |         `None`         |
+|   `DisableDebugging`  | Disable debugging on the server side.       |         `true`         |
+|   `OdictSize`         | The size of the oblivious dict.             |         `100000`       |
+|   `ClientCacheMaxSize`| Maximum size of the cache (used in Odict).  |         `32`           |
 
 ## About the secret key negotiation
 
