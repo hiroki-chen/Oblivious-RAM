@@ -23,6 +23,8 @@ namespace oram_impl {
 class OramClient {
   std::unique_ptr<OramController> oram_controller_;
 
+  OramConfig config_;
+
  public:
   // The only way to construct an ORAM client.
   OramClient(const OramConfig& config);
@@ -34,6 +36,11 @@ class OramClient {
   OramStatus Write(uint32_t address, oram_block_t* const block) {
     return oram_controller_->Access(Operation::kWrite, address, block);
   }
+  OramStatus FillWithData(void);
+  OramStatus Ready(void);
+
+  OramConfig GetConfig(void) const { return config_; }
+
 };
 }  // namespace oram_impl
 

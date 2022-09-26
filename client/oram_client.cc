@@ -34,10 +34,10 @@ static std::shared_ptr<oram_server::Stub> CreateStub(
       grpc::SslCredentials(ssl_opts);
 
   // Make this stub shared among all.
-  return oram_server::NewStub(grpc::CreateChannel(address, ssl_creds));
+  return oram_server::NewStub(grpc::CreateChannel(full_address, ssl_creds));
 }
 
-OramClient::OramClient(const OramConfig& config) {
+OramClient::OramClient(const OramConfig& config) : config_(config) {
   std::shared_ptr<oram_server::Stub> stub;
 
   // Check if the proxy should be enabled.
@@ -95,4 +95,46 @@ OramClient::OramClient(const OramConfig& config) {
   // TODO: Read data from some file.
 }
 
+OramStatus OramClient::Ready(void) {
+  auto cryptor_ = oram_crypto::Cryptor::GetInstance();
+
+  if (config_.disable_debugging) {
+    cryptor_->NoNeedForSessionKey();
+    return OramStatus::OK;
+  } else {
+    return oram_controller_->KeyNegotiate();
+  }
+}
+
+OramStatus OramClient::FillWithData(void) {
+  // There are two ways to fill the ORAM with data.
+  // 1. Randomly sample some garbaga data.
+  // 2. Read data from a given file.
+
+  // Check if the filepath is valid.
+  if (!config_.filepath.empty()) {
+    // Read from file.
+    return oram_controller_->FromFile(config_.filepath);
+  } else {
+    // Sample some random data.
+    const size_t block_num = config_.block_num;
+    std::vector<oram_block_t> blocks;
+
+    // Should check if the current one is TreeOram.
+    if (oram_controller_->GetOramType() == OramType::kPathOram) {
+      PathOramController* const path_oram_controller =
+          oram_utils::TryCast<OramController, PathOramController>(
+              oram_controller_.get());
+
+      const size_t level = path_oram_controller->GetTreeLevel();
+      const size_t tree_size = (POW2(level + 1) - 1) * config_.bucket_size;
+
+      oram_utils::SampleRandomBucket(block_num, tree_size, 0ul);
+    } else {
+      oram_utils::SampleRandomBucket(block_num, block_num, 0ul);
+    }
+
+    return oram_controller_->FillWithData(blocks);
+  }
+}
 }  // namespace oram_impl

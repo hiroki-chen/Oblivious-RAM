@@ -28,3 +28,6 @@ ServerKeyPath: "../keys/server.key"
 ServerAddress: "localhost"
 EnableProxy: false
 ServerPort: 1234
+
+FilePath: "../data/data.txt"
+DisableDebugging: true

@@ -32,6 +32,14 @@
 namespace oram_utils {
 std::string ReadKeyCrtFile(const std::string& path);
 
+template <typename From, typename To>
+To* TryCast(From* const from) {
+  To* to = dynamic_cast<To*>(from);
+
+  PANIC_IF(to == nullptr, "Polymorphism failed.");
+  return to;
+}
+
 template <typename... Args>
 std::string StrCat(Args&&... args) {
   std::ostringstream oss;
@@ -48,8 +56,8 @@ oram_impl::OramStatus TryExec(Fn&& target_func) {
     target_func();
   } catch (const std::exception& e) {
     // Cast this exception to status code.
-    return oram_impl::OramStatus(
-        oram_impl::StatusCode::kUnknownError, e.what());
+    return oram_impl::OramStatus(oram_impl::StatusCode::kUnknownError,
+                                 e.what());
   }
 
   // OK.
