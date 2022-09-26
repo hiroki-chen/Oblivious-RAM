@@ -39,6 +39,21 @@ int main(int argc, char* argv[]) {
   // Create the controller.
   std::unique_ptr<oram_impl::OramClient> client =
       std::make_unique<oram_impl::OramClient>(config);
+  client->Ready();
+  client->FillWithData();
+
+  for (size_t i = 0; i < config.block_num; i++) {
+    oram_impl::oram_block_t block;
+    block.header.block_id = i;
+    oram_impl::OramStatus status = oram_impl::OramStatus::OK;
+
+    if (!(status = client->Read(i, &block)).ok()) {
+      logger->error("[-] Error reading block `{}` due to `{}`.", i,
+                    status.ErrorMessage());
+    } else {
+      logger->info("[+] {}: {}", i, block.data[0]);
+    }
+  }
 
   return 0;
 }

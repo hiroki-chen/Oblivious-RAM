@@ -65,7 +65,7 @@ class OramController {
  public:
   OramController(uint32_t id, bool standalone, size_t block_num,
                  OramType oram_type);
-
+  virtual OramStatus KeyNegotiate(void);
   virtual OramStatus InitOram(void) = 0;
   virtual OramStatus FillWithData(const std::vector<oram_block_t>& data) = 0;
   virtual OramStatus Access(Operation op_type, uint32_t address,

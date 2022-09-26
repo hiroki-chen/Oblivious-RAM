@@ -53,6 +53,8 @@ struct OramConfig {
   size_t client_cache_max_size;
 
   bool disable_debugging;
+
+  std::string filepath;
 };
 
 static const OramConfig default_config = {
@@ -77,6 +79,7 @@ static const OramConfig default_config = {
     32,
 
     true,
+    "",
 };
 }  // namespace oram_impl
 

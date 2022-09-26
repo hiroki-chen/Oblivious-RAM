@@ -55,6 +55,10 @@ ABSL_FLAG(uint32_t, log_frequency, 3,
 // Disable debugging.
 ABSL_FLAG(bool, disable_debugging, true, "Hide secret on the server.");
 
+// Data source.
+ABSL_FLAG(std::string, file_path, "",
+          "The path to the file that stores the ORAM data.");
+
 namespace oram_parse {
 
 oram_impl::OramStatus YamlParser::DoParse(const YAML::const_iterator& cur_iter,
@@ -126,6 +130,16 @@ oram_impl::OramStatus YamlParser::DoParse(const YAML::const_iterator& cur_iter,
       config.client_cache_max_size = cur_iter->second.as<size_t>();
     });
 
+  } else if (key == "FilePath") {
+    return oram_utils::TryExec([&]() {
+      config.filepath = cur_iter->second.as<std::string>();
+    });
+
+  } else if (key == "DisableDebugging") {
+    return oram_utils::TryExec([&]() {
+      config.disable_debugging = cur_iter->second.as<bool>();
+    });
+
   } else {
     return oram_impl::OramStatus(
         oram_impl::StatusCode::kInvalidArgument,
@@ -150,6 +164,7 @@ oram_impl::OramStatus YamlParser::DoCommandLine(oram_impl::OramConfig& config) {
   config.odict_size = absl::GetFlag(FLAGS_odict_size);
   config.client_cache_max_size = absl::GetFlag(FLAGS_client_cache_size);
   config.disable_debugging = absl::GetFlag(FLAGS_disable_debugging);
+  config.filepath = absl::GetFlag(FLAGS_file_path);
 
   return oram_impl::OramStatus::OK;
 }
