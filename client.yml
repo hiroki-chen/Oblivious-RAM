@@ -18,12 +18,11 @@
 
 OramType: "PathOram"
 
-BlockNum: 100000
+BlockNum: 4096
 BucketSize: 4
 Id: 0
 
 ServerCrtPath: "../keys/server.crt"
-ServerKeyPath: "../keys/server.key"
 
 ServerAddress: "localhost"
 EnableProxy: false
