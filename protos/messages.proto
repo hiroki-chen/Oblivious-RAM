@@ -26,7 +26,7 @@ service oram_server {
 
   rpc ReadSqrtMemory(ReadSqrtRequest) returns (SqrtMessage) {}
 
-  rpc WriteSqrtMemory(SqrtMessage) returns (google.protobuf.Empty) {}
+  rpc WriteSqrtMemory(WriteSqrtMessage) returns (google.protobuf.Empty) {}
 
   rpc SqrtPermute(SqrtPermMessage) returns (google.protobuf.Empty) {}
 
@@ -99,6 +99,12 @@ message SqrtMessage {
   bytes content = 2;
 }
 
+message WriteSqrtMessage {
+  RequestHeader header = 1;
+  bytes content = 2;
+  bool write_to_cache = 3;
+}
+
 message SqrtPermMessage {
   RequestHeader header = 1;
   repeated bytes content = 2;
@@ -117,6 +123,12 @@ message ReadFlatRequest {
 
 message ReadSqrtRequest {
   RequestHeader header = 1;
+  uint32 tag = 2;
+  // Explanation:
+  // 0 => shelter;
+  // 1 => main memory;
+  // 2 => dummy.
+  uint32 read_from = 3;
 }
 
 message ReadPathRequest {

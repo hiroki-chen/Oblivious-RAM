@@ -99,6 +99,9 @@ extern WritePathRequestDefaultTypeInternal _WritePathRequest_default_instance_;
 class WritePathResponse;
 struct WritePathResponseDefaultTypeInternal;
 extern WritePathResponseDefaultTypeInternal _WritePathResponse_default_instance_;
+class WriteSqrtMessage;
+struct WriteSqrtMessageDefaultTypeInternal;
+extern WriteSqrtMessageDefaultTypeInternal _WriteSqrtMessage_default_instance_;
 }  // namespace oram_impl
 PROTOBUF_NAMESPACE_OPEN
 template<> ::oram_impl::FlatVectorMessage* Arena::CreateMaybeMessage<::oram_impl::FlatVectorMessage>(Arena*);
@@ -118,6 +121,7 @@ template<> ::oram_impl::SqrtMessage* Arena::CreateMaybeMessage<::oram_impl::Sqrt
 template<> ::oram_impl::SqrtPermMessage* Arena::CreateMaybeMessage<::oram_impl::SqrtPermMessage>(Arena*);
 template<> ::oram_impl::WritePathRequest* Arena::CreateMaybeMessage<::oram_impl::WritePathRequest>(Arena*);
 template<> ::oram_impl::WritePathResponse* Arena::CreateMaybeMessage<::oram_impl::WritePathResponse>(Arena*);
+template<> ::oram_impl::WriteSqrtMessage* Arena::CreateMaybeMessage<::oram_impl::WriteSqrtMessage>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace oram_impl {
 
@@ -1668,6 +1672,190 @@ class SqrtMessage final :
 };
 // -------------------------------------------------------------------
 
+class WriteSqrtMessage final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:oram_impl.WriteSqrtMessage) */ {
+ public:
+  inline WriteSqrtMessage() : WriteSqrtMessage(nullptr) {}
+  ~WriteSqrtMessage() override;
+  explicit PROTOBUF_CONSTEXPR WriteSqrtMessage(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  WriteSqrtMessage(const WriteSqrtMessage& from);
+  WriteSqrtMessage(WriteSqrtMessage&& from) noexcept
+    : WriteSqrtMessage() {
+    *this = ::std::move(from);
+  }
+
+  inline WriteSqrtMessage& operator=(const WriteSqrtMessage& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline WriteSqrtMessage& operator=(WriteSqrtMessage&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const WriteSqrtMessage& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const WriteSqrtMessage* internal_default_instance() {
+    return reinterpret_cast<const WriteSqrtMessage*>(
+               &_WriteSqrtMessage_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    9;
+
+  friend void swap(WriteSqrtMessage& a, WriteSqrtMessage& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(WriteSqrtMessage* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(WriteSqrtMessage* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  WriteSqrtMessage* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<WriteSqrtMessage>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const WriteSqrtMessage& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const WriteSqrtMessage& from) {
+    WriteSqrtMessage::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(WriteSqrtMessage* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "oram_impl.WriteSqrtMessage";
+  }
+  protected:
+  explicit WriteSqrtMessage(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kContentFieldNumber = 2,
+    kHeaderFieldNumber = 1,
+    kWriteToCacheFieldNumber = 3,
+  };
+  // bytes content = 2;
+  void clear_content();
+  const std::string& content() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_content(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_content();
+  PROTOBUF_NODISCARD std::string* release_content();
+  void set_allocated_content(std::string* content);
+  private:
+  const std::string& _internal_content() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_content(const std::string& value);
+  std::string* _internal_mutable_content();
+  public:
+
+  // .oram_impl.RequestHeader header = 1;
+  bool has_header() const;
+  private:
+  bool _internal_has_header() const;
+  public:
+  void clear_header();
+  const ::oram_impl::RequestHeader& header() const;
+  PROTOBUF_NODISCARD ::oram_impl::RequestHeader* release_header();
+  ::oram_impl::RequestHeader* mutable_header();
+  void set_allocated_header(::oram_impl::RequestHeader* header);
+  private:
+  const ::oram_impl::RequestHeader& _internal_header() const;
+  ::oram_impl::RequestHeader* _internal_mutable_header();
+  public:
+  void unsafe_arena_set_allocated_header(
+      ::oram_impl::RequestHeader* header);
+  ::oram_impl::RequestHeader* unsafe_arena_release_header();
+
+  // bool write_to_cache = 3;
+  void clear_write_to_cache();
+  bool write_to_cache() const;
+  void set_write_to_cache(bool value);
+  private:
+  bool _internal_write_to_cache() const;
+  void _internal_set_write_to_cache(bool value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:oram_impl.WriteSqrtMessage)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr content_;
+    ::oram_impl::RequestHeader* header_;
+    bool write_to_cache_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_messages_2eproto;
+};
+// -------------------------------------------------------------------
+
 class SqrtPermMessage final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:oram_impl.SqrtPermMessage) */ {
  public:
@@ -1716,7 +1904,7 @@ class SqrtPermMessage final :
                &_SqrtPermMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    10;
 
   friend void swap(SqrtPermMessage& a, SqrtPermMessage& b) {
     a.Swap(&b);
@@ -1899,7 +2087,7 @@ class InitTreeOramRequest final :
                &_InitTreeOramRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    11;
 
   friend void swap(InitTreeOramRequest& a, InitTreeOramRequest& b) {
     a.Swap(&b);
@@ -2089,7 +2277,7 @@ class ReadFlatRequest final :
                &_ReadFlatRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    12;
 
   friend void swap(ReadFlatRequest& a, ReadFlatRequest& b) {
     a.Swap(&b);
@@ -2246,7 +2434,7 @@ class ReadSqrtRequest final :
                &_ReadSqrtRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    13;
 
   friend void swap(ReadSqrtRequest& a, ReadSqrtRequest& b) {
     a.Swap(&b);
@@ -2320,6 +2508,8 @@ class ReadSqrtRequest final :
 
   enum : int {
     kHeaderFieldNumber = 1,
+    kTagFieldNumber = 2,
+    kReadFromFieldNumber = 3,
   };
   // .oram_impl.RequestHeader header = 1;
   bool has_header() const;
@@ -2339,6 +2529,24 @@ class ReadSqrtRequest final :
       ::oram_impl::RequestHeader* header);
   ::oram_impl::RequestHeader* unsafe_arena_release_header();
 
+  // uint32 tag = 2;
+  void clear_tag();
+  uint32_t tag() const;
+  void set_tag(uint32_t value);
+  private:
+  uint32_t _internal_tag() const;
+  void _internal_set_tag(uint32_t value);
+  public:
+
+  // uint32 read_from = 3;
+  void clear_read_from();
+  uint32_t read_from() const;
+  void set_read_from(uint32_t value);
+  private:
+  uint32_t _internal_read_from() const;
+  void _internal_set_read_from(uint32_t value);
+  public:
+
   // @@protoc_insertion_point(class_scope:oram_impl.ReadSqrtRequest)
  private:
   class _Internal;
@@ -2348,6 +2556,8 @@ class ReadSqrtRequest final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     ::oram_impl::RequestHeader* header_;
+    uint32_t tag_;
+    uint32_t read_from_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -2403,7 +2613,7 @@ class ReadPathRequest final :
                &_ReadPathRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    14;
 
   friend void swap(ReadPathRequest& a, ReadPathRequest& b) {
     a.Swap(&b);
@@ -2582,7 +2792,7 @@ class ReadPathResponse final :
                &_ReadPathResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    15;
 
   friend void swap(ReadPathResponse& a, ReadPathResponse& b) {
     a.Swap(&b);
@@ -2745,7 +2955,7 @@ class WritePathRequest final :
                &_WritePathRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    16;
 
   friend void swap(WritePathRequest& a, WritePathRequest& b) {
     a.Swap(&b);
@@ -2980,7 +3190,7 @@ class WritePathResponse final :
                &_WritePathResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    17;
 
   friend void swap(WritePathResponse& a, WritePathResponse& b) {
     a.Swap(&b);
@@ -3994,6 +4204,170 @@ inline void SqrtMessage::set_allocated_content(std::string* content) {
 
 // -------------------------------------------------------------------
 
+// WriteSqrtMessage
+
+// .oram_impl.RequestHeader header = 1;
+inline bool WriteSqrtMessage::_internal_has_header() const {
+  return this != internal_default_instance() && _impl_.header_ != nullptr;
+}
+inline bool WriteSqrtMessage::has_header() const {
+  return _internal_has_header();
+}
+inline void WriteSqrtMessage::clear_header() {
+  if (GetArenaForAllocation() == nullptr && _impl_.header_ != nullptr) {
+    delete _impl_.header_;
+  }
+  _impl_.header_ = nullptr;
+}
+inline const ::oram_impl::RequestHeader& WriteSqrtMessage::_internal_header() const {
+  const ::oram_impl::RequestHeader* p = _impl_.header_;
+  return p != nullptr ? *p : reinterpret_cast<const ::oram_impl::RequestHeader&>(
+      ::oram_impl::_RequestHeader_default_instance_);
+}
+inline const ::oram_impl::RequestHeader& WriteSqrtMessage::header() const {
+  // @@protoc_insertion_point(field_get:oram_impl.WriteSqrtMessage.header)
+  return _internal_header();
+}
+inline void WriteSqrtMessage::unsafe_arena_set_allocated_header(
+    ::oram_impl::RequestHeader* header) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.header_);
+  }
+  _impl_.header_ = header;
+  if (header) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:oram_impl.WriteSqrtMessage.header)
+}
+inline ::oram_impl::RequestHeader* WriteSqrtMessage::release_header() {
+  
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::oram_impl::RequestHeader* WriteSqrtMessage::unsafe_arena_release_header() {
+  // @@protoc_insertion_point(field_release:oram_impl.WriteSqrtMessage.header)
+  
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+  return temp;
+}
+inline ::oram_impl::RequestHeader* WriteSqrtMessage::_internal_mutable_header() {
+  
+  if (_impl_.header_ == nullptr) {
+    auto* p = CreateMaybeMessage<::oram_impl::RequestHeader>(GetArenaForAllocation());
+    _impl_.header_ = p;
+  }
+  return _impl_.header_;
+}
+inline ::oram_impl::RequestHeader* WriteSqrtMessage::mutable_header() {
+  ::oram_impl::RequestHeader* _msg = _internal_mutable_header();
+  // @@protoc_insertion_point(field_mutable:oram_impl.WriteSqrtMessage.header)
+  return _msg;
+}
+inline void WriteSqrtMessage::set_allocated_header(::oram_impl::RequestHeader* header) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.header_;
+  }
+  if (header) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(header);
+    if (message_arena != submessage_arena) {
+      header = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, header, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.header_ = header;
+  // @@protoc_insertion_point(field_set_allocated:oram_impl.WriteSqrtMessage.header)
+}
+
+// bytes content = 2;
+inline void WriteSqrtMessage::clear_content() {
+  _impl_.content_.ClearToEmpty();
+}
+inline const std::string& WriteSqrtMessage::content() const {
+  // @@protoc_insertion_point(field_get:oram_impl.WriteSqrtMessage.content)
+  return _internal_content();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void WriteSqrtMessage::set_content(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.content_.SetBytes(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:oram_impl.WriteSqrtMessage.content)
+}
+inline std::string* WriteSqrtMessage::mutable_content() {
+  std::string* _s = _internal_mutable_content();
+  // @@protoc_insertion_point(field_mutable:oram_impl.WriteSqrtMessage.content)
+  return _s;
+}
+inline const std::string& WriteSqrtMessage::_internal_content() const {
+  return _impl_.content_.Get();
+}
+inline void WriteSqrtMessage::_internal_set_content(const std::string& value) {
+  
+  _impl_.content_.Set(value, GetArenaForAllocation());
+}
+inline std::string* WriteSqrtMessage::_internal_mutable_content() {
+  
+  return _impl_.content_.Mutable(GetArenaForAllocation());
+}
+inline std::string* WriteSqrtMessage::release_content() {
+  // @@protoc_insertion_point(field_release:oram_impl.WriteSqrtMessage.content)
+  return _impl_.content_.Release();
+}
+inline void WriteSqrtMessage::set_allocated_content(std::string* content) {
+  if (content != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.content_.SetAllocated(content, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.content_.IsDefault()) {
+    _impl_.content_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:oram_impl.WriteSqrtMessage.content)
+}
+
+// bool write_to_cache = 3;
+inline void WriteSqrtMessage::clear_write_to_cache() {
+  _impl_.write_to_cache_ = false;
+}
+inline bool WriteSqrtMessage::_internal_write_to_cache() const {
+  return _impl_.write_to_cache_;
+}
+inline bool WriteSqrtMessage::write_to_cache() const {
+  // @@protoc_insertion_point(field_get:oram_impl.WriteSqrtMessage.write_to_cache)
+  return _internal_write_to_cache();
+}
+inline void WriteSqrtMessage::_internal_set_write_to_cache(bool value) {
+  
+  _impl_.write_to_cache_ = value;
+}
+inline void WriteSqrtMessage::set_write_to_cache(bool value) {
+  _internal_set_write_to_cache(value);
+  // @@protoc_insertion_point(field_set:oram_impl.WriteSqrtMessage.write_to_cache)
+}
+
+// -------------------------------------------------------------------
+
 // SqrtPermMessage
 
 // .oram_impl.RequestHeader header = 1;
@@ -4503,6 +4877,46 @@ inline void ReadSqrtRequest::set_allocated_header(::oram_impl::RequestHeader* he
   // @@protoc_insertion_point(field_set_allocated:oram_impl.ReadSqrtRequest.header)
 }
 
+// uint32 tag = 2;
+inline void ReadSqrtRequest::clear_tag() {
+  _impl_.tag_ = 0u;
+}
+inline uint32_t ReadSqrtRequest::_internal_tag() const {
+  return _impl_.tag_;
+}
+inline uint32_t ReadSqrtRequest::tag() const {
+  // @@protoc_insertion_point(field_get:oram_impl.ReadSqrtRequest.tag)
+  return _internal_tag();
+}
+inline void ReadSqrtRequest::_internal_set_tag(uint32_t value) {
+  
+  _impl_.tag_ = value;
+}
+inline void ReadSqrtRequest::set_tag(uint32_t value) {
+  _internal_set_tag(value);
+  // @@protoc_insertion_point(field_set:oram_impl.ReadSqrtRequest.tag)
+}
+
+// uint32 read_from = 3;
+inline void ReadSqrtRequest::clear_read_from() {
+  _impl_.read_from_ = 0u;
+}
+inline uint32_t ReadSqrtRequest::_internal_read_from() const {
+  return _impl_.read_from_;
+}
+inline uint32_t ReadSqrtRequest::read_from() const {
+  // @@protoc_insertion_point(field_get:oram_impl.ReadSqrtRequest.read_from)
+  return _internal_read_from();
+}
+inline void ReadSqrtRequest::_internal_set_read_from(uint32_t value) {
+  
+  _impl_.read_from_ = value;
+}
+inline void ReadSqrtRequest::set_read_from(uint32_t value) {
+  _internal_set_read_from(value);
+  // @@protoc_insertion_point(field_set:oram_impl.ReadSqrtRequest.read_from)
+}
+
 // -------------------------------------------------------------------
 
 // ReadPathRequest
@@ -4988,6 +5402,8 @@ inline void WritePathRequest::set_offset(uint32_t value) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

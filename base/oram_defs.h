@@ -74,9 +74,10 @@ enum class OramType {
 
 enum class OramStorageType {
   kFlatStorage = 0,
-  kTreeStorage = 1,
-  kLayeredStorage = 2,
-  kInvalidStorage = 3,
+  kSqrtStorage = 1,
+  kTreeStorage = 2,
+  kLayeredStorage = 3,
+  kInvalidStorage = 4,
 };
 
 // The header containing metadata.
@@ -132,6 +133,7 @@ using server_storage_tag_t = std::pair<uint32_t, uint32_t>;
 using server_tree_storage_t =
     absl::flat_hash_map<server_storage_tag_t, server_storage_data>;
 using server_flat_storage_t = std::string;
+using server_sqrt_storage_t = std::vector<std::string>;
 
 struct BlockEqual {
  private:

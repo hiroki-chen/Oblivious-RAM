@@ -16,6 +16,19 @@
  */
 #include "sqrt_oram_storage.h"
 
+#include "base/oram_utils.h"
+
 namespace oram_impl {
-   
-} // namespace oram_impl
+bool SqrtOramServerStorage::Check(uint32_t pos, uint32_t type) {
+  switch (type) {
+    case 0:
+      return pos < shelter_.size();
+    case 1:
+      return pos < main_memory_.size();
+    case 2:
+      return pos < dummy_.size();
+    default:
+      return false;
+  }
+}
+}  // namespace oram_impl

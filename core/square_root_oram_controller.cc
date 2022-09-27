@@ -16,6 +16,10 @@
  */
 #include "square_root_oram_controller.h"
 
+#include <spdlog/spdlog.h>
+
+extern std::shared_ptr<spdlog::logger> logger;
+
 namespace oram_impl {
 
 static std::vector<uint32_t> CreateVec(size_t size) {
@@ -28,9 +32,18 @@ static std::vector<uint32_t> CreateVec(size_t size) {
   return ans;
 }
 
-OramStatus SquareRootOramController::ReadBlock(uint32_t position,
-                                               oram_block_t* const data) {
+OramStatus SquareRootOramController::ReadBlockFromShelter(
+    oram_block_t* const data) {
   // TODO.
+  return OramStatus::OK;
+}
+
+OramStatus SquareRootOramController::ReadBlockFromDummy(void) {
+  return OramStatus::OK;
+}
+
+OramStatus SquareRootOramController::ReadBlockFromMain(uint32_t pos,
+                                                       oram_block_t* data) {
   return OramStatus::OK;
 }
 
@@ -43,6 +56,7 @@ SquareRootOramController::SquareRootOramController(uint32_t id, bool standalone,
                                                    size_t block_num)
     : OramController(id, standalone, block_num, OramType::kSquareOram),
       sqrt_m_((size_t)std::ceil(std::sqrt(block_num))),
+      next_dummy_(0ul),
       counter_(0ul) {
   // TODO: Should check m + \sqrt{m} = log_2(x), for some x.
 }
@@ -108,25 +122,47 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
   }
 
   const uint32_t position = position_map_[address];
-  oram_block_t block;
-  block.header.block_id = address;
-  block.header.type = BlockType::kNormal;
 
   // Read from the server.
-  OramStatus status = OramStatus::OK;
-  if (!(status = ReadBlock(position, &block)).ok()) {
-    return OramStatus(status.ErrorCode(),
-                      oram_utils::StrCat("[InternalAccess] Server Error: ",
-                                         status.ErrorMessage()));
+  // Step 1: Scan the cache (shelter) of the server.
+  bool found_in_shelter = false;
+  OramStatus status = ReadBlockFromShelter(data);
+  if (!status.ok()) {
+    // Check if the error is NOT FOUND; if not, we return the error.
+    if (StatusCode::kObjectNotFound != status.ErrorCode()) {
+      return status;
+    }
+
+  } else {
+    found_in_shelter = true;
+  }
+
+  // Step 2: If not found in the cache, read from main; else read next dummy.
+  if (found_in_shelter) {
+    // Can be permuted, but for convenience, we just "literally" read the next
+    // dummy. If there is any error, we return it.
+    status = ReadBlockFromDummy();
+    if (!status.ok()) {
+      return status;
+    }
+
+  } else {
+    // If a block is not found in the shelter, then it MUST be in the main
+    // memory even if randomly permuted. So we use the permuted posiiton to
+    // index it.
+    status = ReadBlockFromMain(position, data);
+    if (!status.ok()) {
+      return status;
+    }
   }
 
   // Check if the id matches.
-  if (block.header.block_id != address) {
+  if (data->header.block_id != address) {
     return OramStatus(
         StatusCode::kUnknownError,
         oram_utils::StrCat("[InternalAccess] The requested id ", address,
                            " does not match with the fetched block ",
-                           block.header.block_id, "!"));
+                           data->header.block_id, "!"));
   }
 
   // Check if we need to permute the oram storage.
