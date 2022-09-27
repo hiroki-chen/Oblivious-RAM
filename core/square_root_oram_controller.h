@@ -38,6 +38,8 @@ class SquareRootOramController : public OramController {
   // storage.
   
   size_t sqrt_m_;
+  // Marks the next dummy block to be accessed.
+  size_t next_dummy_;
 
   p_oram_position_t position_map_;
 
@@ -48,7 +50,9 @@ class SquareRootOramController : public OramController {
                                     oram_block_t* const data,
                                     bool dummy = false) override;
 
-  virtual OramStatus ReadBlock(uint32_t position, oram_block_t* const data);
+  virtual OramStatus ReadBlockFromShelter(oram_block_t* const data);
+  virtual OramStatus ReadBlockFromDummy(void);
+  virtual OramStatus ReadBlockFromMain(uint32_t pos, oram_block_t* const data);
   virtual OramStatus WriteBlock(uint32_t position, oram_block_t* const data);
   virtual OramStatus PermuteOnFull(void);
 
