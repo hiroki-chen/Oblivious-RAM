@@ -13,6 +13,8 @@ Currently, we consider implmenting the following oblivious RAMs.
 
 In future development, the project may be migrated to an equivalent Rust version with enclave support.
 
+User guide is [here](https://oblivious-ram.gitbook.io/doc/).
+
 ## Prerequisites
 
 To correctly build the repo, one must install the following libraries, and the compiler needs to support C++17. All the libraries are compiled in C++17, and you can pass it to `cmake` by
