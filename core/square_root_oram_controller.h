@@ -36,7 +36,7 @@ class SquareRootOramController : public OramController {
   // the plaintext domain.
   // 2. We will locally maintain the position map with O(sizeof(uint32_t) * N)
   // storage.
-  
+
   size_t sqrt_m_;
   // Marks the next dummy block to be accessed.
   size_t next_dummy_;
@@ -45,16 +45,20 @@ class SquareRootOramController : public OramController {
 
   // After m operations, we will permute the whole ORAM storage.
   uint32_t counter_;
+
  protected:
   virtual OramStatus InternalAccess(Operation op_type, uint32_t address,
                                     oram_block_t* const data,
                                     bool dummy = false) override;
 
+  // FIXME: Maybe there is no need for separate interfaces.
   virtual OramStatus ReadBlockFromShelter(oram_block_t* const data);
   virtual OramStatus ReadBlockFromDummy(void);
   virtual OramStatus ReadBlockFromMain(uint32_t pos, oram_block_t* const data);
-  virtual OramStatus WriteBlock(uint32_t position, oram_block_t* const data);
+  virtual OramStatus WriteBlock(uint32_t position, oram_block_t* const data,
+                                bool write_to_cache);
   virtual OramStatus PermuteOnFull(void);
+  virtual OramStatus DoPermute(const std::string& content);
 
  public:
   // For the convenience of format-preserving encryption, we will round up the

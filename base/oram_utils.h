@@ -119,6 +119,10 @@ std::string IntoBinary(uint32_t num);
 uint32_t FromBinary(const std::string& str);
 
 oram_impl::OramType StrToType(const std::string& type);
+
+std::string PermToStr(const std::vector<uint32_t>& vec);
+
+std::vector<uint32_t> StrToPerm(const std::string& str);
 }  // namespace oram_utils
 
 #endif  // ORAM_IMPL_BASE_ORAM_UTILS_H_

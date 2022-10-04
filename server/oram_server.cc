@@ -179,7 +179,7 @@ grpc::Status OramService::ReadSqrtMemory(grpc::ServerContext* context,
       break;
     }
     default:
-    // Simply does nothing because the sanity check must be passed.
+      // Simply does nothing because the sanity check must be passed.
       break;
   }
 
@@ -189,15 +189,74 @@ grpc::Status OramService::ReadSqrtMemory(grpc::ServerContext* context,
 grpc::Status OramService::WriteSqrtMemory(grpc::ServerContext* context,
                                           const WriteSqrtMessage* request,
                                           google::protobuf::Empty* empty) {
-  // TODO.
+  logger->info("From peer: {}, WriteSqrtMemory request received.",
+               context->peer());
+
+  const uint32_t id = request->header().id();
+  const std::string instance_hash = request->header().instance_hash();
+
+  grpc::Status status = grpc::Status::OK;
+  if (!(status = CheckIdValid(id)).ok()) {
+    return status;
+  }
+
+  SqrtOramServerStorage* const storage =
+      dynamic_cast<SqrtOramServerStorage* const>(storages_[id].get());
+  if (storage == nullptr ||
+      storage->GetOramStorageType() != OramStorageType::kFlatStorage) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
+  } else if (storage->GetInstanceHash().compare(instance_hash)) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
+  }
+
+  // Write to the memory.
+  bool write_to_cache = request->write_to_cache();
+  const uint32_t pos = request->pos();
+  const std::string content = request->content();
+
+  // Should always check boundary before writing.
+  if (write_to_cache) {
+    if (!storage->Check(pos, 0)) {
+      return grpc::Status(grpc::StatusCode::OUT_OF_RANGE,
+                          "The given position is out of range.");
+    }
+    storage->WriteBlockToShelter(pos, content);
+  } else {
+    if (!storage->Check(pos, 1)) {
+      return grpc::Status(grpc::StatusCode::OUT_OF_RANGE,
+                          "The given position is out of range.");
+    }
+    storage->WriteBlockToMain(pos, content);
+  }
 
   return grpc::Status::OK;
 }
 
 grpc::Status OramService::SqrtPermute(grpc::ServerContext* context,
-                                      const SqrtPermMessage* message,
+                                      const SqrtPermMessage* request,
                                       google::protobuf::Empty* empty) {
-  // TODO.
+  logger->info("From peer: {}, SqrtPermute request received.", context->peer());
+
+  const uint32_t id = request->header().id();
+  const std::string instance_hash = request->header().instance_hash();
+
+  grpc::Status status = grpc::Status::OK;
+  if (!(status = CheckIdValid(id)).ok()) {
+    return status;
+  }
+
+  SqrtOramServerStorage* const storage =
+      dynamic_cast<SqrtOramServerStorage* const>(storages_[id].get());
+  if (storage == nullptr ||
+      storage->GetOramStorageType() != OramStorageType::kFlatStorage) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
+  } else if (storage->GetInstanceHash().compare(instance_hash)) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
+  }
+
+  const std::vector<uint32_t> perm =
+      std::move(oram_utils::StrToPerm(request->content()));
+  storage->DoPermute(perm);
 
   return grpc::Status::OK;
 }

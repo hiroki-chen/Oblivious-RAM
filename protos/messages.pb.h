@@ -1796,6 +1796,7 @@ class WriteSqrtMessage final :
     kContentFieldNumber = 2,
     kHeaderFieldNumber = 1,
     kWriteToCacheFieldNumber = 3,
+    kPosFieldNumber = 4,
   };
   // bytes content = 2;
   void clear_content();
@@ -1838,6 +1839,15 @@ class WriteSqrtMessage final :
   void _internal_set_write_to_cache(bool value);
   public:
 
+  // uint32 pos = 4;
+  void clear_pos();
+  uint32_t pos() const;
+  void set_pos(uint32_t value);
+  private:
+  uint32_t _internal_pos() const;
+  void _internal_set_pos(uint32_t value);
+  public:
+
   // @@protoc_insertion_point(class_scope:oram_impl.WriteSqrtMessage)
  private:
   class _Internal;
@@ -1849,6 +1859,7 @@ class WriteSqrtMessage final :
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr content_;
     ::oram_impl::RequestHeader* header_;
     bool write_to_cache_;
+    uint32_t pos_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -1980,28 +1991,18 @@ class SqrtPermMessage final :
     kContentFieldNumber = 2,
     kHeaderFieldNumber = 1,
   };
-  // repeated bytes content = 2;
-  int content_size() const;
-  private:
-  int _internal_content_size() const;
-  public:
+  // bytes content = 2;
   void clear_content();
-  const std::string& content(int index) const;
-  std::string* mutable_content(int index);
-  void set_content(int index, const std::string& value);
-  void set_content(int index, std::string&& value);
-  void set_content(int index, const char* value);
-  void set_content(int index, const void* value, size_t size);
-  std::string* add_content();
-  void add_content(const std::string& value);
-  void add_content(std::string&& value);
-  void add_content(const char* value);
-  void add_content(const void* value, size_t size);
-  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& content() const;
-  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_content();
+  const std::string& content() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_content(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_content();
+  PROTOBUF_NODISCARD std::string* release_content();
+  void set_allocated_content(std::string* content);
   private:
-  const std::string& _internal_content(int index) const;
-  std::string* _internal_add_content();
+  const std::string& _internal_content() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_content(const std::string& value);
+  std::string* _internal_mutable_content();
   public:
 
   // .oram_impl.RequestHeader header = 1;
@@ -2030,7 +2031,7 @@ class SqrtPermMessage final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> content_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr content_;
     ::oram_impl::RequestHeader* header_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
@@ -4366,6 +4367,26 @@ inline void WriteSqrtMessage::set_write_to_cache(bool value) {
   // @@protoc_insertion_point(field_set:oram_impl.WriteSqrtMessage.write_to_cache)
 }
 
+// uint32 pos = 4;
+inline void WriteSqrtMessage::clear_pos() {
+  _impl_.pos_ = 0u;
+}
+inline uint32_t WriteSqrtMessage::_internal_pos() const {
+  return _impl_.pos_;
+}
+inline uint32_t WriteSqrtMessage::pos() const {
+  // @@protoc_insertion_point(field_get:oram_impl.WriteSqrtMessage.pos)
+  return _internal_pos();
+}
+inline void WriteSqrtMessage::_internal_set_pos(uint32_t value) {
+  
+  _impl_.pos_ = value;
+}
+inline void WriteSqrtMessage::set_pos(uint32_t value) {
+  _internal_set_pos(value);
+  // @@protoc_insertion_point(field_set:oram_impl.WriteSqrtMessage.pos)
+}
+
 // -------------------------------------------------------------------
 
 // SqrtPermMessage
@@ -4460,79 +4481,54 @@ inline void SqrtPermMessage::set_allocated_header(::oram_impl::RequestHeader* he
   // @@protoc_insertion_point(field_set_allocated:oram_impl.SqrtPermMessage.header)
 }
 
-// repeated bytes content = 2;
-inline int SqrtPermMessage::_internal_content_size() const {
-  return _impl_.content_.size();
-}
-inline int SqrtPermMessage::content_size() const {
-  return _internal_content_size();
-}
+// bytes content = 2;
 inline void SqrtPermMessage::clear_content() {
-  _impl_.content_.Clear();
+  _impl_.content_.ClearToEmpty();
 }
-inline std::string* SqrtPermMessage::add_content() {
-  std::string* _s = _internal_add_content();
-  // @@protoc_insertion_point(field_add_mutable:oram_impl.SqrtPermMessage.content)
+inline const std::string& SqrtPermMessage::content() const {
+  // @@protoc_insertion_point(field_get:oram_impl.SqrtPermMessage.content)
+  return _internal_content();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void SqrtPermMessage::set_content(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.content_.SetBytes(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:oram_impl.SqrtPermMessage.content)
+}
+inline std::string* SqrtPermMessage::mutable_content() {
+  std::string* _s = _internal_mutable_content();
+  // @@protoc_insertion_point(field_mutable:oram_impl.SqrtPermMessage.content)
   return _s;
 }
-inline const std::string& SqrtPermMessage::_internal_content(int index) const {
-  return _impl_.content_.Get(index);
+inline const std::string& SqrtPermMessage::_internal_content() const {
+  return _impl_.content_.Get();
 }
-inline const std::string& SqrtPermMessage::content(int index) const {
-  // @@protoc_insertion_point(field_get:oram_impl.SqrtPermMessage.content)
-  return _internal_content(index);
+inline void SqrtPermMessage::_internal_set_content(const std::string& value) {
+  
+  _impl_.content_.Set(value, GetArenaForAllocation());
 }
-inline std::string* SqrtPermMessage::mutable_content(int index) {
-  // @@protoc_insertion_point(field_mutable:oram_impl.SqrtPermMessage.content)
-  return _impl_.content_.Mutable(index);
+inline std::string* SqrtPermMessage::_internal_mutable_content() {
+  
+  return _impl_.content_.Mutable(GetArenaForAllocation());
 }
-inline void SqrtPermMessage::set_content(int index, const std::string& value) {
-  _impl_.content_.Mutable(index)->assign(value);
-  // @@protoc_insertion_point(field_set:oram_impl.SqrtPermMessage.content)
+inline std::string* SqrtPermMessage::release_content() {
+  // @@protoc_insertion_point(field_release:oram_impl.SqrtPermMessage.content)
+  return _impl_.content_.Release();
 }
-inline void SqrtPermMessage::set_content(int index, std::string&& value) {
-  _impl_.content_.Mutable(index)->assign(std::move(value));
-  // @@protoc_insertion_point(field_set:oram_impl.SqrtPermMessage.content)
-}
-inline void SqrtPermMessage::set_content(int index, const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  _impl_.content_.Mutable(index)->assign(value);
-  // @@protoc_insertion_point(field_set_char:oram_impl.SqrtPermMessage.content)
-}
-inline void SqrtPermMessage::set_content(int index, const void* value, size_t size) {
-  _impl_.content_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_set_pointer:oram_impl.SqrtPermMessage.content)
-}
-inline std::string* SqrtPermMessage::_internal_add_content() {
-  return _impl_.content_.Add();
-}
-inline void SqrtPermMessage::add_content(const std::string& value) {
-  _impl_.content_.Add()->assign(value);
-  // @@protoc_insertion_point(field_add:oram_impl.SqrtPermMessage.content)
-}
-inline void SqrtPermMessage::add_content(std::string&& value) {
-  _impl_.content_.Add(std::move(value));
-  // @@protoc_insertion_point(field_add:oram_impl.SqrtPermMessage.content)
-}
-inline void SqrtPermMessage::add_content(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  _impl_.content_.Add()->assign(value);
-  // @@protoc_insertion_point(field_add_char:oram_impl.SqrtPermMessage.content)
-}
-inline void SqrtPermMessage::add_content(const void* value, size_t size) {
-  _impl_.content_.Add()->assign(reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_add_pointer:oram_impl.SqrtPermMessage.content)
-}
-inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
-SqrtPermMessage::content() const {
-  // @@protoc_insertion_point(field_list:oram_impl.SqrtPermMessage.content)
-  return _impl_.content_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
-SqrtPermMessage::mutable_content() {
-  // @@protoc_insertion_point(field_mutable_list:oram_impl.SqrtPermMessage.content)
-  return &_impl_.content_;
+inline void SqrtPermMessage::set_allocated_content(std::string* content) {
+  if (content != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.content_.SetAllocated(content, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.content_.IsDefault()) {
+    _impl_.content_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:oram_impl.SqrtPermMessage.content)
 }
 
 // -------------------------------------------------------------------

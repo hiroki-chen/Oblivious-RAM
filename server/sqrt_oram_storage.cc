@@ -22,13 +22,47 @@ namespace oram_impl {
 bool SqrtOramServerStorage::Check(uint32_t pos, uint32_t type) {
   switch (type) {
     case 0:
-      return pos < shelter_.size();
+      return main_memory_.size() <= pos &&
+             pos < shelter_.size() + main_memory_.size();
+
     case 1:
-      return pos < main_memory_.size();
+      return 0 < pos && pos < main_memory_.size();
+
     case 2:
-      return pos < dummy_.size();
+      return shelter_.size() + main_memory_.size() <= pos &&
+             pos < shelter_.size() + main_memory_.size() + dummy_.size();
+
     default:
       return false;
   }
 }
+
+void SqrtOramServerStorage::DoPermute(const std::vector<uint32_t>& perm) {
+  for (size_t i = 0; i < perm.size(); i++) {
+    // This is the index of the element that should be relocated to the current
+    // index; we need to check the boundary.
+    const uint32_t target_element = perm[i];
+
+    // Permute main memory.
+    if (i < main_memory_.size()) {
+      if (target_element < main_memory_.size()) {
+        std::swap(main_memory_[i], main_memory_[target_element]);
+      } else {
+        std::swap(main_memory_[i],
+                  shelter_[target_element - main_memory_.size()]);
+      }
+    }
+    // Permute the shelter.
+    else {
+      if (target_element < main_memory_.size()) {
+        std::swap(shelter_[i - main_memory_.size()],
+                  main_memory_[target_element]);
+      } else {
+        std::swap(shelter_[i - main_memory_.size()],
+                  shelter_[target_element - main_memory_.size()]);
+      }
+    }
+  }
+}
+
 }  // namespace oram_impl

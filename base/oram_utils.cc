@@ -89,7 +89,8 @@ void ConvertToBlock(const std::string& data,
 void ConvertToString(const oram_impl::oram_block_t* const block,
                      std::string* const data) {
   data->resize(ORAM_BLOCK_SIZE);
-  memcpy(data->data(), (void*)block, ORAM_BLOCK_SIZE);
+  memcpy(reinterpret_cast<void*>(data->data()),
+         reinterpret_cast<const void*>(block), ORAM_BLOCK_SIZE);
 }
 
 void CheckStatus(const oram_impl::OramStatus& status,
@@ -361,5 +362,27 @@ oram_impl::OramType StrToType(const std::string& type) {
   } else {
     return oram_impl::OramType::kInvalid;
   }
+}
+
+std::string PermToStr(const std::vector<uint32_t>& vec) {
+  std::string ans;
+
+  std::for_each(vec.begin(), vec.end(), [&ans](const uint32_t num) {
+    ans += std::to_string(num) + "_";
+  });
+
+  ans.pop_back();
+  return ans;
+}
+
+std::vector<uint32_t> StrToPerm(const std::string& str) {
+  std::vector<std::string> chunks = split(str, '_');
+  std::vector<uint32_t> ans;
+
+  std::for_each(chunks.begin(), chunks.end(), [&](const std::string& str) {
+    ans.emplace_back(std::stoul(str));
+  });
+
+  return ans;
 }
 }  // namespace oram_utils
