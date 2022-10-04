@@ -22,8 +22,8 @@
 namespace oram_impl {
 class SqrtOramServerStorage : public BaseOramServerStorage {
   server_sqrt_storage_t main_memory_;
-  server_sqrt_storage_t dummy_;
   server_sqrt_storage_t shelter_;
+  server_sqrt_storage_t dummy_;
 
   size_t squared_m_;
 
@@ -34,11 +34,22 @@ class SqrtOramServerStorage : public BaseOramServerStorage {
                               OramStorageType::kSqrtStorage),
         squared_m_(squared_m) {}
   bool Check(uint32_t pos, uint32_t type);
-  std::string ReadBlockFromShelter(uint32_t pos) { return shelter_[pos]; }
+  // Position needs to "shrink to fit".
+  std::string ReadBlockFromShelter(uint32_t pos) {
+    return shelter_[pos - main_memory_.size()];
+  }
   std::string ReadBlockFromMain(uint32_t pos) { return main_memory_[pos]; }
-  std::string ReadBlockFromDummy(uint32_t pos) { return dummy_[pos]; }
-  void WriteBlockToShelter(uint32_t pos, const std::string& data);
-  void WriteBlockToMain(uint32_t pos, const std::string& data);
+  std::string ReadBlockFromDummy(uint32_t pos) {
+    return dummy_[pos - main_memory_.size() - shelter_.size()];
+  }
+  void WriteBlockToShelter(uint32_t pos, const std::string& data) {
+    shelter_[pos - main_memory_.size()] = data;
+  }
+  void WriteBlockToMain(uint32_t pos, const std::string& data) {
+    main_memory_[pos] = data;
+  }
+
+  void DoPermute(const std::vector<uint32_t>& perm);
 };
 }  // namespace oram_impl
 

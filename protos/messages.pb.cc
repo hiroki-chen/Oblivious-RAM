@@ -153,6 +153,7 @@ PROTOBUF_CONSTEXPR WriteSqrtMessage::WriteSqrtMessage(
     /*decltype(_impl_.content_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.header_)*/nullptr
   , /*decltype(_impl_.write_to_cache_)*/false
+  , /*decltype(_impl_.pos_)*/0u
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct WriteSqrtMessageDefaultTypeInternal {
   PROTOBUF_CONSTEXPR WriteSqrtMessageDefaultTypeInternal()
@@ -165,7 +166,7 @@ struct WriteSqrtMessageDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 WriteSqrtMessageDefaultTypeInternal _WriteSqrtMessage_default_instance_;
 PROTOBUF_CONSTEXPR SqrtPermMessage::SqrtPermMessage(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.content_)*/{}
+    /*decltype(_impl_.content_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.header_)*/nullptr
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct SqrtPermMessageDefaultTypeInternal {
@@ -367,6 +368,7 @@ const uint32_t TableStruct_messages_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE
   PROTOBUF_FIELD_OFFSET(::oram_impl::WriteSqrtMessage, _impl_.header_),
   PROTOBUF_FIELD_OFFSET(::oram_impl::WriteSqrtMessage, _impl_.content_),
   PROTOBUF_FIELD_OFFSET(::oram_impl::WriteSqrtMessage, _impl_.write_to_cache_),
+  PROTOBUF_FIELD_OFFSET(::oram_impl::WriteSqrtMessage, _impl_.pos_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::oram_impl::SqrtPermMessage, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -453,14 +455,14 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 57, -1, -1, sizeof(::oram_impl::FlatVectorMessage)},
   { 65, -1, -1, sizeof(::oram_impl::SqrtMessage)},
   { 73, -1, -1, sizeof(::oram_impl::WriteSqrtMessage)},
-  { 82, -1, -1, sizeof(::oram_impl::SqrtPermMessage)},
-  { 90, -1, -1, sizeof(::oram_impl::InitTreeOramRequest)},
-  { 100, -1, -1, sizeof(::oram_impl::ReadFlatRequest)},
-  { 107, -1, -1, sizeof(::oram_impl::ReadSqrtRequest)},
-  { 116, -1, -1, sizeof(::oram_impl::ReadPathRequest)},
-  { 125, -1, -1, sizeof(::oram_impl::ReadPathResponse)},
-  { 132, 144, -1, sizeof(::oram_impl::WritePathRequest)},
-  { 150, -1, -1, sizeof(::oram_impl::WritePathResponse)},
+  { 83, -1, -1, sizeof(::oram_impl::SqrtPermMessage)},
+  { 91, -1, -1, sizeof(::oram_impl::InitTreeOramRequest)},
+  { 101, -1, -1, sizeof(::oram_impl::ReadFlatRequest)},
+  { 108, -1, -1, sizeof(::oram_impl::ReadSqrtRequest)},
+  { 117, -1, -1, sizeof(::oram_impl::ReadPathRequest)},
+  { 126, -1, -1, sizeof(::oram_impl::ReadPathResponse)},
+  { 133, 145, -1, sizeof(::oram_impl::WritePathRequest)},
+  { 151, -1, -1, sizeof(::oram_impl::WritePathResponse)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -502,65 +504,65 @@ const char descriptor_table_protodef_messages_2eproto[] PROTOBUF_SECTION_VARIABL
   "r\030\001 \001(\0132\030.oram_impl.RequestHeader\022\017\n\007con"
   "tent\030\002 \001(\014\"H\n\013SqrtMessage\022(\n\006header\030\001 \001("
   "\0132\030.oram_impl.RequestHeader\022\017\n\007content\030\002"
-  " \001(\014\"e\n\020WriteSqrtMessage\022(\n\006header\030\001 \001(\013"
+  " \001(\014\"r\n\020WriteSqrtMessage\022(\n\006header\030\001 \001(\013"
   "2\030.oram_impl.RequestHeader\022\017\n\007content\030\002 "
-  "\001(\014\022\026\n\016write_to_cache\030\003 \001(\010\"L\n\017SqrtPermM"
-  "essage\022(\n\006header\030\001 \001(\0132\030.oram_impl.Reque"
-  "stHeader\022\017\n\007content\030\002 \003(\014\"|\n\023InitTreeOra"
-  "mRequest\022(\n\006header\030\001 \001(\0132\030.oram_impl.Req"
-  "uestHeader\022\023\n\013bucket_size\030\002 \001(\r\022\022\n\nbucke"
-  "t_num\030\003 \001(\r\022\022\n\nblock_size\030\004 \001(\r\";\n\017ReadF"
-  "latRequest\022(\n\006header\030\001 \001(\0132\030.oram_impl.R"
-  "equestHeader\"[\n\017ReadSqrtRequest\022(\n\006heade"
-  "r\030\001 \001(\0132\030.oram_impl.RequestHeader\022\013\n\003tag"
-  "\030\002 \001(\r\022\021\n\tread_from\030\003 \001(\r\"X\n\017ReadPathReq"
+  "\001(\014\022\026\n\016write_to_cache\030\003 \001(\010\022\013\n\003pos\030\004 \001(\r"
+  "\"L\n\017SqrtPermMessage\022(\n\006header\030\001 \001(\0132\030.or"
+  "am_impl.RequestHeader\022\017\n\007content\030\002 \001(\014\"|"
+  "\n\023InitTreeOramRequest\022(\n\006header\030\001 \001(\0132\030."
+  "oram_impl.RequestHeader\022\023\n\013bucket_size\030\002"
+  " \001(\r\022\022\n\nbucket_num\030\003 \001(\r\022\022\n\nblock_size\030\004"
+  " \001(\r\";\n\017ReadFlatRequest\022(\n\006header\030\001 \001(\0132"
+  "\030.oram_impl.RequestHeader\"[\n\017ReadSqrtReq"
   "uest\022(\n\006header\030\001 \001(\0132\030.oram_impl.Request"
-  "Header\022\014\n\004path\030\002 \001(\r\022\r\n\005level\030\003 \001(\r\"\"\n\020R"
-  "eadPathResponse\022\016\n\006bucket\030\001 \003(\014\"\266\001\n\020Writ"
-  "ePathRequest\022(\n\006header\030\001 \001(\0132\030.oram_impl"
-  ".RequestHeader\022\014\n\004path\030\002 \001(\r\022\r\n\005level\030\003 "
-  "\001(\r\022\016\n\006bucket\030\004 \003(\014\022\"\n\004type\030\005 \001(\0162\017.oram"
-  "_impl.TypeH\000\210\001\001\022\023\n\006offset\030\006 \001(\rH\001\210\001\001B\007\n\005"
-  "_typeB\t\n\007_offset\"\023\n\021WritePathResponse*<\n"
-  "\004Type\022\017\n\013kSequential\020\000\022\013\n\007kRandom\020\001\022\t\n\005k"
-  "Init\020\002\022\013\n\007kNormal\020\0032\233\t\n\013oram_server\022H\n\014I"
-  "nitTreeOram\022\036.oram_impl.InitTreeOramRequ"
-  "est\032\026.google.protobuf.Empty\"\000\022H\n\014InitFla"
-  "tOram\022\036.oram_impl.InitFlatOramRequest\032\026."
-  "google.protobuf.Empty\"\000\022H\n\014InitSqrtOram\022"
-  "\036.oram_impl.InitSqrtOramRequest\032\026.google"
-  ".protobuf.Empty\"\000\022J\n\rPrintOramTree\022\037.ora"
-  "m_impl.PrintOramTreeRequest\032\026.google.pro"
-  "tobuf.Empty\"\000\022E\n\010ReadPath\022\032.oram_impl.Re"
-  "adPathRequest\032\033.oram_impl.ReadPathRespon"
-  "se\"\000\022H\n\tWritePath\022\033.oram_impl.WritePathR"
-  "equest\032\034.oram_impl.WritePathResponse\"\000\022L"
-  "\n\016ReadFlatMemory\022\032.oram_impl.ReadFlatReq"
-  "uest\032\034.oram_impl.FlatVectorMessage\"\000\022I\n\017"
-  "WriteFlatMemory\022\034.oram_impl.FlatVectorMe"
-  "ssage\032\026.google.protobuf.Empty\"\000\022F\n\016ReadS"
-  "qrtMemory\022\032.oram_impl.ReadSqrtRequest\032\026."
-  "oram_impl.SqrtMessage\"\000\022H\n\017WriteSqrtMemo"
-  "ry\022\033.oram_impl.WriteSqrtMessage\032\026.google"
-  ".protobuf.Empty\"\000\022C\n\013SqrtPermute\022\032.oram_"
-  "impl.SqrtPermMessage\032\026.google.protobuf.E"
-  "mpty\"\000\022C\n\017CloseConnection\022\026.google.proto"
-  "buf.Empty\032\026.google.protobuf.Empty\"\000\022N\n\013K"
-  "eyExchange\022\035.oram_impl.KeyExchangeReques"
-  "t\032\036.oram_impl.KeyExchangeResponse\"\000\022>\n\tS"
-  "endHello\022\027.oram_impl.HelloMessage\032\026.goog"
-  "le.protobuf.Empty\"\000\022K\n\027ReportServerInfor"
-  "mation\022\026.google.protobuf.Empty\032\026.google."
-  "protobuf.Empty\"\000\022\?\n\013ResetServer\022\026.google"
-  ".protobuf.Empty\032\026.google.protobuf.Empty\""
-  "\000b\006proto3"
+  "Header\022\013\n\003tag\030\002 \001(\r\022\021\n\tread_from\030\003 \001(\r\"X"
+  "\n\017ReadPathRequest\022(\n\006header\030\001 \001(\0132\030.oram"
+  "_impl.RequestHeader\022\014\n\004path\030\002 \001(\r\022\r\n\005lev"
+  "el\030\003 \001(\r\"\"\n\020ReadPathResponse\022\016\n\006bucket\030\001"
+  " \003(\014\"\266\001\n\020WritePathRequest\022(\n\006header\030\001 \001("
+  "\0132\030.oram_impl.RequestHeader\022\014\n\004path\030\002 \001("
+  "\r\022\r\n\005level\030\003 \001(\r\022\016\n\006bucket\030\004 \003(\014\022\"\n\004type"
+  "\030\005 \001(\0162\017.oram_impl.TypeH\000\210\001\001\022\023\n\006offset\030\006"
+  " \001(\rH\001\210\001\001B\007\n\005_typeB\t\n\007_offset\"\023\n\021WritePa"
+  "thResponse*<\n\004Type\022\017\n\013kSequential\020\000\022\013\n\007k"
+  "Random\020\001\022\t\n\005kInit\020\002\022\013\n\007kNormal\020\0032\233\t\n\013ora"
+  "m_server\022H\n\014InitTreeOram\022\036.oram_impl.Ini"
+  "tTreeOramRequest\032\026.google.protobuf.Empty"
+  "\"\000\022H\n\014InitFlatOram\022\036.oram_impl.InitFlatO"
+  "ramRequest\032\026.google.protobuf.Empty\"\000\022H\n\014"
+  "InitSqrtOram\022\036.oram_impl.InitSqrtOramReq"
+  "uest\032\026.google.protobuf.Empty\"\000\022J\n\rPrintO"
+  "ramTree\022\037.oram_impl.PrintOramTreeRequest"
+  "\032\026.google.protobuf.Empty\"\000\022E\n\010ReadPath\022\032"
+  ".oram_impl.ReadPathRequest\032\033.oram_impl.R"
+  "eadPathResponse\"\000\022H\n\tWritePath\022\033.oram_im"
+  "pl.WritePathRequest\032\034.oram_impl.WritePat"
+  "hResponse\"\000\022L\n\016ReadFlatMemory\022\032.oram_imp"
+  "l.ReadFlatRequest\032\034.oram_impl.FlatVector"
+  "Message\"\000\022I\n\017WriteFlatMemory\022\034.oram_impl"
+  ".FlatVectorMessage\032\026.google.protobuf.Emp"
+  "ty\"\000\022F\n\016ReadSqrtMemory\022\032.oram_impl.ReadS"
+  "qrtRequest\032\026.oram_impl.SqrtMessage\"\000\022H\n\017"
+  "WriteSqrtMemory\022\033.oram_impl.WriteSqrtMes"
+  "sage\032\026.google.protobuf.Empty\"\000\022C\n\013SqrtPe"
+  "rmute\022\032.oram_impl.SqrtPermMessage\032\026.goog"
+  "le.protobuf.Empty\"\000\022C\n\017CloseConnection\022\026"
+  ".google.protobuf.Empty\032\026.google.protobuf"
+  ".Empty\"\000\022N\n\013KeyExchange\022\035.oram_impl.KeyE"
+  "xchangeRequest\032\036.oram_impl.KeyExchangeRe"
+  "sponse\"\000\022>\n\tSendHello\022\027.oram_impl.HelloM"
+  "essage\032\026.google.protobuf.Empty\"\000\022K\n\027Repo"
+  "rtServerInformation\022\026.google.protobuf.Em"
+  "pty\032\026.google.protobuf.Empty\"\000\022\?\n\013ResetSe"
+  "rver\022\026.google.protobuf.Empty\032\026.google.pr"
+  "otobuf.Empty\"\000b\006proto3"
   ;
 static const ::_pbi::DescriptorTable* const descriptor_table_messages_2eproto_deps[1] = {
   &::descriptor_table_google_2fprotobuf_2fempty_2eproto,
 };
 static ::_pbi::once_flag descriptor_table_messages_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_messages_2eproto = {
-    false, false, 2729, descriptor_table_protodef_messages_2eproto,
+    false, false, 2742, descriptor_table_protodef_messages_2eproto,
     "messages.proto",
     &descriptor_table_messages_2eproto_once, descriptor_table_messages_2eproto_deps, 1, 18,
     schemas, file_default_instances, TableStruct_messages_2eproto::offsets,
@@ -2710,6 +2712,7 @@ WriteSqrtMessage::WriteSqrtMessage(const WriteSqrtMessage& from)
       decltype(_impl_.content_){}
     , decltype(_impl_.header_){nullptr}
     , decltype(_impl_.write_to_cache_){}
+    , decltype(_impl_.pos_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -2724,7 +2727,9 @@ WriteSqrtMessage::WriteSqrtMessage(const WriteSqrtMessage& from)
   if (from._internal_has_header()) {
     _this->_impl_.header_ = new ::oram_impl::RequestHeader(*from._impl_.header_);
   }
-  _this->_impl_.write_to_cache_ = from._impl_.write_to_cache_;
+  ::memcpy(&_impl_.write_to_cache_, &from._impl_.write_to_cache_,
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.pos_) -
+    reinterpret_cast<char*>(&_impl_.write_to_cache_)) + sizeof(_impl_.pos_));
   // @@protoc_insertion_point(copy_constructor:oram_impl.WriteSqrtMessage)
 }
 
@@ -2736,6 +2741,7 @@ inline void WriteSqrtMessage::SharedCtor(
       decltype(_impl_.content_){}
     , decltype(_impl_.header_){nullptr}
     , decltype(_impl_.write_to_cache_){false}
+    , decltype(_impl_.pos_){0u}
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.content_.InitDefault();
@@ -2774,7 +2780,9 @@ void WriteSqrtMessage::Clear() {
     delete _impl_.header_;
   }
   _impl_.header_ = nullptr;
-  _impl_.write_to_cache_ = false;
+  ::memset(&_impl_.write_to_cache_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&_impl_.pos_) -
+      reinterpret_cast<char*>(&_impl_.write_to_cache_)) + sizeof(_impl_.pos_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -2805,6 +2813,14 @@ const char* WriteSqrtMessage::_InternalParse(const char* ptr, ::_pbi::ParseConte
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
           _impl_.write_to_cache_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint32 pos = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 32)) {
+          _impl_.pos_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -2857,6 +2873,12 @@ uint8_t* WriteSqrtMessage::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteBoolToArray(3, this->_internal_write_to_cache(), target);
   }
 
+  // uint32 pos = 4;
+  if (this->_internal_pos() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(4, this->_internal_pos(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -2892,6 +2914,11 @@ size_t WriteSqrtMessage::ByteSizeLong() const {
     total_size += 1 + 1;
   }
 
+  // uint32 pos = 4;
+  if (this->_internal_pos() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_pos());
+  }
+
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -2920,6 +2947,9 @@ void WriteSqrtMessage::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const
   if (from._internal_write_to_cache() != 0) {
     _this->_internal_set_write_to_cache(from._internal_write_to_cache());
   }
+  if (from._internal_pos() != 0) {
+    _this->_internal_set_pos(from._internal_pos());
+  }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -2944,8 +2974,8 @@ void WriteSqrtMessage::InternalSwap(WriteSqrtMessage* other) {
       &other->_impl_.content_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(WriteSqrtMessage, _impl_.write_to_cache_)
-      + sizeof(WriteSqrtMessage::_impl_.write_to_cache_)
+      PROTOBUF_FIELD_OFFSET(WriteSqrtMessage, _impl_.pos_)
+      + sizeof(WriteSqrtMessage::_impl_.pos_)
       - PROTOBUF_FIELD_OFFSET(WriteSqrtMessage, _impl_.header_)>(
           reinterpret_cast<char*>(&_impl_.header_),
           reinterpret_cast<char*>(&other->_impl_.header_));
@@ -2978,11 +3008,19 @@ SqrtPermMessage::SqrtPermMessage(const SqrtPermMessage& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   SqrtPermMessage* const _this = this; (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.content_){from._impl_.content_}
+      decltype(_impl_.content_){}
     , decltype(_impl_.header_){nullptr}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _impl_.content_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.content_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_content().empty()) {
+    _this->_impl_.content_.Set(from._internal_content(), 
+      _this->GetArenaForAllocation());
+  }
   if (from._internal_has_header()) {
     _this->_impl_.header_ = new ::oram_impl::RequestHeader(*from._impl_.header_);
   }
@@ -2994,10 +3032,14 @@ inline void SqrtPermMessage::SharedCtor(
   (void)arena;
   (void)is_message_owned;
   new (&_impl_) Impl_{
-      decltype(_impl_.content_){arena}
+      decltype(_impl_.content_){}
     , decltype(_impl_.header_){nullptr}
     , /*decltype(_impl_._cached_size_)*/{}
   };
+  _impl_.content_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.content_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
 SqrtPermMessage::~SqrtPermMessage() {
@@ -3011,7 +3053,7 @@ SqrtPermMessage::~SqrtPermMessage() {
 
 inline void SqrtPermMessage::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
-  _impl_.content_.~RepeatedPtrField();
+  _impl_.content_.Destroy();
   if (this != internal_default_instance()) delete _impl_.header_;
 }
 
@@ -3025,7 +3067,7 @@ void SqrtPermMessage::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.content_.Clear();
+  _impl_.content_.ClearToEmpty();
   if (GetArenaForAllocation() == nullptr && _impl_.header_ != nullptr) {
     delete _impl_.header_;
   }
@@ -3047,17 +3089,12 @@ const char* SqrtPermMessage::_InternalParse(const char* ptr, ::_pbi::ParseContex
         } else
           goto handle_unusual;
         continue;
-      // repeated bytes content = 2;
+      // bytes content = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
-          ptr -= 1;
-          do {
-            ptr += 1;
-            auto str = _internal_add_content();
-            ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-            CHK_(ptr);
-            if (!ctx->DataAvailable(ptr)) break;
-          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<18>(ptr));
+          auto str = _internal_mutable_content();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
         } else
           goto handle_unusual;
         continue;
@@ -3097,10 +3134,10 @@ uint8_t* SqrtPermMessage::_InternalSerialize(
         _Internal::header(this).GetCachedSize(), target, stream);
   }
 
-  // repeated bytes content = 2;
-  for (int i = 0, n = this->_internal_content_size(); i < n; i++) {
-    const auto& s = this->_internal_content(i);
-    target = stream->WriteBytes(2, s, target);
+  // bytes content = 2;
+  if (!this->_internal_content().empty()) {
+    target = stream->WriteBytesMaybeAliased(
+        2, this->_internal_content(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -3119,12 +3156,11 @@ size_t SqrtPermMessage::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // repeated bytes content = 2;
-  total_size += 1 *
-      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_impl_.content_.size());
-  for (int i = 0, n = _impl_.content_.size(); i < n; i++) {
-    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-      _impl_.content_.Get(i));
+  // bytes content = 2;
+  if (!this->_internal_content().empty()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
+        this->_internal_content());
   }
 
   // .oram_impl.RequestHeader header = 1;
@@ -3152,7 +3188,9 @@ void SqrtPermMessage::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const 
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_impl_.content_.MergeFrom(from._impl_.content_);
+  if (!from._internal_content().empty()) {
+    _this->_internal_set_content(from._internal_content());
+  }
   if (from._internal_has_header()) {
     _this->_internal_mutable_header()->::oram_impl::RequestHeader::MergeFrom(
         from._internal_header());
@@ -3173,8 +3211,13 @@ bool SqrtPermMessage::IsInitialized() const {
 
 void SqrtPermMessage::InternalSwap(SqrtPermMessage* other) {
   using std::swap;
+  auto* lhs_arena = GetArenaForAllocation();
+  auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _impl_.content_.InternalSwap(&other->_impl_.content_);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.content_, lhs_arena,
+      &other->_impl_.content_, rhs_arena
+  );
   swap(_impl_.header_, other->_impl_.header_);
 }
 

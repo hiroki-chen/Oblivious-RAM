@@ -91,8 +91,6 @@ OramClient::OramClient(const OramConfig& config) : config_(config) {
 
     abort();
   }
-
-  // TODO: Read data from some file.
 }
 
 OramStatus OramClient::Ready(void) {
