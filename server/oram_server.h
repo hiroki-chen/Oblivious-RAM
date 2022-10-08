@@ -57,6 +57,10 @@ class OramService final : public oram_server::Service {
                             const InitSqrtOramRequest* request,
                             google::protobuf::Empty* empty) override;
 
+  grpc::Status LoadSqrtOram(grpc::ServerContext* context,
+                            const LoadSqrtOramRequest* request,
+                            google::protobuf::Empty* empty) override;
+
   grpc::Status PrintOramTree(grpc::ServerContext* context,
                              const PrintOramTreeRequest* request,
                              google::protobuf::Empty* response) override;

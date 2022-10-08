@@ -363,26 +363,4 @@ oram_impl::OramType StrToType(const std::string& type) {
     return oram_impl::OramType::kInvalid;
   }
 }
-
-std::string PermToStr(const std::vector<uint32_t>& vec) {
-  std::string ans;
-
-  std::for_each(vec.begin(), vec.end(), [&ans](const uint32_t num) {
-    ans += std::to_string(num) + "_";
-  });
-
-  ans.pop_back();
-  return ans;
-}
-
-std::vector<uint32_t> StrToPerm(const std::string& str) {
-  std::vector<std::string> chunks = split(str, '_');
-  std::vector<uint32_t> ans;
-
-  std::for_each(chunks.begin(), chunks.end(), [&](const std::string& str) {
-    ans.emplace_back(std::stoul(str));
-  });
-
-  return ans;
-}
 }  // namespace oram_utils

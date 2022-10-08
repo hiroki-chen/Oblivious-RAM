@@ -20,6 +20,10 @@
 #include "oram_controller.h"
 
 namespace oram_impl {
+static const uint32_t kShelter = 0ul;
+static const uint32_t kMainMemory = 1ul;
+static const uint32_t kDummy = 2ul;
+
 class SquareRootOramController : public OramController {
   // The layout of the square root ORAM is:
   // ------------------ | ------- | -------|
@@ -51,19 +55,22 @@ class SquareRootOramController : public OramController {
                                     oram_block_t* const data,
                                     bool dummy = false) override;
 
-  // FIXME: Maybe there is no need for separate interfaces.
-  virtual OramStatus ReadBlockFromShelter(oram_block_t* const data);
-  virtual OramStatus ReadBlockFromDummy(void);
-  virtual OramStatus ReadBlockFromMain(uint32_t pos, oram_block_t* const data);
+  virtual OramStatus ReadShelter(oram_block_t* const data);
+  virtual OramStatus ReadBlock(uint32_t from, uint32_t pos,
+                               oram_block_t* const data);
   virtual OramStatus WriteBlock(uint32_t position, oram_block_t* const data,
-                                bool write_to_cache);
+                                bool to);
   virtual OramStatus PermuteOnFull(void);
-  virtual OramStatus DoPermute(const std::string& content);
+  virtual OramStatus DoPermute(const std::vector<uint32_t>& perm);
 
  public:
   // For the convenience of format-preserving encryption, we will round up the
   // block_num to a value such that m + \sqrt{m} =  2^{n}, for some integer n.
   SquareRootOramController(uint32_t id, bool standalone, size_t block_num);
+
+  virtual OramStatus InitOram(void) override;
+  // The user should prepare a permuted initial data vector.
+  virtual OramStatus FillWithData(const std::vector<oram_block_t>& data) override;
 };
 }  // namespace oram_impl
 

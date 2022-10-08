@@ -69,6 +69,9 @@ extern KeyExchangeRequestDefaultTypeInternal _KeyExchangeRequest_default_instanc
 class KeyExchangeResponse;
 struct KeyExchangeResponseDefaultTypeInternal;
 extern KeyExchangeResponseDefaultTypeInternal _KeyExchangeResponse_default_instance_;
+class LoadSqrtOramRequest;
+struct LoadSqrtOramRequestDefaultTypeInternal;
+extern LoadSqrtOramRequestDefaultTypeInternal _LoadSqrtOramRequest_default_instance_;
 class PrintOramTreeRequest;
 struct PrintOramTreeRequestDefaultTypeInternal;
 extern PrintOramTreeRequestDefaultTypeInternal _PrintOramTreeRequest_default_instance_;
@@ -111,6 +114,7 @@ template<> ::oram_impl::InitSqrtOramRequest* Arena::CreateMaybeMessage<::oram_im
 template<> ::oram_impl::InitTreeOramRequest* Arena::CreateMaybeMessage<::oram_impl::InitTreeOramRequest>(Arena*);
 template<> ::oram_impl::KeyExchangeRequest* Arena::CreateMaybeMessage<::oram_impl::KeyExchangeRequest>(Arena*);
 template<> ::oram_impl::KeyExchangeResponse* Arena::CreateMaybeMessage<::oram_impl::KeyExchangeResponse>(Arena*);
+template<> ::oram_impl::LoadSqrtOramRequest* Arena::CreateMaybeMessage<::oram_impl::LoadSqrtOramRequest>(Arena*);
 template<> ::oram_impl::PrintOramTreeRequest* Arena::CreateMaybeMessage<::oram_impl::PrintOramTreeRequest>(Arena*);
 template<> ::oram_impl::ReadFlatRequest* Arena::CreateMaybeMessage<::oram_impl::ReadFlatRequest>(Arena*);
 template<> ::oram_impl::ReadPathRequest* Arena::CreateMaybeMessage<::oram_impl::ReadPathRequest>(Arena*);
@@ -1326,6 +1330,189 @@ class InitSqrtOramRequest final :
 };
 // -------------------------------------------------------------------
 
+class LoadSqrtOramRequest final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:oram_impl.LoadSqrtOramRequest) */ {
+ public:
+  inline LoadSqrtOramRequest() : LoadSqrtOramRequest(nullptr) {}
+  ~LoadSqrtOramRequest() override;
+  explicit PROTOBUF_CONSTEXPR LoadSqrtOramRequest(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  LoadSqrtOramRequest(const LoadSqrtOramRequest& from);
+  LoadSqrtOramRequest(LoadSqrtOramRequest&& from) noexcept
+    : LoadSqrtOramRequest() {
+    *this = ::std::move(from);
+  }
+
+  inline LoadSqrtOramRequest& operator=(const LoadSqrtOramRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline LoadSqrtOramRequest& operator=(LoadSqrtOramRequest&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const LoadSqrtOramRequest& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const LoadSqrtOramRequest* internal_default_instance() {
+    return reinterpret_cast<const LoadSqrtOramRequest*>(
+               &_LoadSqrtOramRequest_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    7;
+
+  friend void swap(LoadSqrtOramRequest& a, LoadSqrtOramRequest& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(LoadSqrtOramRequest* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(LoadSqrtOramRequest* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  LoadSqrtOramRequest* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<LoadSqrtOramRequest>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const LoadSqrtOramRequest& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const LoadSqrtOramRequest& from) {
+    LoadSqrtOramRequest::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(LoadSqrtOramRequest* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "oram_impl.LoadSqrtOramRequest";
+  }
+  protected:
+  explicit LoadSqrtOramRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kContentsFieldNumber = 2,
+    kHeaderFieldNumber = 1,
+  };
+  // repeated bytes contents = 2;
+  int contents_size() const;
+  private:
+  int _internal_contents_size() const;
+  public:
+  void clear_contents();
+  const std::string& contents(int index) const;
+  std::string* mutable_contents(int index);
+  void set_contents(int index, const std::string& value);
+  void set_contents(int index, std::string&& value);
+  void set_contents(int index, const char* value);
+  void set_contents(int index, const void* value, size_t size);
+  std::string* add_contents();
+  void add_contents(const std::string& value);
+  void add_contents(std::string&& value);
+  void add_contents(const char* value);
+  void add_contents(const void* value, size_t size);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& contents() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_contents();
+  private:
+  const std::string& _internal_contents(int index) const;
+  std::string* _internal_add_contents();
+  public:
+
+  // .oram_impl.RequestHeader header = 1;
+  bool has_header() const;
+  private:
+  bool _internal_has_header() const;
+  public:
+  void clear_header();
+  const ::oram_impl::RequestHeader& header() const;
+  PROTOBUF_NODISCARD ::oram_impl::RequestHeader* release_header();
+  ::oram_impl::RequestHeader* mutable_header();
+  void set_allocated_header(::oram_impl::RequestHeader* header);
+  private:
+  const ::oram_impl::RequestHeader& _internal_header() const;
+  ::oram_impl::RequestHeader* _internal_mutable_header();
+  public:
+  void unsafe_arena_set_allocated_header(
+      ::oram_impl::RequestHeader* header);
+  ::oram_impl::RequestHeader* unsafe_arena_release_header();
+
+  // @@protoc_insertion_point(class_scope:oram_impl.LoadSqrtOramRequest)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> contents_;
+    ::oram_impl::RequestHeader* header_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_messages_2eproto;
+};
+// -------------------------------------------------------------------
+
 class FlatVectorMessage final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:oram_impl.FlatVectorMessage) */ {
  public:
@@ -1374,7 +1561,7 @@ class FlatVectorMessage final :
                &_FlatVectorMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   friend void swap(FlatVectorMessage& a, FlatVectorMessage& b) {
     a.Swap(&b);
@@ -1547,7 +1734,7 @@ class SqrtMessage final :
                &_SqrtMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   friend void swap(SqrtMessage& a, SqrtMessage& b) {
     a.Swap(&b);
@@ -1720,7 +1907,7 @@ class WriteSqrtMessage final :
                &_WriteSqrtMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    10;
 
   friend void swap(WriteSqrtMessage& a, WriteSqrtMessage& b) {
     a.Swap(&b);
@@ -1915,7 +2102,7 @@ class SqrtPermMessage final :
                &_SqrtPermMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    11;
 
   friend void swap(SqrtPermMessage& a, SqrtPermMessage& b) {
     a.Swap(&b);
@@ -1988,22 +2175,30 @@ class SqrtPermMessage final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kContentFieldNumber = 2,
+    kPermsFieldNumber = 2,
     kHeaderFieldNumber = 1,
   };
-  // bytes content = 2;
-  void clear_content();
-  const std::string& content() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_content(ArgT0&& arg0, ArgT... args);
-  std::string* mutable_content();
-  PROTOBUF_NODISCARD std::string* release_content();
-  void set_allocated_content(std::string* content);
+  // repeated uint32 perms = 2;
+  int perms_size() const;
   private:
-  const std::string& _internal_content() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_content(const std::string& value);
-  std::string* _internal_mutable_content();
+  int _internal_perms_size() const;
   public:
+  void clear_perms();
+  private:
+  uint32_t _internal_perms(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+      _internal_perms() const;
+  void _internal_add_perms(uint32_t value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+      _internal_mutable_perms();
+  public:
+  uint32_t perms(int index) const;
+  void set_perms(int index, uint32_t value);
+  void add_perms(uint32_t value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+      perms() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+      mutable_perms();
 
   // .oram_impl.RequestHeader header = 1;
   bool has_header() const;
@@ -2031,7 +2226,8 @@ class SqrtPermMessage final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr content_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t > perms_;
+    mutable std::atomic<int> _perms_cached_byte_size_;
     ::oram_impl::RequestHeader* header_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
@@ -2088,7 +2284,7 @@ class InitTreeOramRequest final :
                &_InitTreeOramRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    12;
 
   friend void swap(InitTreeOramRequest& a, InitTreeOramRequest& b) {
     a.Swap(&b);
@@ -2278,7 +2474,7 @@ class ReadFlatRequest final :
                &_ReadFlatRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    13;
 
   friend void swap(ReadFlatRequest& a, ReadFlatRequest& b) {
     a.Swap(&b);
@@ -2435,7 +2631,7 @@ class ReadSqrtRequest final :
                &_ReadSqrtRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    14;
 
   friend void swap(ReadSqrtRequest& a, ReadSqrtRequest& b) {
     a.Swap(&b);
@@ -2614,7 +2810,7 @@ class ReadPathRequest final :
                &_ReadPathRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    15;
 
   friend void swap(ReadPathRequest& a, ReadPathRequest& b) {
     a.Swap(&b);
@@ -2793,7 +2989,7 @@ class ReadPathResponse final :
                &_ReadPathResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    16;
 
   friend void swap(ReadPathResponse& a, ReadPathResponse& b) {
     a.Swap(&b);
@@ -2956,7 +3152,7 @@ class WritePathRequest final :
                &_WritePathRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    17;
 
   friend void swap(WritePathRequest& a, WritePathRequest& b) {
     a.Swap(&b);
@@ -3191,7 +3387,7 @@ class WritePathResponse final :
                &_WritePathResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    17;
+    18;
 
   friend void swap(WritePathResponse& a, WritePathResponse& b) {
     a.Swap(&b);
@@ -3917,6 +4113,175 @@ inline void InitSqrtOramRequest::set_block_size(uint32_t value) {
 
 // -------------------------------------------------------------------
 
+// LoadSqrtOramRequest
+
+// .oram_impl.RequestHeader header = 1;
+inline bool LoadSqrtOramRequest::_internal_has_header() const {
+  return this != internal_default_instance() && _impl_.header_ != nullptr;
+}
+inline bool LoadSqrtOramRequest::has_header() const {
+  return _internal_has_header();
+}
+inline void LoadSqrtOramRequest::clear_header() {
+  if (GetArenaForAllocation() == nullptr && _impl_.header_ != nullptr) {
+    delete _impl_.header_;
+  }
+  _impl_.header_ = nullptr;
+}
+inline const ::oram_impl::RequestHeader& LoadSqrtOramRequest::_internal_header() const {
+  const ::oram_impl::RequestHeader* p = _impl_.header_;
+  return p != nullptr ? *p : reinterpret_cast<const ::oram_impl::RequestHeader&>(
+      ::oram_impl::_RequestHeader_default_instance_);
+}
+inline const ::oram_impl::RequestHeader& LoadSqrtOramRequest::header() const {
+  // @@protoc_insertion_point(field_get:oram_impl.LoadSqrtOramRequest.header)
+  return _internal_header();
+}
+inline void LoadSqrtOramRequest::unsafe_arena_set_allocated_header(
+    ::oram_impl::RequestHeader* header) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.header_);
+  }
+  _impl_.header_ = header;
+  if (header) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:oram_impl.LoadSqrtOramRequest.header)
+}
+inline ::oram_impl::RequestHeader* LoadSqrtOramRequest::release_header() {
+  
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::oram_impl::RequestHeader* LoadSqrtOramRequest::unsafe_arena_release_header() {
+  // @@protoc_insertion_point(field_release:oram_impl.LoadSqrtOramRequest.header)
+  
+  ::oram_impl::RequestHeader* temp = _impl_.header_;
+  _impl_.header_ = nullptr;
+  return temp;
+}
+inline ::oram_impl::RequestHeader* LoadSqrtOramRequest::_internal_mutable_header() {
+  
+  if (_impl_.header_ == nullptr) {
+    auto* p = CreateMaybeMessage<::oram_impl::RequestHeader>(GetArenaForAllocation());
+    _impl_.header_ = p;
+  }
+  return _impl_.header_;
+}
+inline ::oram_impl::RequestHeader* LoadSqrtOramRequest::mutable_header() {
+  ::oram_impl::RequestHeader* _msg = _internal_mutable_header();
+  // @@protoc_insertion_point(field_mutable:oram_impl.LoadSqrtOramRequest.header)
+  return _msg;
+}
+inline void LoadSqrtOramRequest::set_allocated_header(::oram_impl::RequestHeader* header) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.header_;
+  }
+  if (header) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(header);
+    if (message_arena != submessage_arena) {
+      header = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, header, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.header_ = header;
+  // @@protoc_insertion_point(field_set_allocated:oram_impl.LoadSqrtOramRequest.header)
+}
+
+// repeated bytes contents = 2;
+inline int LoadSqrtOramRequest::_internal_contents_size() const {
+  return _impl_.contents_.size();
+}
+inline int LoadSqrtOramRequest::contents_size() const {
+  return _internal_contents_size();
+}
+inline void LoadSqrtOramRequest::clear_contents() {
+  _impl_.contents_.Clear();
+}
+inline std::string* LoadSqrtOramRequest::add_contents() {
+  std::string* _s = _internal_add_contents();
+  // @@protoc_insertion_point(field_add_mutable:oram_impl.LoadSqrtOramRequest.contents)
+  return _s;
+}
+inline const std::string& LoadSqrtOramRequest::_internal_contents(int index) const {
+  return _impl_.contents_.Get(index);
+}
+inline const std::string& LoadSqrtOramRequest::contents(int index) const {
+  // @@protoc_insertion_point(field_get:oram_impl.LoadSqrtOramRequest.contents)
+  return _internal_contents(index);
+}
+inline std::string* LoadSqrtOramRequest::mutable_contents(int index) {
+  // @@protoc_insertion_point(field_mutable:oram_impl.LoadSqrtOramRequest.contents)
+  return _impl_.contents_.Mutable(index);
+}
+inline void LoadSqrtOramRequest::set_contents(int index, const std::string& value) {
+  _impl_.contents_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set:oram_impl.LoadSqrtOramRequest.contents)
+}
+inline void LoadSqrtOramRequest::set_contents(int index, std::string&& value) {
+  _impl_.contents_.Mutable(index)->assign(std::move(value));
+  // @@protoc_insertion_point(field_set:oram_impl.LoadSqrtOramRequest.contents)
+}
+inline void LoadSqrtOramRequest::set_contents(int index, const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _impl_.contents_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:oram_impl.LoadSqrtOramRequest.contents)
+}
+inline void LoadSqrtOramRequest::set_contents(int index, const void* value, size_t size) {
+  _impl_.contents_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:oram_impl.LoadSqrtOramRequest.contents)
+}
+inline std::string* LoadSqrtOramRequest::_internal_add_contents() {
+  return _impl_.contents_.Add();
+}
+inline void LoadSqrtOramRequest::add_contents(const std::string& value) {
+  _impl_.contents_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:oram_impl.LoadSqrtOramRequest.contents)
+}
+inline void LoadSqrtOramRequest::add_contents(std::string&& value) {
+  _impl_.contents_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:oram_impl.LoadSqrtOramRequest.contents)
+}
+inline void LoadSqrtOramRequest::add_contents(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _impl_.contents_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:oram_impl.LoadSqrtOramRequest.contents)
+}
+inline void LoadSqrtOramRequest::add_contents(const void* value, size_t size) {
+  _impl_.contents_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:oram_impl.LoadSqrtOramRequest.contents)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
+LoadSqrtOramRequest::contents() const {
+  // @@protoc_insertion_point(field_list:oram_impl.LoadSqrtOramRequest.contents)
+  return _impl_.contents_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
+LoadSqrtOramRequest::mutable_contents() {
+  // @@protoc_insertion_point(field_mutable_list:oram_impl.LoadSqrtOramRequest.contents)
+  return &_impl_.contents_;
+}
+
+// -------------------------------------------------------------------
+
 // FlatVectorMessage
 
 // .oram_impl.RequestHeader header = 1;
@@ -4481,54 +4846,51 @@ inline void SqrtPermMessage::set_allocated_header(::oram_impl::RequestHeader* he
   // @@protoc_insertion_point(field_set_allocated:oram_impl.SqrtPermMessage.header)
 }
 
-// bytes content = 2;
-inline void SqrtPermMessage::clear_content() {
-  _impl_.content_.ClearToEmpty();
+// repeated uint32 perms = 2;
+inline int SqrtPermMessage::_internal_perms_size() const {
+  return _impl_.perms_.size();
 }
-inline const std::string& SqrtPermMessage::content() const {
-  // @@protoc_insertion_point(field_get:oram_impl.SqrtPermMessage.content)
-  return _internal_content();
+inline int SqrtPermMessage::perms_size() const {
+  return _internal_perms_size();
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void SqrtPermMessage::set_content(ArgT0&& arg0, ArgT... args) {
- 
- _impl_.content_.SetBytes(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:oram_impl.SqrtPermMessage.content)
+inline void SqrtPermMessage::clear_perms() {
+  _impl_.perms_.Clear();
 }
-inline std::string* SqrtPermMessage::mutable_content() {
-  std::string* _s = _internal_mutable_content();
-  // @@protoc_insertion_point(field_mutable:oram_impl.SqrtPermMessage.content)
-  return _s;
+inline uint32_t SqrtPermMessage::_internal_perms(int index) const {
+  return _impl_.perms_.Get(index);
 }
-inline const std::string& SqrtPermMessage::_internal_content() const {
-  return _impl_.content_.Get();
+inline uint32_t SqrtPermMessage::perms(int index) const {
+  // @@protoc_insertion_point(field_get:oram_impl.SqrtPermMessage.perms)
+  return _internal_perms(index);
 }
-inline void SqrtPermMessage::_internal_set_content(const std::string& value) {
-  
-  _impl_.content_.Set(value, GetArenaForAllocation());
+inline void SqrtPermMessage::set_perms(int index, uint32_t value) {
+  _impl_.perms_.Set(index, value);
+  // @@protoc_insertion_point(field_set:oram_impl.SqrtPermMessage.perms)
 }
-inline std::string* SqrtPermMessage::_internal_mutable_content() {
-  
-  return _impl_.content_.Mutable(GetArenaForAllocation());
+inline void SqrtPermMessage::_internal_add_perms(uint32_t value) {
+  _impl_.perms_.Add(value);
 }
-inline std::string* SqrtPermMessage::release_content() {
-  // @@protoc_insertion_point(field_release:oram_impl.SqrtPermMessage.content)
-  return _impl_.content_.Release();
+inline void SqrtPermMessage::add_perms(uint32_t value) {
+  _internal_add_perms(value);
+  // @@protoc_insertion_point(field_add:oram_impl.SqrtPermMessage.perms)
 }
-inline void SqrtPermMessage::set_allocated_content(std::string* content) {
-  if (content != nullptr) {
-    
-  } else {
-    
-  }
-  _impl_.content_.SetAllocated(content, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.content_.IsDefault()) {
-    _impl_.content_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:oram_impl.SqrtPermMessage.content)
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+SqrtPermMessage::_internal_perms() const {
+  return _impl_.perms_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+SqrtPermMessage::perms() const {
+  // @@protoc_insertion_point(field_list:oram_impl.SqrtPermMessage.perms)
+  return _internal_perms();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+SqrtPermMessage::_internal_mutable_perms() {
+  return &_impl_.perms_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+SqrtPermMessage::mutable_perms() {
+  // @@protoc_insertion_point(field_mutable_list:oram_impl.SqrtPermMessage.perms)
+  return _internal_mutable_perms();
 }
 
 // -------------------------------------------------------------------
@@ -5398,6 +5760,8 @@ inline void WritePathRequest::set_offset(uint32_t value) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

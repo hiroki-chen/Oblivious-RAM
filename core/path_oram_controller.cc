@@ -257,14 +257,13 @@ OramStatus PathOramController::ReadBucket(uint32_t path, uint32_t level,
   const size_t bucket_size = response.bucket_size();
   // Then copy the bucket to the vector.
   for (size_t j = 0; j < bucket_size; j++) {
-    oram_block_t* const block = (oram_block_t*)malloc(ORAM_BLOCK_SIZE);
-    oram_utils::ConvertToBlock(response.bucket(j), block);
+    oram_block_t block;
+    oram_utils::ConvertToBlock(response.bucket(j), &block);
 
     // Decrypt the block.
-    oram_utils::DecryptBlock(block, cryptor_.get());
+    oram_utils::DecryptBlock(&block, cryptor_.get());
 
-    bucket->emplace_back(*block);
-    oram_utils::SafeFree(block);
+    bucket->emplace_back(block);
   }
 
   network_communication_ += response.bucket_size();
@@ -351,7 +350,8 @@ OramStatus PathOramController::InternalAccess(Operation op_type,
   if (!is_initialized_) {
     return OramStatus(StatusCode::kInvalidOperation,
                       "Cannot access ORAM before it is initialized."
-                      " You may need to call InitOram() method first.");
+                      " You may need to call `InitOram()` and `FillWithData()` "
+                      "method first.");
   }
 
   logger->debug("ORAM ID: {}, Accessing address {}, op_type {}, dummy {} ", id_,

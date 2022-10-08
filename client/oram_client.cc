@@ -73,6 +73,11 @@ OramClient::OramClient(const OramConfig& config) : config_(config) {
       oram_controller_ = std::move(PartitionOramController::GetInstance());
       break;
     }
+    case OramType::kSquareOram: {
+      oram_controller_ = std::move(std::make_unique<SquareRootOramController>(
+          config.id, true, config.block_num));
+      break;
+    }
     default: {
       logger->error("[-] This type is currently fully implemented.");
 
