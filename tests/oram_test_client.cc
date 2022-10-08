@@ -40,7 +40,13 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<oram_impl::OramClient> client =
       std::make_unique<oram_impl::OramClient>(config);
   client->Ready();
-  client->FillWithData();
+
+  status = client->FillWithData();
+  if (!status.ok()) {
+    logger->error("Client: FillWithData failed due to `{}`.",
+                  status.ErrorMessage());
+    abort();
+  }
 
   for (size_t i = 0; i < config.block_num; i++) {
     oram_impl::oram_block_t block;

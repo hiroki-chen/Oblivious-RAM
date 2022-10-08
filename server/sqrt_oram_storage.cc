@@ -65,4 +65,45 @@ void SqrtOramServerStorage::DoPermute(const std::vector<uint32_t>& perm) {
   }
 }
 
+std::string SqrtOramServerStorage::ReadBlockFromShelter(uint32_t pos) {
+  const std::string ans = shelter_[pos - main_memory_.size()];
+  // Clear this position.
+  shelter_[pos - main_memory_.size()].clear();
+  return ans;
+}
+
+std::string SqrtOramServerStorage::ReadBlockFromMain(uint32_t pos) {
+  const std::string ans = main_memory_[pos];
+  main_memory_[pos].clear();
+  return ans;
+}
+
+std::string SqrtOramServerStorage::ReadBlockFromDummy(uint32_t pos) {
+  // It is meaningless to remove a block from dummy. So we keep it.
+  return dummy_[pos - main_memory_.size() - shelter_.size()];
+}
+
+void SqrtOramServerStorage::WriteBlockToShelter(const std::string& data) {
+  for (size_t i = 0; i < shelter_.size(); i++) {
+    // Find an empty space and write to it.
+    if (shelter_[i].empty()) {
+      shelter_[i] = data;
+
+      return;
+    }
+  }
+
+  // Should always find an available space for this block.
+}
+
+void SqrtOramServerStorage::Fill(const std::vector<std::string>& data) {
+  for (size_t i = 0; i < data.size(); i++) {
+    if (i < capacity_) {
+      main_memory_.emplace_back(data[i]);
+    } else {
+      shelter_.emplace_back(data[i]);
+    }
+  }
+}
+
 }  // namespace oram_impl

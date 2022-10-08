@@ -214,14 +214,10 @@ grpc::Status OramService::WriteSqrtMemory(grpc::ServerContext* context,
   const uint32_t pos = request->pos();
   const std::string content = request->content();
 
-  // Should always check boundary before writing.
   if (write_to_cache) {
-    if (!storage->Check(pos, 0)) {
-      return grpc::Status(grpc::StatusCode::OUT_OF_RANGE,
-                          "The given position is out of range.");
-    }
-    storage->WriteBlockToShelter(pos, content);
+    storage->WriteBlockToShelter(content);
   } else {
+    // Should always check boundary before writing.
     if (!storage->Check(pos, 1)) {
       return grpc::Status(grpc::StatusCode::OUT_OF_RANGE,
                           "The given position is out of range.");
@@ -248,15 +244,45 @@ grpc::Status OramService::SqrtPermute(grpc::ServerContext* context,
   SqrtOramServerStorage* const storage =
       dynamic_cast<SqrtOramServerStorage* const>(storages_[id].get());
   if (storage == nullptr ||
-      storage->GetOramStorageType() != OramStorageType::kFlatStorage) {
+      storage->GetOramStorageType() != OramStorageType::kSqrtStorage) {
     return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
   } else if (storage->GetInstanceHash().compare(instance_hash)) {
     return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
   }
 
-  const std::vector<uint32_t> perm =
-      std::move(oram_utils::StrToPerm(request->content()));
+  const std::vector<uint32_t> perm(request->perms().cbegin(),
+                                   request->perms().cend());
   storage->DoPermute(perm);
+
+  return grpc::Status::OK;
+}
+
+grpc::Status OramService::LoadSqrtOram(grpc::ServerContext* context,
+                                       const LoadSqrtOramRequest* request,
+                                       google::protobuf::Empty* empty) {
+  logger->info("From peer: {}, LoadSqrtOram request received.",
+               context->peer());
+
+  const uint32_t id = request->header().id();
+  const std::string instance_hash = request->header().instance_hash();
+
+  grpc::Status status = grpc::Status::OK;
+  if (!(status = CheckIdValid(id)).ok()) {
+    return status;
+  }
+
+  SqrtOramServerStorage* const storage =
+      dynamic_cast<SqrtOramServerStorage* const>(storages_[id].get());
+  if (storage == nullptr ||
+      storage->GetOramStorageType() != OramStorageType::kSqrtStorage) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
+  } else if (storage->GetInstanceHash().compare(instance_hash)) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
+  }
+
+  const std::vector<std::string> content(request->contents().cbegin(),
+                                         request->contents().end());
+  storage->Fill(content);
 
   return grpc::Status::OK;
 }

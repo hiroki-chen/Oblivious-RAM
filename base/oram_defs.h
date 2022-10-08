@@ -117,6 +117,8 @@ static const float kPartitionAdjustmentFactor = 1.;
 
 static const uint32_t kMaximumOramStorageNum = 1e5;
 
+static const uint32_t kInvalidMask = 0xFFFFFFFF;
+
 // Alias for SQRT ORam.
 using sqrt_oram_storage_t = std::vector<oram_block_t>;
 

@@ -35,19 +35,14 @@ class SqrtOramServerStorage : public BaseOramServerStorage {
         squared_m_(squared_m) {}
   bool Check(uint32_t pos, uint32_t type);
   // Position needs to "shrink to fit".
-  std::string ReadBlockFromShelter(uint32_t pos) {
-    return shelter_[pos - main_memory_.size()];
-  }
-  std::string ReadBlockFromMain(uint32_t pos) { return main_memory_[pos]; }
-  std::string ReadBlockFromDummy(uint32_t pos) {
-    return dummy_[pos - main_memory_.size() - shelter_.size()];
-  }
-  void WriteBlockToShelter(uint32_t pos, const std::string& data) {
-    shelter_[pos - main_memory_.size()] = data;
-  }
+  std::string ReadBlockFromShelter(uint32_t pos);
+  std::string ReadBlockFromMain(uint32_t pos);
+  std::string ReadBlockFromDummy(uint32_t pos);
+  void WriteBlockToShelter(const std::string& data);
   void WriteBlockToMain(uint32_t pos, const std::string& data) {
     main_memory_[pos] = data;
   }
+  void Fill(const std::vector<std::string>& data);
 
   void DoPermute(const std::vector<uint32_t>& perm);
 };
