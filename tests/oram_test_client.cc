@@ -24,8 +24,6 @@
 std::shared_ptr<spdlog::logger> logger = spdlog::stdout_color_mt("oram_client");
 
 int main(int argc, char* argv[]) {
-  spdlog::set_default_logger(logger);
-
   // Create a parser.
   oram_parse::YamlParser parser;
   oram_impl::OramConfig config;
@@ -35,6 +33,10 @@ int main(int argc, char* argv[]) {
       !parser.IgnoreCommandLineArgs()) {
     parser.FromCommandLine(argc, argv, config);
   }
+
+  // Control the log level.
+  logger->set_level(static_cast<spdlog::level::level_enum>(config.log_level));
+  spdlog::set_default_logger(logger);
 
   // Create the controller.
   std::unique_ptr<oram_impl::OramClient> client =
