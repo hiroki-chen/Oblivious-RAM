@@ -162,7 +162,8 @@ grpc::Status OramService::ReadSqrtMemory(grpc::ServerContext* context,
   const uint32_t tag = request->tag();
   if (!storage->Check(tag, read_type)) {
     return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
-                        "Sanity check failed.");
+                        oram_utils::StrCat("Sanity check failed. Read type is ",
+                                           read_type, ", tag is ", tag, "."));
   }
 
   switch (read_type) {
@@ -281,7 +282,8 @@ grpc::Status OramService::LoadSqrtOram(grpc::ServerContext* context,
   }
 
   const std::vector<std::string> content(request->contents().cbegin(),
-                                         request->contents().end());
+                                         request->contents().cend());
+
   storage->Fill(content);
 
   return grpc::Status::OK;

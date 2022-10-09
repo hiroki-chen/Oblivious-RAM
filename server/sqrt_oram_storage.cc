@@ -22,15 +22,13 @@ namespace oram_impl {
 bool SqrtOramServerStorage::Check(uint32_t pos, uint32_t type) {
   switch (type) {
     case 0:
-      return main_memory_.size() <= pos &&
-             pos < shelter_.size() + main_memory_.size();
+      return true;
 
     case 1:
-      return 0 < pos && pos < main_memory_.size();
+      return 0 <= pos && pos < main_memory_.size();
 
     case 2:
-      return shelter_.size() + main_memory_.size() <= pos &&
-             pos < shelter_.size() + main_memory_.size() + dummy_.size();
+      return true;
 
     default:
       return false;
@@ -66,9 +64,14 @@ void SqrtOramServerStorage::DoPermute(const std::vector<uint32_t>& perm) {
 }
 
 std::string SqrtOramServerStorage::ReadBlockFromShelter(uint32_t pos) {
-  const std::string ans = shelter_[pos - main_memory_.size()];
-  // Clear this position.
-  shelter_[pos - main_memory_.size()].clear();
+  // Perform a shrink.
+  if (pos >= main_memory_.size()) {
+    pos -= main_memory_.size();
+  }
+
+  const std::string ans = shelter_[pos];
+  // Invalidate this position.
+  shelter_[pos].clear();
   return ans;
 }
 
@@ -80,7 +83,8 @@ std::string SqrtOramServerStorage::ReadBlockFromMain(uint32_t pos) {
 
 std::string SqrtOramServerStorage::ReadBlockFromDummy(uint32_t pos) {
   // It is meaningless to remove a block from dummy. So we keep it.
-  return dummy_[pos - main_memory_.size() - shelter_.size()];
+  // There is no offset anymore.
+  return dummy_[pos];
 }
 
 void SqrtOramServerStorage::WriteBlockToShelter(const std::string& data) {
@@ -102,6 +106,8 @@ void SqrtOramServerStorage::Fill(const std::vector<std::string>& data) {
       main_memory_.emplace_back(data[i]);
     } else {
       shelter_.emplace_back(data[i]);
+      // Initialize the dummy.
+      dummy_.emplace_back(std::string(block_size_, 0));
     }
   }
 }

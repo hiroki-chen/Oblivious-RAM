@@ -34,7 +34,7 @@ class SqrtOramServerStorage : public BaseOramServerStorage {
                               OramStorageType::kSqrtStorage),
         squared_m_(squared_m) {}
   bool Check(uint32_t pos, uint32_t type);
-  // Position needs to "shrink to fit".
+  // Position may need to "shrink to fit".
   std::string ReadBlockFromShelter(uint32_t pos);
   std::string ReadBlockFromMain(uint32_t pos);
   std::string ReadBlockFromDummy(uint32_t pos);
@@ -43,7 +43,6 @@ class SqrtOramServerStorage : public BaseOramServerStorage {
     main_memory_[pos] = data;
   }
   void Fill(const std::vector<std::string>& data);
-
   void DoPermute(const std::vector<uint32_t>& perm);
 };
 }  // namespace oram_impl
