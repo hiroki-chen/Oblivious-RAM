@@ -320,32 +320,6 @@ std::vector<std::string> split(const std::string& str, char delim) {
   return result;
 }
 
-std::string IntoBinary(uint32_t num) {
-  std::string ans;
-
-  while (num != 0) {
-    ans.push_back('0' + num % 2);
-    num /= 2;
-  }
-
-  std::reverse(ans.begin(), ans.end());
-  return ans;
-}
-
-uint32_t FromBinary(const std::string& bin) {
-  uint32_t ans = 0;
-  uint32_t base = 1;
-
-  for (auto iter = bin.cbegin(); iter != bin.cend(); iter++) {
-    if (*iter != '0') {
-      ans += base;
-    }
-    base *= 2;
-  }
-
-  return ans;
-}
-
 oram_impl::OramType StrToType(const std::string& type) {
   if (type == "PathOram") {
     return oram_impl::OramType::kPathOram;
