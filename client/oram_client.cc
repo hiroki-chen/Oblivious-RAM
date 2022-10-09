@@ -132,9 +132,9 @@ OramStatus OramClient::FillWithData(void) {
       const size_t level = path_oram_controller->GetTreeLevel();
       const size_t tree_size = (POW2(level + 1) - 1) * config_.bucket_size;
 
-      oram_utils::SampleRandomBucket(block_num, tree_size, 0ul);
+      blocks = oram_utils::SampleRandomBucket(block_num, tree_size, 0ul);
     } else {
-      oram_utils::SampleRandomBucket(block_num, block_num, 0ul);
+      blocks = oram_utils::SampleRandomBucket(block_num, block_num, 0ul);
     }
 
     return oram_controller_->FillWithData(blocks);
