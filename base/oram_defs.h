@@ -136,6 +136,7 @@ using server_tree_storage_t =
     absl::flat_hash_map<server_storage_tag_t, server_storage_data>;
 using server_flat_storage_t = std::string;
 using server_sqrt_storage_t = std::vector<std::string>;
+using server_sqrt_shelter_t = std::vector<std::pair<uint32_t, std::string>>;
 
 struct BlockEqual {
  private:
