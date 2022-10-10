@@ -29,10 +29,7 @@ grpc::Status LinearOramController::ReadFromServer(std::string* const out) {
   ReadFlatRequest request;
   FlatVectorMessage response;
 
-  request.mutable_header()->set_id(id_);
-  request.mutable_header()->set_instance_hash(
-      std::string(reinterpret_cast<char*>(instance_hash_), 32));
-  request.mutable_header()->set_version(GetVersion());
+  ASSEMBLE_HEADER(request, id_, instance_hash_, GetVersion());
 
   // Read the whole storage from the remote storage.
   grpc::Status status = stub_->ReadFlatMemory(&context, request, &response);
@@ -49,10 +46,7 @@ grpc::Status LinearOramController::WriteToServer(const std::string& input) {
   FlatVectorMessage request;
   google::protobuf::Empty empty;
 
-  request.mutable_header()->set_id(id_);
-  request.mutable_header()->set_instance_hash(
-      std::string(reinterpret_cast<char*>(instance_hash_), 32));
-  request.mutable_header()->set_version(GetVersion());
+  ASSEMBLE_HEADER(request, id_, instance_hash_, GetVersion());
   request.set_content(input);
 
   return stub_->WriteFlatMemory(&context, request, &empty);
@@ -111,10 +105,7 @@ OramStatus LinearOramController::InitOram(void) {
   InitFlatOramRequest request;
   google::protobuf::Empty empty;
 
-  request.mutable_header()->set_id(id_);
-  request.mutable_header()->set_instance_hash(
-      std::string(reinterpret_cast<char*>(instance_hash_), 32));
-  request.mutable_header()->set_version(GetVersion());
+  ASSEMBLE_HEADER(request, id_, instance_hash_, GetVersion());
   request.set_capacity(block_num_);
   request.set_block_size(ORAM_BLOCK_SIZE);
 
@@ -131,10 +122,7 @@ OramStatus LinearOramController::FillWithData(
   FlatVectorMessage request;
   google::protobuf::Empty empty;
 
-  request.mutable_header()->set_id(id_);
-  request.mutable_header()->set_instance_hash(
-      std::string(reinterpret_cast<char*>(instance_hash_), 32));
-  request.mutable_header()->set_version(GetVersion());
+  ASSEMBLE_HEADER(request, id_, instance_hash_, GetVersion());
 
   std::string content;
   for (size_t i = 0; i < data.size(); i++) {

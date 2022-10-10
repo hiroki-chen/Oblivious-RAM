@@ -28,6 +28,19 @@
 
 #define ASSERT_MSG(x) !(std::cerr << "Assertion failed: " << x << std::endl)
 #define PANIC_IF(cond, message) assert(!(cond) || ASSERT_MSG(message))
+#define PANIC(message)   \
+  {                      \
+    ASSERT_MSG(message); \
+    exit(1);             \
+  }
+
+#define ASSEMBLE_HEADER(request, id, hash, version)      \
+  {                                                      \
+    request.mutable_header()->set_id(id);                \
+    request.mutable_header()->set_instance_hash(         \
+        std::string(reinterpret_cast<char*>(hash), 32)); \
+    request.mutable_header()->set_version(version);      \
+  }
 
 namespace oram_utils {
 std::string ReadKeyCrtFile(const std::string& path);
@@ -43,6 +56,20 @@ To* TryCast(From* const from) {
 template <typename E>
 constexpr typename std::underlying_type<E>::type to_underlying(E e) noexcept {
   return static_cast<typename std::underlying_type<E>::type>(e);
+}
+
+template <typename T>
+void PermuteBy(const std::vector<uint32_t>& perm, std::vector<T>& arr) {
+  // A temporary buffer.
+  std::vector<T> clone = arr;
+
+  for (size_t i = 0; i < arr.size(); i++) {
+    // Perm[i] = The i-th element is placed to perm[i]-th position.
+    clone[perm[i]] = arr[i];
+  }
+
+  arr.clear();
+  arr.assign(clone.begin(), clone.end());
 }
 
 template <typename... Args>
@@ -115,6 +142,10 @@ std::string TypeToName(oram_impl::OramType oram_type);
 std::vector<std::string> split(const std::string& str, char delim);
 
 oram_impl::OramType StrToType(const std::string& type);
+
+template <class T>
+void PermuteBy(const std::vector<uint32_t>& perm,
+               std::vector<oram_impl::oram_block_t>& arr);
 }  // namespace oram_utils
 
 #endif  // ORAM_IMPL_BASE_ORAM_UTILS_H_
