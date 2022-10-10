@@ -16,6 +16,9 @@
  */
 #include "oram_crypto.h"
 
+#include <bitset>
+#include <sstream>
+
 #include <spdlog/spdlog.h>
 #include <fpe.h>
 
@@ -56,7 +59,7 @@ void Cryptor::CryptoPrelogue(void) {
 
 oram_impl::OramStatus RandomPermutation(std::vector<uint32_t>& array) {
   // Pick up a PRP key.
-  oram_impl::OramStatus status;
+  oram_impl::OramStatus status = oram_impl::OramStatus::OK;
   uint8_t prp_key[ORAM_PRP_KEY_SIZE];
   memset(prp_key, 0, ORAM_PRP_KEY_SIZE);
   randombytes_buf(prp_key, ORAM_PRP_KEY_SIZE);
@@ -67,20 +70,30 @@ oram_impl::OramStatus RandomPermutation(std::vector<uint32_t>& array) {
                                  "The input array cannot be empty!");
   }
 
-  // Generate FPE key. By default, the radix is 2.
+  // Calculate the highest order.
+  const uint32_t ord = (uint32_t)(std::log10(size) / std::log10(ORAM_RADIX));
+
+  // Generate FPE key. By default, the radix is 2, which is set by `ORAM_RADIX`.
   FPE_KEY* fpe_key =
-      FPE_ff3_1_create_key(reinterpret_cast<char*>(prp_key), "", 2);
+      FPE_ff3_1_create_key(reinterpret_cast<char*>(prp_key), "", ORAM_RADIX);
 
   // Start permutation. Prepare a buffer.
   std::vector<uint32_t> perm_buf(size);
   // The array size should be some power of 2 to ensure that there is round-up.
   for (size_t i = 0; i < size; i++) {
-    std::string bin = oram_utils::IntoBinary(array[i]);
+    std::bitset<sizeof(uint32_t)* 8> bit = array[i];
+    std::string bin = bit.to_string();
+    // Truncate the binary string.
+    bin = bin.substr(bin.size() - ord);
+
     std::string out(bin.size(), '0');
     FPE_ff3_encrypt(bin.data(), out.data(), fpe_key);
 
-    uint32_t perm = oram_utils::FromBinary(out);
-    perm_buf[i] = perm;
+    // Convert to uint32_t.
+    bit = 0;
+    std::stringstream ss(out);
+    ss >> bit;
+    perm_buf[i] = bit.to_ulong();
   }
 
   // Permute the array.
@@ -241,7 +254,7 @@ std::pair<std::string, std::string> Cryptor::GetSessionKeyPair(void) {
 }
 
 oram_impl::OramStatus UniformRandom(uint32_t min, uint32_t max,
-                                             uint32_t* const out) {
+                                    uint32_t* const out) {
   if (min > max) {
     return oram_impl::OramStatus(
         oram_impl::StatusCode::kInvalidArgument,

@@ -61,6 +61,24 @@ ABSL_FLAG(std::string, file_path, "",
 
 namespace oram_parse {
 
+static uint8_t LogLevel2U8(const std::string& log_level) {
+  if (log_level == "trace") {
+    return 0;
+  } else if (log_level == "debug") {
+    return 1;
+  } else if (log_level == "warn") {
+    return 3;
+  } else if (log_level == "error") {
+    return 4;
+  } else if (log_level == "critical") {
+    return 5;
+  } else if (log_level == "off") {
+    return 6;
+  } else {
+    return 2;
+  }
+}
+
 oram_impl::OramStatus YamlParser::DoParse(const YAML::const_iterator& cur_iter,
                                           oram_impl::OramConfig& config) {
   const std::string key = cur_iter->first.as<std::string>();
@@ -114,8 +132,13 @@ oram_impl::OramStatus YamlParser::DoParse(const YAML::const_iterator& cur_iter,
         [&]() { config.proxy_port = cur_iter->second.as<uint32_t>(); });
 
   } else if (key == "LogLevel") {
-    return oram_utils::TryExec(
-        [&]() { config.log_level = cur_iter->second.as<uint8_t>(); });
+    return oram_utils::TryExec([&]() {
+      std::string log_level = cur_iter->second.as<std::string>();
+      std::transform(log_level.begin(), log_level.end(), log_level.begin(),
+                     [](unsigned char c) { return std::tolower(c); });
+
+      config.log_level = LogLevel2U8(log_level);
+    });
 
   } else if (key == "LogFrequency") {
     return oram_utils::TryExec(
@@ -131,14 +154,12 @@ oram_impl::OramStatus YamlParser::DoParse(const YAML::const_iterator& cur_iter,
     });
 
   } else if (key == "FilePath") {
-    return oram_utils::TryExec([&]() {
-      config.filepath = cur_iter->second.as<std::string>();
-    });
+    return oram_utils::TryExec(
+        [&]() { config.filepath = cur_iter->second.as<std::string>(); });
 
   } else if (key == "DisableDebugging") {
-    return oram_utils::TryExec([&]() {
-      config.disable_debugging = cur_iter->second.as<bool>();
-    });
+    return oram_utils::TryExec(
+        [&]() { config.disable_debugging = cur_iter->second.as<bool>(); });
 
   } else {
     return oram_impl::OramStatus(

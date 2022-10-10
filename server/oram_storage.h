@@ -20,5 +20,6 @@
 #include "base_oram_storage.h"
 #include "flat_oram_storage.h"
 #include "tree_oram_storage.h"
+#include "sqrt_oram_storage.h"
 
 #endif  // ORAM_IMPL_SERVER_ORAM_STORAGE_H_

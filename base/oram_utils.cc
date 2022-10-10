@@ -20,6 +20,7 @@
 #include <spdlog/fmt/bin_to_hex.h>
 #include <spdlog/spdlog.h>
 
+#include <algorithm>
 #include <cstdarg>
 #include <cstring>
 #include <fstream>
@@ -89,7 +90,8 @@ void ConvertToBlock(const std::string& data,
 void ConvertToString(const oram_impl::oram_block_t* const block,
                      std::string* const data) {
   data->resize(ORAM_BLOCK_SIZE);
-  memcpy(data->data(), (void*)block, ORAM_BLOCK_SIZE);
+  memcpy(reinterpret_cast<void*>(data->data()),
+         reinterpret_cast<const void*>(block), ORAM_BLOCK_SIZE);
 }
 
 void CheckStatus(const oram_impl::OramStatus& status,
@@ -317,32 +319,6 @@ std::vector<std::string> split(const std::string& str, char delim) {
   }
 
   return result;
-}
-
-std::string IntoBinary(uint32_t num) {
-  std::string ans;
-
-  while (num != 0) {
-    ans.push_back('0' + num % 2);
-    num /= 2;
-  }
-
-  std::reverse(ans.begin(), ans.end());
-  return ans;
-}
-
-uint32_t FromBinary(const std::string& bin) {
-  uint32_t ans = 0;
-  uint32_t base = 1;
-
-  for (auto iter = bin.cbegin(); iter != bin.cend(); iter++) {
-    if (*iter != '0') {
-      ans += base;
-    }
-    base *= 2;
-  }
-
-  return ans;
 }
 
 oram_impl::OramType StrToType(const std::string& type) {

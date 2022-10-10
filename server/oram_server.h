@@ -38,7 +38,8 @@ class OramService final : public oram_server::Service {
   friend class ServerRunner;
 
   std::shared_ptr<oram_crypto::Cryptor> cryptor_;
-  std::unordered_map<uint32_t, std::unique_ptr<BaseOramServerStorage>> storages_;
+  std::unordered_map<uint32_t, std::unique_ptr<BaseOramServerStorage>>
+      storages_;
 
   grpc::Status CheckInitRequest(uint32_t id);
   grpc::Status CheckIdValid(uint32_t id);
@@ -54,6 +55,10 @@ class OramService final : public oram_server::Service {
 
   grpc::Status InitSqrtOram(grpc::ServerContext* context,
                             const InitSqrtOramRequest* request,
+                            google::protobuf::Empty* empty) override;
+
+  grpc::Status LoadSqrtOram(grpc::ServerContext* context,
+                            const LoadSqrtOramRequest* request,
                             google::protobuf::Empty* empty) override;
 
   grpc::Status PrintOramTree(grpc::ServerContext* context,
@@ -81,7 +86,7 @@ class OramService final : public oram_server::Service {
                               SqrtMessage* response) override;
 
   grpc::Status WriteSqrtMemory(grpc::ServerContext* context,
-                               const SqrtMessage* request,
+                               const WriteSqrtMessage* request,
                                google::protobuf::Empty* empty) override;
 
   grpc::Status SqrtPermute(grpc::ServerContext* context,
@@ -126,6 +131,23 @@ class ServerRunner {
 
   void Run(void);
 };
+
+template <typename T>
+grpc::Status CheckStorage(BaseOramServerStorage* const storage,
+                          const std::string& instance_hash,
+                          OramStorageType type) {
+  T* const store = dynamic_cast<T* const>(storage);
+
+  if (store == nullptr || type != store->GetStorageType()) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
+
+  } else if (store->GetInstanceHash() != instance_hash) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
+  }
+
+  return grpc::Status::OK;
+}
+
 }  // namespace oram_impl
 
 #endif  // ORAM_IMPL_SERVER_ORAM_SERVER_H_

@@ -73,6 +73,11 @@ OramClient::OramClient(const OramConfig& config) : config_(config) {
       oram_controller_ = std::move(PartitionOramController::GetInstance());
       break;
     }
+    case OramType::kSquareOram: {
+      oram_controller_ = std::move(std::make_unique<SquareRootOramController>(
+          config.id, true, config.block_num));
+      break;
+    }
     default: {
       logger->error("[-] This type is currently fully implemented.");
 
@@ -91,8 +96,6 @@ OramClient::OramClient(const OramConfig& config) : config_(config) {
 
     abort();
   }
-
-  // TODO: Read data from some file.
 }
 
 OramStatus OramClient::Ready(void) {
@@ -129,9 +132,9 @@ OramStatus OramClient::FillWithData(void) {
       const size_t level = path_oram_controller->GetTreeLevel();
       const size_t tree_size = (POW2(level + 1) - 1) * config_.bucket_size;
 
-      oram_utils::SampleRandomBucket(block_num, tree_size, 0ul);
+      blocks = std::move(oram_utils::SampleRandomBucket(block_num, tree_size, 0ul));
     } else {
-      oram_utils::SampleRandomBucket(block_num, block_num, 0ul);
+      blocks = std::move(oram_utils::SampleRandomBucket(block_num, block_num, 0ul));
     }
 
     return oram_controller_->FillWithData(blocks);

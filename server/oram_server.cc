@@ -108,7 +108,24 @@ grpc::Status OramService::InitFlatOram(grpc::ServerContext* context,
 grpc::Status OramService::InitSqrtOram(grpc::ServerContext* context,
                                        const InitSqrtOramRequest* request,
                                        google::protobuf::Empty* empty) {
-  // TODO.
+  logger->info("From peer: {}, InitSqrtOram request received.",
+               context->peer());
+
+  const uint32_t id = request->header().id();
+  const std::string instance_hash = request->header().instance_hash();
+  const size_t capacity = request->capacity();
+  const size_t block_size = request->block_size();
+  const size_t squared_m = request->squared_m();
+
+  grpc::Status status = CheckInitRequest(id);
+  if (!status.ok()) {
+    return status;
+  }
+
+  storages_[id] = std::make_unique<SqrtOramServerStorage>(
+      id, capacity, block_size, squared_m, instance_hash);
+
+  logger->info("Sqrt Oram successfully created. ID = {}", id);
 
   return grpc::Status::OK;
 }
@@ -116,23 +133,149 @@ grpc::Status OramService::InitSqrtOram(grpc::ServerContext* context,
 grpc::Status OramService::ReadSqrtMemory(grpc::ServerContext* context,
                                          const ReadSqrtRequest* request,
                                          SqrtMessage* response) {
-  // TODO.
+  logger->info("From peer: {}, ReadSqrtMemory request received.",
+               context->peer());
+
+  const uint32_t id = request->header().id();
+  const std::string instance_hash = request->header().instance_hash();
+
+  grpc::Status status = grpc::Status::OK;
+  if (!(status = CheckIdValid(id)).ok()) {
+    return status;
+  }
+
+  SqrtOramServerStorage* const storage =
+      dynamic_cast<SqrtOramServerStorage*>(storages_[id].get());
+
+  if (storage == nullptr ||
+      OramStorageType::kSqrtStorage != storage->GetOramStorageType()) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
+  } else if (storage->GetInstanceHash() != instance_hash) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
+  }
+
+  // Explanation:
+  // 0 => shelter;
+  // 1 => main memory;
+  // 2 => dummy.
+  const uint32_t read_type = request->read_from();
+  const uint32_t tag = request->tag();
+  if (!storage->Check(tag, read_type)) {
+    return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
+                        oram_utils::StrCat("Sanity check failed. Read type is ",
+                                           read_type, ", tag is ", tag, "."));
+  }
+
+  logger->debug("Read type: {}, tag: {}", read_type, tag);
+
+  switch (read_type) {
+    case 0: {
+      response->set_content(storage->ReadBlockFromShelter(tag));
+      break;
+    }
+    case 1: {
+      response->set_content(storage->ReadBlockFromMain(tag));
+      break;
+    }
+    case 2: {
+      response->set_content(storage->ReadBlockFromDummy(tag));
+      break;
+    }
+    default:
+      // Simply does nothing because the sanity check must be passed.
+      break;
+  }
 
   return grpc::Status::OK;
 }
 
 grpc::Status OramService::WriteSqrtMemory(grpc::ServerContext* context,
-                                          const SqrtMessage* request,
+                                          const WriteSqrtMessage* request,
                                           google::protobuf::Empty* empty) {
-  // TODO.
+  logger->info("From peer: {}, WriteSqrtMemory request received.",
+               context->peer());
 
+  const uint32_t id = request->header().id();
+  const std::string instance_hash = request->header().instance_hash();
+
+  grpc::Status status = grpc::Status::OK;
+  if (!(status = CheckIdValid(id)).ok()) {
+    return status;
+  }
+
+  SqrtOramServerStorage* const storage =
+      dynamic_cast<SqrtOramServerStorage* const>(storages_[id].get());
+  if (storage == nullptr ||
+      storage->GetOramStorageType() != OramStorageType::kSqrtStorage) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
+  } else if (storage->GetInstanceHash().compare(instance_hash)) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
+  }
+
+  const std::string content = request->content();
+  const uint32_t tag = request->pos();
+
+  // We ALWAYS write to the shelter.
+  storage->WriteBlockToShelter(tag, content);
   return grpc::Status::OK;
 }
 
 grpc::Status OramService::SqrtPermute(grpc::ServerContext* context,
-                                      const SqrtPermMessage* message,
+                                      const SqrtPermMessage* request,
                                       google::protobuf::Empty* empty) {
-  // TODO.
+  logger->info("From peer: {}, SqrtPermute request received.", context->peer());
+
+  const uint32_t id = request->header().id();
+  const std::string instance_hash = request->header().instance_hash();
+
+  grpc::Status status = grpc::Status::OK;
+  if (!(status = CheckIdValid(id)).ok()) {
+    return status;
+  }
+
+  SqrtOramServerStorage* const storage =
+      dynamic_cast<SqrtOramServerStorage* const>(storages_[id].get());
+  if (storage == nullptr ||
+      storage->GetOramStorageType() != OramStorageType::kSqrtStorage) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
+  } else if (storage->GetInstanceHash().compare(instance_hash)) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
+  }
+
+  const std::vector<uint32_t> perm(request->perms().cbegin(),
+                                   request->perms().cend());
+  storage->DoPermute(perm);
+
+  return grpc::Status::OK;
+}
+
+grpc::Status OramService::LoadSqrtOram(grpc::ServerContext* context,
+                                       const LoadSqrtOramRequest* request,
+                                       google::protobuf::Empty* empty) {
+  logger->info("From peer: {}, LoadSqrtOram request received.",
+               context->peer());
+
+  const uint32_t id = request->header().id();
+  const std::string instance_hash = request->header().instance_hash();
+
+  grpc::Status status = grpc::Status::OK;
+  if (!(status = CheckIdValid(id)).ok()) {
+    return status;
+  }
+
+  SqrtOramServerStorage* const storage =
+      dynamic_cast<SqrtOramServerStorage* const>(storages_[id].get());
+  if (storage == nullptr ||
+      storage->GetOramStorageType() != OramStorageType::kSqrtStorage) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
+  } else if (storage->GetInstanceHash().compare(instance_hash)) {
+    return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
+  }
+
+  const std::vector<std::string> content(request->contents().cbegin(),
+                                         request->contents().cend());
+
+  storage->Fill(content);
 
   return grpc::Status::OK;
 }
@@ -425,7 +568,7 @@ ServerRunner::ServerRunner(const std::string& address, uint32_t port,
 
   if (key_file.empty() || crt_file.empty()) {
     logger->error("[-] Neither the certificate nor the key cannot be empty.");
-    
+
     abort();
   }
 

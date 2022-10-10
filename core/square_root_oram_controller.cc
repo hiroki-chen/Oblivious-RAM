@@ -16,26 +16,232 @@
  */
 #include "square_root_oram_controller.h"
 
+#include <spdlog/spdlog.h>
+
+#include "oram.h"
+
+extern std::shared_ptr<spdlog::logger> logger;
+
 namespace oram_impl {
+static std::vector<oram_block_t> Padded(const std::vector<oram_block_t>& data,
+                                        size_t num) {
+  std::vector<oram_block_t> ans = data;
 
-static std::vector<uint32_t> CreateVec(size_t size) {
-  std::vector<uint32_t> ans(size, 0);
-
-  for (size_t i = 0; i < size; i++) {
-    ans[i] = i;
+  for (size_t i = data.size(); i != num; i++) {
+    // Nonsense data.
+    oram_block_t block;
+    block.header.type = BlockType::kInvalid;
+    block.header.block_id = i;
+    ans.emplace_back(block);
   }
 
   return ans;
 }
 
-OramStatus SquareRootOramController::ReadBlock(uint32_t position,
+static std::vector<uint32_t> CreateVec(size_t size) {
+  std::vector<uint32_t> ans;
+
+  for (size_t i = 0; i < size; i++) {
+    ans.emplace_back(i);
+  }
+
+  return ans;
+}
+
+void SquareRootOramController::UpdatePosition(
+    const std::vector<uint32_t>& perm) {
+  for (size_t i = 0; i < perm.size(); i++) {
+    if (position_map_.find(i) == position_map_.end()) {
+      // Initial state.
+      // The element with index i is placed on index perm[i].
+      position_map_[i] = perm[i];
+    } else {
+      // Two levels of permutation.
+      position_map_[i] = perm[position_map_[i]];
+    }
+  }
+}
+
+OramStatus SquareRootOramController::InitOram(void) {
+  grpc::ClientContext context;
+  InitSqrtOramRequest request;
+  google::protobuf::Empty empty;
+
+  ASSEMBLE_HEADER(request, id_, instance_hash_, GetVersion());
+  request.set_block_size(ORAM_BLOCK_SIZE);
+  request.set_capacity(block_num_);
+  request.set_squared_m(sqrt_m_);
+
+  grpc::Status status = stub_->InitSqrtOram(&context, request, &empty);
+  if (!status.ok()) {
+    return OramStatus(StatusCode::kServerError,
+                      oram_utils::StrCat("InitOram: ", status.error_message()));
+  }
+
+  return OramStatus::OK;
+}
+
+OramStatus SquareRootOramController::FillWithData(
+    const std::vector<oram_block_t>& data) {
+  // Initially, the first m words of the oblivious RAM contain the contents of
+  // the words of the original RAM.
+  // Pad the data size to m + \sqrt{m}. This is a must.
+  std::vector<oram_block_t> padded_data = Padded(data, block_num_ + sqrt_m_);
+
+  grpc::ClientContext context;
+  LoadSqrtOramRequest request;
+  google::protobuf::Empty response;
+
+  ASSEMBLE_HEADER(request, id_, instance_hash_, GetVersion());
+
+  // Get the permutation vector.
+  std::vector<uint32_t> perm = std::move(CreateVec(padded_data.size()));
+  oram_crypto::RandomPermutation(perm);
+  UpdatePosition(perm);
+
+  // First we need to make sure that original array is sorted.
+  std::sort(padded_data.begin(), padded_data.end(),
+            [](const oram_block_t& lhs, const oram_block_t& rhs) {
+              return lhs.header.block_id <= rhs.header.block_id;
+            });
+  // Make sure the data vector is correctly ordered.
+  oram_utils::PermuteBy(perm, padded_data);
+
+  // Randomly permute the contents of locations 1 through m + \sqrt{m}. That is,
+  // select a permutation π over the integers 1 through m + \sqrt{m} and
+  // relocate the contents of word i into word pi(i).
+  for (size_t i = 0; i < padded_data.size(); i++) {
+    // Load the Square Root ORAM with permutation.
+    oram_block_t block = padded_data[i];
+
+    logger->debug("Perm: {}, {}; visiting block {}", i, perm[i],
+                  block.header.block_id);
+
+    std::string block_str;
+    oram_utils::EncryptBlock(&block, cryptor_.get());
+    oram_utils::ConvertToString(&block, &block_str);
+
+    // Add to request.
+    request.add_contents(block_str);
+  }
+
+  grpc::Status status = stub_->LoadSqrtOram(&context, request, &response);
+  if (!status.ok()) {
+    return OramStatus(StatusCode::kServerError,
+                      oram_utils::StrCat(status.error_message()));
+  }
+
+  is_initialized_ = true;
+
+  return OramStatus::OK;
+}
+
+OramStatus SquareRootOramController::ReadShelter(oram_block_t* const data) {
+  bool found = false;
+  // Scan the whole shelter.
+  for (size_t i = 0; i < sqrt_m_; i++) {
+    grpc::ClientContext context;
+
+    ReadSqrtRequest request;
+    SqrtMessage response;
+
+    ASSEMBLE_HEADER(request, id_, instance_hash_, GetVersion());
+    request.set_read_from(kShelter);
+    request.set_tag(i);
+
+    grpc::Status status = stub_->ReadSqrtMemory(&context, request, &response);
+    if (!status.ok()) {
+      return OramStatus(StatusCode::kServerError, status.error_message());
+    }
+
+    // Need to check if the block is empty.
+    if (!response.content().empty()) {
+      oram_block_t block;
+      // Deserialze the received block.
+      oram_utils::ConvertToBlock(response.content(), &block);
+      // Decrypt the block.
+      oram_utils::DecryptBlock(&block, cryptor_.get());
+      // Check if the block id matches.
+      if (block.header.type == BlockType::kNormal &&
+          block.header.block_id == data->header.block_id) {
+        memcpy(reinterpret_cast<void*>(data), reinterpret_cast<void*>(&block),
+               ORAM_BLOCK_SIZE);
+        found = true;
+      }
+    }
+  }
+
+  // Object not found.
+  return found ? OramStatus::OK
+               : OramStatus(StatusCode::kObjectNotFound,
+                            oram_utils::StrCat(
+                                "The target block ", data->header.block_id,
+                                " is not found in the shelter."));
+}
+
+OramStatus SquareRootOramController::ReadBlock(uint32_t from, uint32_t pos,
                                                oram_block_t* const data) {
-  // TODO.
+  // We invoke a separate function to handle `ReadShelter` request.
+  if (from == kShelter) {
+    return ReadShelter(data);
+  }
+
+  grpc::ClientContext context;
+  // Prepare the message.
+  ReadSqrtRequest request;
+  SqrtMessage response;
+
+  ASSEMBLE_HEADER(request, id_, instance_hash_, GetVersion());
+
+  request.set_read_from(from);
+  request.set_tag(pos);
+
+  grpc::Status status = stub_->ReadSqrtMemory(&context, request, &response);
+  if (!status.ok()) {
+    return OramStatus(StatusCode::kServerError, status.error_message());
+  }
+
+  // Not a dummy read.
+  if (from != kDummy) {
+    if (!response.content().empty()) {
+      // Deserialze the received block.
+      oram_utils::ConvertToBlock(response.content(), data);
+      // Decrypt the block.
+      oram_utils::DecryptBlock(data, cryptor_.get());
+    } else {
+      // Not found. Should panic?
+      return OramStatus(
+          StatusCode::kObjectNotFound,
+          "The target block cannot be found both in shelter and main memory.");
+    }
+  }
+
   return OramStatus::OK;
 }
 
 OramStatus SquareRootOramController::WriteBlock(uint32_t position,
                                                 oram_block_t* const data) {
+  grpc::ClientContext context;
+
+  // Prepare the message.
+  WriteSqrtMessage request;
+  google::protobuf::Empty response;
+
+  ASSEMBLE_HEADER(request, id_, instance_hash_, GetVersion());
+
+  // Serialize the the block into request type.
+  std::string data_str;
+  // Encrypt the block.
+  oram_utils::EncryptBlock(data, cryptor_.get());
+  oram_utils::ConvertToString(data, &data_str);
+  request.set_content(data_str);
+  request.set_pos(position);
+
+  grpc::Status status = stub_->WriteSqrtMemory(&context, request, &response);
+  if (!status.ok()) {
+    return OramStatus(StatusCode::kServerError, status.error_message());
+  }
+
   return OramStatus::OK;
 }
 
@@ -43,8 +249,13 @@ SquareRootOramController::SquareRootOramController(uint32_t id, bool standalone,
                                                    size_t block_num)
     : OramController(id, standalone, block_num, OramType::kSquareOram),
       sqrt_m_((size_t)std::ceil(std::sqrt(block_num))),
+      next_dummy_(0ul),
       counter_(0ul) {
-  // TODO: Should check m + \sqrt{m} = log_2(x), for some x.
+  // Check if the input is valid according to the current implementation of FPE.
+  PANIC_IF(
+      ((sqrt_m_ + block_num) & (sqrt_m_ + block_num - 1)) != 0,
+      "Currently, m + \\sqrt{m} should be some power of 2, where m denotes "
+      "the block number.");
 }
 
 OramStatus SquareRootOramController::PermuteOnFull(void) {
@@ -52,36 +263,77 @@ OramStatus SquareRootOramController::PermuteOnFull(void) {
   // Increment the counter and check if we need to permute the oram again.
   // The permutation is done on the server side; we just need to update the
   // position map.
-  if (counter_++ == sqrt_m_) {
+  if (++counter_ == sqrt_m_) {
+    logger->debug("Performing Permutation!");
+    
     // First let us clear the counter.
-    counter_ = 0;
+    counter_ = 0ul;
+    // Also clear next_dummy_.
+    next_dummy_ = 0ul;
 
+    // Then we create a random permutation.
     std::vector<uint32_t> perm = std::move(CreateVec(block_num_ + sqrt_m_));
     status = oram_crypto::RandomPermutation(perm);
     if (!status.ok()) {
       return OramStatus(status.ErrorCode(),
                         oram_utils::StrCat("Permutation failed due to ",
                                            status.ErrorMessage()));
+    } else {
+      // Send the whole vector to the server.
+      return DoPermute(perm);
     }
-
-    // TODO: Send the vector to the server.
   }
 
   // Nothing happens or the permutation is done correctly.
   return status;
 }
 
+OramStatus SquareRootOramController::DoPermute(
+    const std::vector<uint32_t>& perm) {
+  grpc::ClientContext context;
+  google::protobuf::Empty response;
+
+  SqrtPermMessage request;
+  ASSEMBLE_HEADER(request, id_, instance_hash_, GetVersion());
+
+  for (size_t i = 0; i < perm.size(); i++) {
+    request.add_perms(perm[i]);
+  }
+
+  grpc::Status status = stub_->SqrtPermute(&context, request, &response);
+  if (!status.ok()) {
+    return OramStatus(StatusCode::kServerError, status.error_message());
+  }
+
+  // Flush position map.
+  // This update should be done at the tag level.
+  // So the internal logic is a little bit different.
+  // address -> [tag -> tag] (We are doing this)
+  UpdatePosition(perm);
+
+  return OramStatus::OK;
+}
+
 OramStatus SquareRootOramController::InternalAccess(Operation op_type,
                                                     uint32_t address,
                                                     oram_block_t* const data,
                                                     bool dummy) {
+  if (!is_initialized_) {
+    return OramStatus(StatusCode::kInvalidOperation,
+                      "Cannot access ORAM before it is initialized."
+                      " You may need to call `InitOram()` and `FillWithData()` "
+                      "method first.");
+  }
+
+  PANIC_IF(op_type == Operation::kInvalid, "Invalid ORAM operation!");
+
   // Step 1: Randomly permute the contents of locations 1 through m + \sqrt{m}.
   // That is, select a permutation π over the integers 1 through m + \sqrt{m}
   // and relocate the contents of word i into word π(i) (later, we show how to
   // do this obliviously).
 
   // Step 2: Simulate \sqrt{m} memory accesses of the original RAM.
-  // - If i is found in the shelter, then read next dummy.
+  // - If i is found in the shelter,fthen read next dummy.
   // - If is not found in the shelter, then read main memory using its permuted
   //   tag \pi(i) which is then stored in the shelter temporarily.
 
@@ -98,8 +350,9 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
   // algorithm is oblivious.
   //
   // Workflow:
-  //    Server --> Client (Read & Update) -->
-  //               Server stores the block in the shelter --> (Permute)
+  //    Server --> [ Client (Read & Update) -->
+  //               Server stores the block in the shelter ] --> (Permute)
+  // A full read-write operation is regarded as an atomic operation here.
 
   // Check the position map.
   if (position_map_.find(address) == position_map_.end()) {
@@ -108,25 +361,73 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
   }
 
   const uint32_t position = position_map_[address];
+
+  logger->debug("The position for {} is {}", address, position);
+
   oram_block_t block;
   block.header.block_id = address;
   block.header.type = BlockType::kNormal;
 
   // Read from the server.
-  OramStatus status = OramStatus::OK;
-  if (!(status = ReadBlock(position, &block)).ok()) {
-    return OramStatus(status.ErrorCode(),
-                      oram_utils::StrCat("[InternalAccess] Server Error: ",
-                                         status.ErrorMessage()));
+  // Step 1: Scan the cache (shelter) of the server.
+  bool in_shelter = false;
+  OramStatus status = ReadBlock(kShelter, position, &block);
+  if (!status.ok()) {
+    // Check if the error is NOT FOUND; if not, we return the error.
+    if (StatusCode::kObjectNotFound != status.ErrorCode()) {
+      return status;
+    }
+
+  } else {
+    in_shelter = true;
+  }
+
+  // Step 2: If not found in the cache, read from main; else read next dummy.
+  if (in_shelter) {
+    // Can be permuted, but for convenience, we just "literally" read the next
+    // dummy. If there is any error, we return it.
+    status = ReadBlock(kDummy, next_dummy_++, nullptr);
+    if (!status.ok()) {
+      return status;
+    }
+
+  } else {
+    // If a block is not found in the shelter, then it MUST be in the main
+    // memory even if randomly permuted. So we use the permuted posiiton to
+    // index it.
+    status = ReadBlock(kMainMemory, position, &block);
+    if (!status.ok()) {
+      return status;
+    }
   }
 
   // Check if the id matches.
-  if (block.header.block_id != address) {
+  if (block.header.type == BlockType::kNormal &&
+      block.header.block_id != address) {
     return OramStatus(
         StatusCode::kUnknownError,
         oram_utils::StrCat("[InternalAccess] The requested id ", address,
                            " does not match with the fetched block ",
                            block.header.block_id, "!"));
+  }
+
+  // Update the block, if it needs.
+  if (op_type == Operation::kRead) {
+    // Copy the block to the user side.
+    memcpy(reinterpret_cast<void*>(data), reinterpret_cast<void*>(&block),
+           ORAM_BLOCK_SIZE);
+    // Immediately write it back.
+    status = WriteBlock(position, data);
+  } else {
+    // Simply Call write.
+    status = WriteBlock(position, data);
+    // Propagate the error.
+    if (!status.ok()) {
+      return OramStatus(
+          status.ErrorCode(),
+          oram_utils::StrCat("[InternalAccess] Write back failed on ", address,
+                             ". Error: ", status.ErrorMessage()));
+    }
   }
 
   // Check if we need to permute the oram storage.

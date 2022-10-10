@@ -29,6 +29,7 @@
 #define ORAM_CRYPTO_KEY_SIZE crypto_aead_aes256gcm_KEYBYTES
 #define ORAM_CRYPTO_RANDOM_SIZE crypto_aead_aes256gcm_NPUBBYTES
 #define ORAM_PRP_KEY_SIZE 32ul
+#define ORAM_RADIX 2
 
 #define ull unsigned long long
 

@@ -24,8 +24,6 @@
 std::shared_ptr<spdlog::logger> logger = spdlog::stdout_color_mt("oram_client");
 
 int main(int argc, char* argv[]) {
-  spdlog::set_default_logger(logger);
-
   // Create a parser.
   oram_parse::YamlParser parser;
   oram_impl::OramConfig config;
@@ -36,11 +34,21 @@ int main(int argc, char* argv[]) {
     parser.FromCommandLine(argc, argv, config);
   }
 
+  // Control the log level.
+  logger->set_level(static_cast<spdlog::level::level_enum>(config.log_level));
+  spdlog::set_default_logger(logger);
+
   // Create the controller.
   std::unique_ptr<oram_impl::OramClient> client =
       std::make_unique<oram_impl::OramClient>(config);
   client->Ready();
-  client->FillWithData();
+
+  status = client->FillWithData();
+  if (!status.ok()) {
+    logger->error("Client: FillWithData failed due to `{}`.",
+                  status.ErrorMessage());
+    abort();
+  }
 
   for (size_t i = 0; i < config.block_num; i++) {
     oram_impl::oram_block_t block;

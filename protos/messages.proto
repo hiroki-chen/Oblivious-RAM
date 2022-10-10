@@ -14,6 +14,8 @@ service oram_server {
 
   rpc InitSqrtOram(InitSqrtOramRequest) returns (google.protobuf.Empty) {}
 
+  rpc LoadSqrtOram(LoadSqrtOramRequest) returns (google.protobuf.Empty) {}
+
   rpc PrintOramTree(PrintOramTreeRequest) returns (google.protobuf.Empty) {}
 
   rpc ReadPath(ReadPathRequest) returns (ReadPathResponse) {}
@@ -26,7 +28,7 @@ service oram_server {
 
   rpc ReadSqrtMemory(ReadSqrtRequest) returns (SqrtMessage) {}
 
-  rpc WriteSqrtMemory(SqrtMessage) returns (google.protobuf.Empty) {}
+  rpc WriteSqrtMemory(WriteSqrtMessage) returns (google.protobuf.Empty) {}
 
   rpc SqrtPermute(SqrtPermMessage) returns (google.protobuf.Empty) {}
 
@@ -89,6 +91,11 @@ message InitSqrtOramRequest {
   uint32 block_size = 4;
 }
 
+message LoadSqrtOramRequest {
+  RequestHeader header = 1;
+  repeated bytes contents = 2;
+}
+
 message FlatVectorMessage {
   RequestHeader header = 1;
   bytes content = 2;
@@ -97,11 +104,19 @@ message FlatVectorMessage {
 message SqrtMessage {
   RequestHeader header = 1;
   bytes content = 2;
+  // optional uint32 pos = 3;
+}
+
+message WriteSqrtMessage {
+  RequestHeader header = 1;
+  bytes content = 2;
+  bool write_to_cache = 3;
+  uint32 pos = 4;
 }
 
 message SqrtPermMessage {
   RequestHeader header = 1;
-  repeated bytes content = 2;
+  repeated uint32 perms = 2;
 }
 
 message InitTreeOramRequest {
@@ -117,6 +132,12 @@ message ReadFlatRequest {
 
 message ReadSqrtRequest {
   RequestHeader header = 1;
+  uint32 tag = 2;
+  // Explanation:
+  // 0 => shelter;
+  // 1 => main memory;
+  // 2 => dummy.
+  uint32 read_from = 3;
 }
 
 message ReadPathRequest {
