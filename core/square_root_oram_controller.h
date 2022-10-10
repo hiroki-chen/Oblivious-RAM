@@ -40,6 +40,12 @@ class SquareRootOramController : public OramController {
   // the plaintext domain.
   // 2. We will locally maintain the position map with O(sizeof(uint32_t) * N)
   // storage.
+  //
+  // The design of the shelter is a very tricky one. Because the block read from
+  // the main memory must be written to the shelter, so we need to tell the
+  // server where to write. In addition, We also want to encrypt the blocks so
+  // that the server cannot tell from each one. So we must maintain another
+  // empty map on the client side that tracks the availability of the shelter.
 
   size_t sqrt_m_;
   // Marks the next dummy block to be accessed.
@@ -50,6 +56,9 @@ class SquareRootOramController : public OramController {
   // After m operations, we will permute the whole ORAM storage.
   uint32_t counter_;
 
+  // Shelter avaibility mapping. This is always synchronized with the server.
+  // sqrt_shelter_empty_t shelter_status_;
+
  protected:
   virtual OramStatus InternalAccess(Operation op_type, uint32_t address,
                                     oram_block_t* const data,
@@ -58,10 +67,11 @@ class SquareRootOramController : public OramController {
   virtual OramStatus ReadShelter(oram_block_t* const data);
   virtual OramStatus ReadBlock(uint32_t from, uint32_t pos,
                                oram_block_t* const data);
-  virtual OramStatus WriteBlock(uint32_t position, oram_block_t* const data,
-                                bool to);
+  virtual OramStatus WriteBlock(uint32_t position, oram_block_t* const data);
   virtual OramStatus PermuteOnFull(void);
   virtual OramStatus DoPermute(const std::vector<uint32_t>& perm);
+
+  void UpdatePosition(const std::vector<uint32_t>& perm);
 
  public:
   // For the convenience of format-preserving encryption, we will round up the
@@ -70,7 +80,8 @@ class SquareRootOramController : public OramController {
 
   virtual OramStatus InitOram(void) override;
   // The user should prepare a permuted initial data vector.
-  virtual OramStatus FillWithData(const std::vector<oram_block_t>& data) override;
+  virtual OramStatus FillWithData(
+      const std::vector<oram_block_t>& data) override;
 };
 }  // namespace oram_impl
 

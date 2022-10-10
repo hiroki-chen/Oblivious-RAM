@@ -166,6 +166,8 @@ grpc::Status OramService::ReadSqrtMemory(grpc::ServerContext* context,
                                            read_type, ", tag is ", tag, "."));
   }
 
+  logger->debug("Read type: {}, tag: {}", read_type, tag);
+
   switch (read_type) {
     case 0: {
       response->set_content(storage->ReadBlockFromShelter(tag));
@@ -204,28 +206,17 @@ grpc::Status OramService::WriteSqrtMemory(grpc::ServerContext* context,
   SqrtOramServerStorage* const storage =
       dynamic_cast<SqrtOramServerStorage* const>(storages_[id].get());
   if (storage == nullptr ||
-      storage->GetOramStorageType() != OramStorageType::kFlatStorage) {
+      storage->GetOramStorageType() != OramStorageType::kSqrtStorage) {
     return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
   } else if (storage->GetInstanceHash().compare(instance_hash)) {
     return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
   }
 
-  // Write to the memory.
-  bool write_to_cache = request->write_to_cache();
-  const uint32_t pos = request->pos();
   const std::string content = request->content();
+  const uint32_t tag = request->pos();
 
-  if (write_to_cache) {
-    storage->WriteBlockToShelter(content);
-  } else {
-    // Should always check boundary before writing.
-    if (!storage->Check(pos, 1)) {
-      return grpc::Status(grpc::StatusCode::OUT_OF_RANGE,
-                          "The given position is out of range.");
-    }
-    storage->WriteBlockToMain(pos, content);
-  }
-
+  // We ALWAYS write to the shelter.
+  storage->WriteBlockToShelter(tag, content);
   return grpc::Status::OK;
 }
 
