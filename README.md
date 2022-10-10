@@ -5,7 +5,7 @@ This repository was created initially for evluating the performance of Partition
 Currently, we consider implmenting the following oblivious RAMs.
 
 * (Implemented) Linear ORAM
-* (Implemented) [(Modified) Basic sqaure root ORAM](https://dl.acm.org/doi/pdf/10.1145/28395.28416)*
+* (Implemented) [(Modified) Basic square root ORAM](https://dl.acm.org/doi/pdf/10.1145/28395.28416)*
 * (Implemented) [Path ORAM](https://eprint.iacr.org/2013/280.pdf)
 * (Implemented) [Partition-based ORAM](https://www.ndss-symposium.org/wp-content/uploads/2017/09/04_4.pdf)
 * (Implemented) [Path ORAM-based Oblivious dictionary](https://eprint.iacr.org/2014/185.pdf)
