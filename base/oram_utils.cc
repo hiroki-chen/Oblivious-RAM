@@ -20,6 +20,7 @@
 #include <spdlog/fmt/bin_to_hex.h>
 #include <spdlog/spdlog.h>
 
+#include <algorithm>
 #include <cstdarg>
 #include <cstring>
 #include <fstream>

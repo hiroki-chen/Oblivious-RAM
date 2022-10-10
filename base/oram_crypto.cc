@@ -58,7 +58,6 @@ void Cryptor::CryptoPrelogue(void) {
 }
 
 oram_impl::OramStatus RandomPermutation(std::vector<uint32_t>& array) {
-  logger->debug("{}", array.size());
   // Pick up a PRP key.
   oram_impl::OramStatus status = oram_impl::OramStatus::OK;
   uint8_t prp_key[ORAM_PRP_KEY_SIZE];

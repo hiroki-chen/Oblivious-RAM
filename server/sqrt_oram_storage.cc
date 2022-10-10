@@ -16,21 +16,23 @@
  */
 #include "sqrt_oram_storage.h"
 
+#include <spdlog/spdlog.h>
+
 #include "base/oram_utils.h"
+
+extern std::shared_ptr<spdlog::logger> logger;
 
 namespace oram_impl {
 bool SqrtOramServerStorage::Check(uint32_t pos, uint32_t type) {
   switch (type) {
     case 0:
-      return main_memory_.size() <= pos &&
-             pos < shelter_.size() + main_memory_.size();
+      return true;
 
     case 1:
-      return 0 < pos && pos < main_memory_.size();
+      return pos <= main_memory_.size() + dummy_.size();
 
     case 2:
-      return shelter_.size() + main_memory_.size() <= pos &&
-             pos < shelter_.size() + main_memory_.size() + dummy_.size();
+      return true;
 
     default:
       return false;
@@ -38,62 +40,83 @@ bool SqrtOramServerStorage::Check(uint32_t pos, uint32_t type) {
 }
 
 void SqrtOramServerStorage::DoPermute(const std::vector<uint32_t>& perm) {
-  for (size_t i = 0; i < perm.size(); i++) {
-    // This is the index of the element that should be relocated to the current
-    // index; we need to check the boundary.
-    const uint32_t target_element = perm[i];
+  PANIC_IF(perm.size() != main_memory_.size() + dummy_.size(),
+           "The permutation size is wrong!");
 
-    // Permute main memory.
-    if (i < main_memory_.size()) {
-      if (target_element < main_memory_.size()) {
-        std::swap(main_memory_[i], main_memory_[target_element]);
+  // Server needs to reconstruct the memory layout. In short, it has two tasks:
+  //    1. Update the memory using shelter's information. Since we have stored
+  //       tag information in the shelter, we can easily update the main memory.
+  //    2. Permute the main memory according to the uploaded data provided by
+  //       the client.
+
+  // Step 1: Update the memory.
+  for (size_t i = 0; i < shelter_.size(); i++) {
+    const uint32_t tag = shelter_[i].first;
+    const std::string data = shelter_[i].second;
+
+    if (tag != kInvalidMask && !data.empty()) {
+      // Check which one should we update.
+      if (tag < main_memory_.size()) {
+        main_memory_[tag] = data;
       } else {
-        std::swap(main_memory_[i],
-                  shelter_[target_element - main_memory_.size()]);
+        dummy_[tag - main_memory_.size()] = data;
       }
     }
-    // Permute the shelter.
-    else {
-      if (target_element < main_memory_.size()) {
-        std::swap(shelter_[i - main_memory_.size()],
-                  main_memory_[target_element]);
-      } else {
-        std::swap(shelter_[i - main_memory_.size()],
-                  shelter_[target_element - main_memory_.size()]);
-      }
+
+    // Clear the shelter.
+    shelter_[i] = std::make_pair(kInvalidMask, "");
+  }
+
+  // Step 2: Permute the memory.
+  // This permutation is done at the tag level.
+  std::vector<std::string> assembled_arr = main_memory_;
+  assembled_arr.insert(assembled_arr.end(), dummy_.begin(), dummy_.end());
+  oram_utils::PermuteBy(perm, assembled_arr);
+
+  // Copy it back.
+  for (size_t i = 0; i < assembled_arr.size(); i++) {
+    if (i < main_memory_.size()) {
+      main_memory_[i] = assembled_arr[i];
+    } else {
+      dummy_[i - main_memory_.size()] = assembled_arr[i];
     }
   }
 }
 
-std::string SqrtOramServerStorage::ReadBlockFromShelter(uint32_t pos) {
-  const std::string ans = shelter_[pos - main_memory_.size()];
-  // Clear this position.
-  shelter_[pos - main_memory_.size()].clear();
-  return ans;
-}
-
-std::string SqrtOramServerStorage::ReadBlockFromMain(uint32_t pos) {
-  const std::string ans = main_memory_[pos];
-  main_memory_[pos].clear();
-  return ans;
-}
-
-std::string SqrtOramServerStorage::ReadBlockFromDummy(uint32_t pos) {
-  // It is meaningless to remove a block from dummy. So we keep it.
-  return dummy_[pos - main_memory_.size() - shelter_.size()];
-}
-
-void SqrtOramServerStorage::WriteBlockToShelter(const std::string& data) {
+void SqrtOramServerStorage::WriteBlockToShelter(uint32_t tag,
+                                                const std::string& data) {
+  // Scan and find an available space.
   for (size_t i = 0; i < shelter_.size(); i++) {
-    // Find an empty space and write to it.
-    if (shelter_[i].empty()) {
-      shelter_[i] = data;
+    if (shelter_[i].second.empty() && shelter_[i].first == kInvalidMask) {
+      shelter_[i].first = tag;
+      shelter_[i].second = data;
 
       return;
     }
   }
 
-  // Should always find an available space for this block.
+  PANIC("No available space in the shelter. This is an internal logic error.");
+}
+
+std::string SqrtOramServerStorage::ReadBlockFromShelter(uint32_t pos) {
+  const std::string ans = shelter_[pos].second;
+  shelter_[pos].first = kInvalidMask;
+  shelter_[pos].second.clear();
+  return ans;
+}
+
+std::string SqrtOramServerStorage::ReadBlockFromMain(uint32_t pos) {
+  if (pos < main_memory_.size()) {
+    return main_memory_[pos];
+  } else {
+    return ReadBlockFromDummy(pos - main_memory_.size());
+  }
+}
+
+std::string SqrtOramServerStorage::ReadBlockFromDummy(uint32_t pos) {
+  // It is meaningless to remove a block from dummy. So we keep it.
+  // There is no offset anymore.
+  return dummy_[pos];
 }
 
 void SqrtOramServerStorage::Fill(const std::vector<std::string>& data) {
@@ -101,7 +124,9 @@ void SqrtOramServerStorage::Fill(const std::vector<std::string>& data) {
     if (i < capacity_) {
       main_memory_.emplace_back(data[i]);
     } else {
-      shelter_.emplace_back(data[i]);
+      dummy_.emplace_back(data[i]);
+      // Initialize the shelter.
+      shelter_.emplace_back(std::make_pair(kInvalidMask, ""));
     }
   }
 }

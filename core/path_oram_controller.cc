@@ -29,6 +29,8 @@
 
 extern std::shared_ptr<spdlog::logger> logger;
 
+// TODO: Refine error handling. Do not simply PANIC.
+
 using std::chrono_literals::operator""us;
 
 namespace oram_impl {
@@ -94,10 +96,7 @@ OramStatus PathOramController::AccurateWriteBucket(
   WritePathRequest request;
   WritePathResponse response;
 
-  request.mutable_header()->set_id(id_);
-  request.mutable_header()->set_instance_hash(
-      std::string(reinterpret_cast<char*>(instance_hash_), 32));
-  request.mutable_header()->set_version(GetVersion());
+  ASSEMBLE_HEADER(request, id_, instance_hash_, GetVersion());
   request.set_level(level);
   request.set_offset(offset);
   request.set_type(Type::kInit);
@@ -127,10 +126,7 @@ OramStatus PathOramController::InitOram(void) {
   InitTreeOramRequest request;
   google::protobuf::Empty empty;
 
-  request.mutable_header()->set_id(id_);
-  request.mutable_header()->set_instance_hash(
-      std::string(reinterpret_cast<char*>(instance_hash_), 32));
-  request.mutable_header()->set_version(GetVersion());
+  ASSEMBLE_HEADER(request, id_, instance_hash_, GetVersion());
   request.set_bucket_size(bucket_size_);
   request.set_bucket_num(number_of_leafs_);
   request.set_block_size(ORAM_BLOCK_SIZE);
@@ -234,10 +230,7 @@ OramStatus PathOramController::ReadBucket(uint32_t path, uint32_t level,
   ReadPathRequest request;
   ReadPathResponse response;
 
-  request.mutable_header()->set_id(id_);
-  request.mutable_header()->set_instance_hash(
-      std::string(reinterpret_cast<char*>(instance_hash_), 32));
-  request.mutable_header()->set_version(GetVersion());
+  ASSEMBLE_HEADER(request, id_, instance_hash_, GetVersion());
   request.set_path(path);
   request.set_level(level);
 
@@ -279,10 +272,7 @@ OramStatus PathOramController::WriteBucket(uint32_t path, uint32_t level,
   WritePathRequest request;
   WritePathResponse response;
 
-  request.mutable_header()->set_id(id_);
-  request.mutable_header()->set_instance_hash(
-      std::string(reinterpret_cast<char*>(instance_hash_), 32));
-  request.mutable_header()->set_version(GetVersion());
+  ASSEMBLE_HEADER(request, id_, instance_hash_, GetVersion());
   request.set_path(path);
   request.set_level(level);
   request.set_type(Type::kNormal);

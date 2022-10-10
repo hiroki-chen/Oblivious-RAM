@@ -22,7 +22,9 @@
 namespace oram_impl {
 class SqrtOramServerStorage : public BaseOramServerStorage {
   server_sqrt_storage_t main_memory_;
-  server_sqrt_storage_t shelter_;
+  // Shelter is a vector of [tag, data]. The tag field is used to track the
+  // blocks in the main memory in case we need to update them.
+  server_sqrt_shelter_t shelter_;
   server_sqrt_storage_t dummy_;
 
   size_t squared_m_;
@@ -34,16 +36,12 @@ class SqrtOramServerStorage : public BaseOramServerStorage {
                               OramStorageType::kSqrtStorage),
         squared_m_(squared_m) {}
   bool Check(uint32_t pos, uint32_t type);
-  // Position needs to "shrink to fit".
+  // Position may need to "shrink to fit".
   std::string ReadBlockFromShelter(uint32_t pos);
   std::string ReadBlockFromMain(uint32_t pos);
   std::string ReadBlockFromDummy(uint32_t pos);
-  void WriteBlockToShelter(const std::string& data);
-  void WriteBlockToMain(uint32_t pos, const std::string& data) {
-    main_memory_[pos] = data;
-  }
+  void WriteBlockToShelter(uint32_t tag, const std::string& data);
   void Fill(const std::vector<std::string>& data);
-
   void DoPermute(const std::vector<uint32_t>& perm);
 };
 }  // namespace oram_impl
