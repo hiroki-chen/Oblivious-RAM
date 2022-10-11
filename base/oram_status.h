@@ -181,8 +181,8 @@ class OramStatus final {
   void Update(const StatusCode& new_status);
 
   // Append the status from the callee; if the status returns ok, then we
-  // discard it.
-  void Append(const OramStatus& new_status);
+  // discard it. This would return itself for chainable operations.
+  OramStatus& Append(const OramStatus& new_status);
 
   // Returns true if the current status matches `OramStatus::OK`.
   // If the functions returns false, then the user may need to check the error
@@ -205,10 +205,12 @@ inline void OramStatus::Update(const StatusCode& new_status) {
   }
 }
 
-inline void OramStatus::Append(const OramStatus& new_status) {
+inline OramStatus& OramStatus::Append(const OramStatus& new_status) {
   if (!new_status.ok()) {
     nested_status_.emplace_back(new_status);
   }
+  
+  return *this;
 }
 }  // namespace oram_impl
 

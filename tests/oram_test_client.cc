@@ -60,12 +60,14 @@ int main(int argc, char* argv[]) {
 
     if (!(status = client->Read(i, &block)).ok()) {
       // Play with the status.
-      oram_impl::OramStatus s = oram_impl::OramStatus(
-          oram_impl::StatusCode::kInvalidOperation,
-          oram_utils::StrCat("Error reading block ", i), __func__);
-      s.Append(status);
 
-      ERRS(logger, s.EmitString());
+      ERRS(logger,
+           status
+               .Append(oram_impl::OramStatus(
+                   oram_impl::StatusCode::kInvalidOperation,
+                   oram_utils::StrCat("Error reading block ", i), __func__))
+               .EmitString());
+      
     } else {
       INFO(logger, "[+] {}: {}", i, block.data[0]);
     }

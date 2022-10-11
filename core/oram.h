@@ -30,7 +30,7 @@
 namespace oram_impl {
 static const uint8_t major_version = 1;
 static const uint8_t minor_version = 2;
-static const uint8_t patch_version = 1;
+static const uint8_t patch_version = 2;
 
 std::string GetVersion(void);
 }  // namespace oram_impl

@@ -31,19 +31,20 @@ std::string OramStatus::EmitString(void) const {
   // ----> [error_type]: additional message; caused by
   // ...
   std::string ans;
-
-  // First, get the information from itself.
-  if (error_code_ != StatusCode::kOK) {
-    ans.append(oram_utils::StrCat("\n\t[", kErrorList.at(error_code_), "@",
-                                  location_, "]: ", error_message_));
-  }
+  ans.append("\n\t");
 
   for (auto iter = nested_status_.crbegin(); iter != nested_status_.crend();
        iter++) {
-    ans.append("; caused by\n\t");
     ans.append(oram_utils::StrCat("[", kErrorList.at(iter->error_code_), "@",
                                   iter->location_,
                                   "]: ", iter->error_message_));
+    ans.append("; caused by\n\t");
+  }
+
+  // Finally, get the information from itself.
+  if (error_code_ != StatusCode::kOK) {
+    ans.append(oram_utils::StrCat("[", kErrorList.at(error_code_), "@",
+                                  location_, "]: ", error_message_));
   }
 
   return ans;

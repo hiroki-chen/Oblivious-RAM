@@ -30,12 +30,8 @@ class OramClient {
   OramClient(const OramConfig& config);
 
   // READ / WRITE Interfaces.
-  OramStatus Read(uint32_t address, oram_block_t* const block) {
-    return oram_controller_->Access(Operation::kRead, address, block);
-  }
-  OramStatus Write(uint32_t address, oram_block_t* const block) {
-    return oram_controller_->Access(Operation::kWrite, address, block);
-  }
+  OramStatus Read(uint32_t address, oram_block_t* const block);
+  OramStatus Write(uint32_t address, oram_block_t* const block);
   OramStatus FillWithData(void);
   OramStatus Ready(void);
 

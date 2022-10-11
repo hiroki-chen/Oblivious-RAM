@@ -374,12 +374,9 @@ OramStatus PathOramController::InternalAccessDirect(Operation op_type,
     OramStatus status = ReadBucket(x, i, &bucket_this_level);
 
     if (!status.ok()) {
-      OramStatus ret = OramStatus(
+      return status.Append(OramStatus(
           StatusCode::kInvalidOperation,
-          oram_utils::StrCat("Failed to write bucket ", x), __func__);
-      ret.Append(status);
-
-      return ret;
+          oram_utils::StrCat("Failed to write bucket ", x), __func__));
     }
 
     bucket_this_path.emplace_back(bucket_this_level);
@@ -460,11 +457,8 @@ OramStatus PathOramController::InternalAccessDirect(Operation op_type,
     OramStatus status = WriteBucket(x, i - 1, subset);
 
     if (!status.ok()) {
-      OramStatus ret = OramStatus(StatusCode::kInvalidOperation,
-                                  "Failed to write bucket", __func__);
-      ret.Append(status);
-
-      return ret;
+      return status.Append(OramStatus(StatusCode::kInvalidOperation,
+                                      "Failed to write bucket", __func__));
     }
   }
 

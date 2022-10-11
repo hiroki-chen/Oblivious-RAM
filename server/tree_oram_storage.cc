@@ -69,11 +69,9 @@ OramStatus TreeOramServerStorage::ReadPath(uint32_t level, uint32_t path,
             reinterpret_cast<const uint8_t*>(data.data()), data.size(),
             reinterpret_cast<uint8_t*>(&block), &size);
         if (!status.ok()) {
-          OramStatus ret = OramStatus(StatusCode::kInvalidOperation,
-                                      "Cannot Read from the server", __func__);
-          ret.Append(status);
-
-          return ret;
+          return status.Append(OramStatus(StatusCode::kInvalidOperation,
+                                          "Cannot Read from the server",
+                                          __func__));
         }
 
         out_bucket->emplace_back(block);
@@ -110,11 +108,9 @@ OramStatus TreeOramServerStorage::AccurateWritePath(
           (uint8_t*)(&in_bucket[i]), ORAM_BLOCK_SIZE, buf, &compressed_size);
 
       if (!status.ok()) {
-        OramStatus ret = OramStatus(StatusCode::kInvalidOperation,
-                                    "Cannot write to the server", __func__);
-        ret.Append(status);
-
-        return ret;
+        return status.Append(OramStatus(StatusCode::kInvalidOperation,
+                                        "Cannot write to the server",
+                                        __func__));
       }
 
       iter->second.emplace_back(
@@ -136,11 +132,9 @@ OramStatus TreeOramServerStorage::AccurateWritePath(
       OramStatus status = oram_utils::DataCompress(
           (uint8_t*)(&in_bucket[i]), ORAM_BLOCK_SIZE, buf, &compressed_size);
       if (!status.ok()) {
-        OramStatus ret = OramStatus(StatusCode::kInvalidOperation,
-                                    "Cannot write to the server", __func__);
-        ret.Append(status);
-
-        return ret;
+        return status.Append(OramStatus(StatusCode::kInvalidOperation,
+                                        "Cannot write to the server",
+                                        __func__));
       }
 
       iter->second.emplace_back(

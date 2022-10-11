@@ -219,12 +219,9 @@ oram_impl::OramStatus EncryptBlock(oram_impl::oram_block_t* const block,
                        DEFAULT_ORAM_DATA_SIZE + DEFAULT_ORAM_METADATA_SIZE,
                        block->header.iv, &enc);
   if (!status.ok()) {
-    oram_impl::OramStatus ret = oram_impl::OramStatus(
+    return status.Append(oram_impl::OramStatus(
         oram_impl::StatusCode::kInvalidArgument,
-        "Encryption failed (check if the data size is correct?)", __func__);
-    ret.Append(status);
-
-    return ret;
+        "Encryption failed (check if the data size is correct?)", __func__));
   }
 
   // Third, let us split the mac tag to the header.
@@ -262,12 +259,9 @@ oram_impl::OramStatus DecryptBlock(oram_impl::oram_block_t* const block,
                            crypto_aead_aes256gcm_ABYTES,
                        block->header.iv, &dec);
   if (!status.ok()) {
-    oram_impl::OramStatus ret = oram_impl::OramStatus(
+    return status.Append(oram_impl::OramStatus(
         oram_impl::StatusCode::kInvalidArgument,
-        "Decryption failed due to corrupted ciphertext", __func__);
-    ret.Append(status);
-
-    return ret;
+        "Decryption failed due to corrupted ciphertext", __func__));
   }
 
   // Fifth, let us copy the decrypted data to the block.
