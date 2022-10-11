@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
   oram_impl::OramConfig config;
   // Try configuration file.
   oram_impl::OramStatus status = parser.Parse(config);
-  if (status.ErrorCode() == oram_impl::StatusCode::kFileNotFound &&
+  if (status.error_code() == oram_impl::StatusCode::kFileNotFound &&
       !parser.IgnoreCommandLineArgs()) {
     parser.FromCommandLine(argc, argv, config);
   }

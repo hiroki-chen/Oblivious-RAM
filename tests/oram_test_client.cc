@@ -29,9 +29,13 @@ int main(int argc, char* argv[]) {
   oram_impl::OramConfig config;
   // Try configuration file.
   oram_impl::OramStatus status = parser.Parse(config);
-  if (status.ErrorCode() == oram_impl::StatusCode::kFileNotFound &&
+  if (status.error_code() == oram_impl::StatusCode::kFileNotFound &&
       !parser.IgnoreCommandLineArgs()) {
-    parser.FromCommandLine(argc, argv, config);
+    status = parser.FromCommandLine(argc, argv, config);
+
+    if (!status.ok()) {
+      logger->warn(status.EmitString());
+    }
   }
 
   // Control the log level.
@@ -45,8 +49,7 @@ int main(int argc, char* argv[]) {
 
   status = client->FillWithData();
   if (!status.ok()) {
-    logger->error("Client: FillWithData failed due to `{}`.",
-                  status.ErrorMessage());
+    ERRS(logger, "FillWithData failed. {}", status.EmitString());
     abort();
   }
 
@@ -56,10 +59,15 @@ int main(int argc, char* argv[]) {
     oram_impl::OramStatus status = oram_impl::OramStatus::OK;
 
     if (!(status = client->Read(i, &block)).ok()) {
-      logger->error("[-] Error reading block `{}` due to `{}`.", i,
-                    status.ErrorMessage());
+      // Play with the status.
+      oram_impl::OramStatus s = oram_impl::OramStatus(
+          oram_impl::StatusCode::kInvalidOperation,
+          oram_utils::StrCat("Error reading block ", i), __func__);
+      s.Append(status);
+
+      ERRS(logger, s.EmitString());
     } else {
-      logger->info("[+] {}: {}", i, block.data[0]);
+      INFO(logger, "[+] {}: {}", i, block.data[0]);
     }
   }
 

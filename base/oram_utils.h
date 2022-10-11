@@ -42,6 +42,10 @@
     request.mutable_header()->set_version(version);      \
   }
 
+#define DBG(logger, fmt, ...) logger->debug(fmt, ##__VA_ARGS__)
+#define ERRS(logger, fmt, ...) logger->error(fmt, ##__VA_ARGS__)
+#define INFO(logger, fmt, ...) logger->info(fmt, ##__VA_ARGS__)
+
 namespace oram_utils {
 std::string ReadKeyCrtFile(const std::string& path);
 
@@ -88,8 +92,8 @@ oram_impl::OramStatus TryExec(Fn&& target_func) {
     target_func();
   } catch (const std::exception& e) {
     // Cast this exception to status code.
-    return oram_impl::OramStatus(oram_impl::StatusCode::kUnknownError,
-                                 e.what());
+    return oram_impl::OramStatus(oram_impl::StatusCode::kUnknownError, e.what(),
+                                 __func__);
   }
 
   // OK.
@@ -126,26 +130,25 @@ void PrintStash(const oram_impl::p_oram_stash_t& stash);
 
 void PrintOramTree(const oram_impl::server_tree_storage_t& storage);
 
-void EncryptBlock(oram_impl::oram_block_t* const block,
-                  oram_crypto::Cryptor* const cryptor);
+oram_impl::OramStatus EncryptBlock(oram_impl::oram_block_t* const block,
+                                   oram_crypto::Cryptor* const cryptor);
 
-void DecryptBlock(oram_impl::oram_block_t* const block,
-                  oram_crypto::Cryptor* const cryptor);
+oram_impl::OramStatus DecryptBlock(oram_impl::oram_block_t* const block,
+                                   oram_crypto::Cryptor* const cryptor);
 
-size_t DataCompress(const uint8_t* data, size_t data_size, uint8_t* const out);
+oram_impl::OramStatus DataCompress(const uint8_t* data, size_t data_size,
+                                   uint8_t* const out,
+                                   size_t* const compressed_size);
 
-size_t DataDecompress(const uint8_t* data, size_t data_size,
-                      uint8_t* const out);
+oram_impl::OramStatus DataDecompress(const uint8_t* data, size_t data_size,
+                                     uint8_t* const out,
+                                     size_t* const decompressed_size);
 
 std::string TypeToName(oram_impl::OramType oram_type);
 
 std::vector<std::string> split(const std::string& str, char delim);
 
 oram_impl::OramType StrToType(const std::string& type);
-
-template <class T>
-void PermuteBy(const std::vector<uint32_t>& perm,
-               std::vector<oram_impl::oram_block_t>& arr);
 }  // namespace oram_utils
 
 #endif  // ORAM_IMPL_BASE_ORAM_UTILS_H_

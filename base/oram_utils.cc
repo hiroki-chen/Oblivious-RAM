@@ -39,7 +39,7 @@ std::string ReadKeyCrtFile(const std::string& path) {
     oss << file.rdbuf();
     file.close();
   } else {
-    logger->error("Failed to read key file: {}", path);
+    ERRS(logger, "Failed to read key file: {}", path);
     return "";
   }
 
@@ -57,7 +57,7 @@ std::vector<std::string> ReadDataFromFile(const std::string& path) {
     }
     file.close();
   } else {
-    logger->error("Failed to read data file: {}", path);
+    ERRS(logger, "Failed to read data file: {}", path);
   }
   return data;
 }
@@ -66,7 +66,7 @@ void SafeFree(void* ptr) {
   if (ptr != nullptr) {
     free(ptr);
   } else {
-    logger->error("Failed to free nullptr");
+    ERRS(logger, "Double free detected.");
   }
 }
 
@@ -97,7 +97,7 @@ void ConvertToString(const oram_impl::oram_block_t* const block,
 void CheckStatus(const oram_impl::OramStatus& status,
                  const std::string& reason) {
   if (!status.ok()) {
-    logger->error("{}: {}", status.ErrorMessage(), reason);
+    ERRS(logger, "{}: {}", status.error_message(), reason);
     abort();
   }
 }
@@ -110,7 +110,7 @@ void PadStash(oram_impl::p_oram_stash_t* const stash,
       oram_impl::oram_block_t dummy;
 
       if (!oram_crypto::RandomBytes((uint8_t*)(&dummy), ORAM_BLOCK_SIZE).ok()) {
-        logger->error("Failed to generate random bytes");
+        ERRS(logger, "Failed to generate random bytes");
         abort();
       }
 
@@ -133,8 +133,7 @@ oram_impl::p_oram_bucket_t SampleRandomBucket(size_t size, size_t tree_size,
 
     if (!oram_crypto::RandomBytes(block.data + 1, DEFAULT_ORAM_DATA_SIZE - 1)
              .ok()) {
-      logger->error("Failed to generate random bytes");
-      abort();
+      PANIC("Failed to generate random bytes");
     }
 
     bucket.emplace_back(block);
@@ -174,35 +173,40 @@ oram_impl::p_oram_bucket_t DeserializeFromStringVector(
 }
 
 void PrintStash(const oram_impl::p_oram_stash_t& stash) {
-  logger->debug("Stash:");
+  DBG(logger, "Stash:");
 
   for (size_t i = 0; i < stash.size(); ++i) {
-    logger->debug("Block {}: type : {}, data: {}", stash[i].header.block_id,
-                  (int)stash[i].header.type, stash[i].data[0]);
+    DBG(logger, "Block {}: type : {}, data: {}", stash[i].header.block_id,
+        (int)stash[i].header.type, stash[i].data[0]);
   }
 }
 
 void PrintOramTree(const oram_impl::server_tree_storage_t& storage) {
-  logger->debug("The size of the ORAM tree is {}", storage.size());
+  DBG(logger, "The size of the ORAM tree is {}", storage.size());
 
   for (auto iter = storage.begin(); iter != storage.end(); ++iter) {
-    logger->debug("Tag {}, {}: ", iter->first.first, iter->first.second);
+    DBG(logger, "Tag {}, {}: ", iter->first.first, iter->first.second);
 
     for (const auto& block : iter->second) {
       // Decompress the storage.
+      size_t size;
       oram_impl::oram_block_t decompressed_block;
-      DataDecompress(reinterpret_cast<const uint8_t*>(block.data()),
-                     block.size(),
-                     reinterpret_cast<uint8_t*>(&decompressed_block));
+      oram_impl::OramStatus status = DataDecompress(
+          reinterpret_cast<const uint8_t*>(block.data()), block.size(),
+          reinterpret_cast<uint8_t*>(&decompressed_block), &size);
 
-      logger->debug("id: {}, type: {}", decompressed_block.header.block_id,
-                    (int)decompressed_block.header.type);
+      if (!status.ok()) {
+        ERRS(logger, status.EmitString());
+      } else {
+        DBG(logger, "id: {}, type: {}", decompressed_block.header.block_id,
+            (int)decompressed_block.header.type);
+      }
     }
   }
 }
 
-void EncryptBlock(oram_impl::oram_block_t* const block,
-                  oram_crypto::Cryptor* const cryptor) {
+oram_impl::OramStatus EncryptBlock(oram_impl::oram_block_t* const block,
+                                   oram_crypto::Cryptor* const cryptor) {
   // First let us generate the iv.
   oram_impl::OramStatus status =
       oram_crypto::RandomBytes(block->header.iv, ORAM_CRYPTO_RANDOM_SIZE);
@@ -214,7 +218,14 @@ void EncryptBlock(oram_impl::oram_block_t* const block,
       cryptor->Encrypt((uint8_t*)(&block->header) + DEFAULT_ORAM_ENCSKIP_SIZE,
                        DEFAULT_ORAM_DATA_SIZE + DEFAULT_ORAM_METADATA_SIZE,
                        block->header.iv, &enc);
-  CheckStatus(status, "Failed to encrypt data!");
+  if (!status.ok()) {
+    oram_impl::OramStatus ret = oram_impl::OramStatus(
+        oram_impl::StatusCode::kInvalidArgument,
+        "Encryption failed (check if the data size is correct?)", __func__);
+    ret.Append(status);
+
+    return ret;
+  }
 
   // Third, let us split the mac tag to the header.
   memcpy(block->header.mac_tag,
@@ -224,10 +235,12 @@ void EncryptBlock(oram_impl::oram_block_t* const block,
   // Fourth, let us copy the encrypted data to the block.
   memcpy((uint8_t*)(&block->header) + DEFAULT_ORAM_ENCSKIP_SIZE, enc.data(),
          enc.size() - crypto_aead_aes256gcm_ABYTES);
+
+  return oram_impl::OramStatus::OK;
 }
 
-void DecryptBlock(oram_impl::oram_block_t* const block,
-                  oram_crypto::Cryptor* const cryptor) {
+oram_impl::OramStatus DecryptBlock(oram_impl::oram_block_t* const block,
+                                   oram_crypto::Cryptor* const cryptor) {
   // First, let us prepare the buffer.
   uint8_t* enc_data =
       (uint8_t*)malloc(DEFAULT_ORAM_DATA_SIZE + DEFAULT_ORAM_METADATA_SIZE +
@@ -248,47 +261,64 @@ void DecryptBlock(oram_impl::oram_block_t* const block,
                        DEFAULT_ORAM_DATA_SIZE + DEFAULT_ORAM_METADATA_SIZE +
                            crypto_aead_aes256gcm_ABYTES,
                        block->header.iv, &dec);
-  CheckStatus(status, "Failed to decrypt data!");
+  if (!status.ok()) {
+    oram_impl::OramStatus ret = oram_impl::OramStatus(
+        oram_impl::StatusCode::kInvalidArgument,
+        "Decryption failed due to corrupted ciphertext", __func__);
+    ret.Append(status);
+
+    return ret;
+  }
 
   // Fifth, let us copy the decrypted data to the block.
   memcpy((uint8_t*)(&block->header) + DEFAULT_ORAM_ENCSKIP_SIZE, dec.data(),
          dec.size());
 
   SafeFree(enc_data);
+
+  return oram_impl::OramStatus::OK;
 }
 
-size_t DataCompress(const uint8_t* data, size_t data_size, uint8_t* const out) {
+oram_impl::OramStatus DataCompress(const uint8_t* data, size_t data_size,
+                                   uint8_t* const out,
+                                   size_t* const compressed_size) {
   // Compress the source std::string with lz4 compression libarary.
   // The compressed data will be stored in the destination buffer.
   // The destination will be pre-allocated by the correct size.
   const size_t max_allowed_size = LZ4_compressBound(data_size);
-  size_t compressed_size = LZ4_compress_default(
-      reinterpret_cast<const char*>(data), reinterpret_cast<char*>(out),
-      data_size, max_allowed_size);
+  const size_t res = LZ4_compress_default(reinterpret_cast<const char*>(data),
+                                          reinterpret_cast<char*>(out),
+                                          data_size, max_allowed_size);
 
-  if (compressed_size == 0) {
-    logger->error("Failed to compress data!");
-    abort();
+  if (res == 0) {
+    return oram_impl::OramStatus(oram_impl::StatusCode::kExternalError,
+                                 "lz4 returned a zero compressed size",
+                                 __func__);
   }
 
-  return compressed_size;
+  *compressed_size = res;
+  return oram_impl::OramStatus::OK;
 }
 
-size_t DataDecompress(const uint8_t* data, size_t data_size,
-                      uint8_t* const out) {
+oram_impl::OramStatus DataDecompress(const uint8_t* data, size_t data_size,
+                                     uint8_t* const out,
+                                     size_t* const decompressed_size) {
   // Decompress the source std::string with lz4 compression
   // library.
   const size_t max_allowed_size = data_size * 2;
-  size_t decompressed_size = LZ4_decompress_safe(
-      reinterpret_cast<const char*>(data), reinterpret_cast<char*>(out),
-      data_size, max_allowed_size);
+  const size_t res = LZ4_decompress_safe(reinterpret_cast<const char*>(data),
+                                         reinterpret_cast<char*>(out),
+                                         data_size, max_allowed_size);
 
-  if (decompressed_size == 0) {
-    logger->error("Failed to decompress data!");
-    abort();
+  if (res == 0) {
+    return oram_impl::OramStatus(
+        oram_impl::StatusCode::kExternalError,
+        "lz4 returned a zero decompressed size (the input may be corrupted)",
+        __func__);
   }
 
-  return decompressed_size;
+  *decompressed_size = res;
+  return oram_impl::OramStatus::OK;
 }
 
 std::string TypeToName(oram_impl::OramType oram_type) {

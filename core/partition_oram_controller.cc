@@ -56,11 +56,11 @@ OramStatus PartitionOramController::Access(Operation op_type, uint32_t address,
 
   // Get the position (i.e., the slot id) from the position map.
   const uint32_t slot_id = position_map_[address];
-  logger->debug("SLOT ID {} FOR ADDRESS {}", slot_id, address);
+  DBG(logger, "SLOT ID {} FOR ADDRESS {}", slot_id, address);
   // Then immediately update the position map.
   position_map_[address] = new_slot_id;
 
-  logger->debug("New slot id: {} for address: {}", new_slot_id, address);
+  DBG(logger, "New slot id: {} for address: {}", new_slot_id, address);
 
   // Get the PathOram controller.
   PathOramController* const controller = path_oram_controllers_[slot_id].get();
@@ -95,10 +95,10 @@ OramStatus PartitionOramController::Access(Operation op_type, uint32_t address,
 
   auto end_access = std::chrono::high_resolution_clock::now();
 
-  logger->info("[+] Access time: {} us.",
-               std::chrono::duration_cast<std::chrono::microseconds>(
-                   end_access - begin_access)
-                   .count());
+  INFO(logger, "[+] Access time: {} us.",
+       std::chrono::duration_cast<std::chrono::microseconds>(end_access -
+                                                             begin_access)
+           .count());
 
   // Call piggy-backed eviction. (optional)
   // NO piggyback-ed eviction is implemented for PathORAM.
@@ -109,24 +109,24 @@ OramStatus PartitionOramController::Access(Operation op_type, uint32_t address,
   oram_utils::CheckStatus(status, "Failed to perform eviction!");
   auto end_evict = std::chrono::high_resolution_clock::now();
 
-  logger->info("[+] Eviction time: {} us.",
-               std::chrono::duration_cast<std::chrono::microseconds>(
-                   end_evict - begin_evict)
-                   .count());
+  INFO(logger, "[+] Eviction time: {} us.",
+       std::chrono::duration_cast<std::chrono::microseconds>(end_evict -
+                                                             begin_evict)
+           .count());
 
   return OramStatus::OK;
 }
 
 OramStatus PartitionOramController::Evict(uint32_t id) {
-  logger->debug("Evicting slot {}", id);
+  DBG(logger, "Evicting slot {}", id);
   PathOramController* const controller = path_oram_controllers_[id].get();
   if (slots_[id].empty()) {
     // Perform a fake write.
     return controller->InternalAccess(Operation::kWrite, 0, nullptr, true);
   } else {
-    logger->debug("---------------EVICT------------------");
+    DBG(logger, "---------------EVICT------------------");
     oram_utils::PrintStash(slots_[id]);
-    logger->debug("---------------EVICT------------------");
+    DBG(logger, "---------------EVICT------------------");
     oram_block_t block = slots_[id].back();
     slots_[id].pop_back();
     return controller->InternalAccess(Operation::kWrite, block.header.block_id,
@@ -140,9 +140,9 @@ OramStatus PartitionOramController::RandomEvict(void) {
   // For simplicity, we use uniform random sampling.
   for (size_t i = 0; i < nu_; i++) {
     uint32_t id;
-    oram_utils::CheckStatus(oram_crypto::UniformRandom(
-                                0, path_oram_controllers_.size() - 1, &id),
-                            "Failed to sample a new slot id.");
+    oram_utils::CheckStatus(
+        oram_crypto::UniformRandom(0, path_oram_controllers_.size() - 1, &id),
+        "Failed to sample a new slot id.");
 
     OramStatus status;
     if (!(status = Evict(id)).ok()) {
@@ -161,7 +161,7 @@ OramStatus PartitionOramController::SequentialEvict(void) {
   size_t evict_num;
   oram_utils::CheckStatus(
       oram_crypto::UniformRandom(0, path_oram_controllers_.size() - 1,
-                                          (uint32_t*)&evict_num),
+                                 (uint32_t*)&evict_num),
       "Failed to sample eviction number.");
   for (size_t i = 0; i < evict_num; i++) {
     // cnt is a global counter for the sequential scan.
@@ -178,15 +178,15 @@ OramStatus PartitionOramController::SequentialEvict(void) {
 
 OramStatus PartitionOramController::Run(uint32_t block_num,
                                         uint32_t bucket_size) {
-  logger->info("[+] The Partition Oram Controller is running...");
+  INFO(logger, "[+] The Partition Oram Controller is running...");
   // Determine the size of each sub-ORAM and the number of slot number.
   const size_t squared = std::ceil(std::sqrt(block_num));
   partition_size_ = std::ceil(squared * (1));
   block_num_ = block_num;
   bucket_size_ = bucket_size;
 
-  logger->debug("The Partition ORAM's config: partition_size = {} ",
-                partition_size_);
+  DBG(logger, "The Partition ORAM's config: partition_size = {} ",
+      partition_size_);
   // Initialize all the slots.
   slots_.resize(squared);
 
@@ -229,7 +229,8 @@ OramStatus PartitionOramController::FillWithData(
   // Check if the data size is consistent with the block number (note that this
   // includes dummy blocks).
   if (data.size() != tree_size * path_oram_controllers_.size()) {
-    return OramStatus(StatusCode::kInvalidArgument, "Data size is wrong");
+    return OramStatus(StatusCode::kInvalidArgument, "Data size is wrong",
+                      __func__);
   }
 
   // Send the data vector to each PathORAM controller.
@@ -248,11 +249,11 @@ OramStatus PartitionOramController::FillWithData(
   }
   auto end = std::chrono::high_resolution_clock::now();
 
-  logger->info(
-      "[+] The Partition Oram Controller is initialized. Elapsed time is {} "
-      "us.",
-      std::chrono::duration_cast<std::chrono::microseconds>(end - begin)
-          .count());
+  INFO(logger,
+       "[+] The Partition Oram Controller is initialized. Elapsed time is {} "
+       "us.",
+       std::chrono::duration_cast<std::chrono::microseconds>(end - begin)
+           .count());
 
   // Set initialized.
   is_initialized_ = true;
@@ -263,7 +264,7 @@ OramStatus PartitionOramController::FillWithData(
 OramStatus PartitionOramController::TestPathOram(uint32_t controller_id) {
   if (controller_id >= path_oram_controllers_.size()) {
     return OramStatus(StatusCode::kOutOfRange,
-                      "The controller id is out of range.");
+                      "The controller id is out of range.", __func__);
   }
 
   PathOramController* const controller =
@@ -276,7 +277,7 @@ OramStatus PartitionOramController::TestPathOram(uint32_t controller_id) {
 
   controller->FillWithData(raw_data);
 
-  logger->info("[+] Begin testing Path ORAM...");
+  INFO(logger, "[+] Begin testing Path ORAM...");
   auto begin = std::chrono::high_resolution_clock::now();
 
   for (size_t i = 0; i < partition_size_; i++) {
@@ -285,8 +286,7 @@ OramStatus PartitionOramController::TestPathOram(uint32_t controller_id) {
         controller->InternalAccess(Operation::kRead, i, &block, false);
     oram_utils::CheckStatus(status, "Failed to read block.");
 
-    logger->debug("[+] Read block {}: {}", block.header.block_id,
-                  block.data[0]);
+    DBG(logger, "[+] Read block {}: {}", block.header.block_id, block.data[0]);
   }
 
   for (size_t i = 0; i < partition_size_; i++) {
@@ -305,15 +305,13 @@ OramStatus PartitionOramController::TestPathOram(uint32_t controller_id) {
         controller->InternalAccess(Operation::kRead, i, &block, false);
     oram_utils::CheckStatus(status, "Failed to read block.");
 
-    logger->debug("[+] Read block {}: {}", block.header.block_id,
-                  block.data[0]);
+    DBG(logger, "[+] Read block {}: {}", block.header.block_id, block.data[0]);
   }
 
   auto end = std::chrono::high_resolution_clock::now();
-  logger->info(
-      "[-] End Testing Path ORAM. Time elapsed: {} ms.",
-      std::chrono::duration_cast<std::chrono::milliseconds>(end - begin)
-          .count());
+  INFO(logger, "[-] End Testing Path ORAM. Time elapsed: {} ms.",
+       std::chrono::duration_cast<std::chrono::milliseconds>(end - begin)
+           .count());
 
   return OramStatus::OK;
 }
@@ -328,7 +326,7 @@ OramStatus PartitionOramController::TestPartitionOram(void) {
     const std::vector<oram_block_t> block =
         std::move(oram_utils::SampleRandomBucket(partition_size_, tree_size,
                                                  i * partition_size_ / 2));
-    logger->debug("[+] Sample for {}: {}", i, block.size());
+    DBG(logger, "[+] Sample for {}: {}", i, block.size());
     oram_utils::PrintStash(block);
     blocks.insert(blocks.end(), block.begin(), block.end());
   }
@@ -344,16 +342,15 @@ OramStatus PartitionOramController::TestPartitionOram(void) {
   stub_->ReportServerInformation(&context, empty, &empty);
 
   auto begin = std::chrono::high_resolution_clock::now();
-  logger->info("[+] Begin testing Partition ORAM...");
+  INFO(logger, "[+] Begin testing Partition ORAM...");
   for (size_t i = 0; i < 10; i++) {
     oram_block_t block;
-    logger->debug("[+] Reading {} ...", i);
+    DBG(logger, "[+] Reading {} ...", i);
     OramStatus status = Access(Operation::kRead, i, &block);
     oram_utils::CheckStatus(status, "Cannot access partition ORAM!");
 
     PANIC_IF((block.data[0] != i), "Failed to read the correct block.");
-    logger->debug("[+] Read block {}: {}", block.header.block_id,
-                  block.data[0]);
+    DBG(logger, "[+] Read block {}: {}", block.header.block_id, block.data[0]);
   }
   auto end = std::chrono::high_resolution_clock::now();
 
@@ -368,13 +365,13 @@ OramStatus PartitionOramController::TestPartitionOram(void) {
   const auto network_time = ReportNetworkingTime();
   const auto client_time = end_to_end - network_time;
 
-  logger->info("[-] The client storage is {} MB.", storage / 1024 / 1024);
-  logger->info("[-] The client communication is {} MB.",
-               communication / 1024 / 1024 / 10);
-  logger->info(
-      "[-] End testing Partition ORAM.\nEnd-to-end time elapsed per block: {} "
-      "us. \nClient computation time is: {} us.",
-      (end_to_end / 10).count(), (client_time / 10).count());
+  INFO(logger, "[-] The client storage is {} MB.", storage / 1024 / 1024);
+  INFO(logger, "[-] The client communication is {} MB.",
+       communication / 1024 / 1024 / 10);
+  INFO(logger,
+       "[-] End testing Partition ORAM.\nEnd-to-end time elapsed per block: {} "
+       "us. \nClient computation time is: {} us.",
+       (end_to_end / 10).count(), (client_time / 10).count());
 
   return OramStatus::OK;
 }

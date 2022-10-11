@@ -34,10 +34,10 @@ OramController::OramController(uint32_t id, bool standalone, size_t block_num,
   // Intialize the hash of this instance.
   OramStatus status;
   if (!(status = oram_crypto::RandomBytes(instance_hash_, 32ul)).ok()) {
-    logger->error(
-        "[-] OramController failed to generated random instance id : {}",
-        status.ErrorMessage());
-    abort();
+    ERRS(logger,
+         "[-] OramController failed to generated random instance id: {}",
+         status.EmitString());
+    exit(1);
   }
 }
 
@@ -54,12 +54,13 @@ OramStatus OramController::KeyNegotiate(void) {
   grpc::Status status = stub_->KeyExchange(&context, request, &response);
 
   if (!status.ok()) {
-    logger->error(status.error_message());
+    return OramStatus(StatusCode::kServerError, status.error_message(),
+                      __func__);
   }
 
   const std::string public_key_server = response.public_key_server();
-  logger->debug("The server's public key is {}.",
-                spdlog::to_hex(public_key_server));
+  DBG(logger, "The server's public key is {}.",
+      spdlog::to_hex(public_key_server));
 
   // Sample the session key based on the server's public key.
   OramStatus oram_status;
@@ -69,12 +70,12 @@ OramStatus OramController::KeyNegotiate(void) {
     return oram_status;
   }
 
-  logger->info("[+] The session key sampled.");
+  INFO(logger, "[+] The session key sampled.");
   auto session_key = std::move(cryptor_->GetSessionKeyPair());
-  logger->debug("The session key for receiving is {}.",
-                spdlog::to_hex(session_key.first));
-  logger->debug("The session key for sending is {}.",
-                spdlog::to_hex(session_key.second));
+  DBG(logger, "The session key for receiving is {}.",
+      spdlog::to_hex(session_key.first));
+  DBG(logger, "The session key for sending is {}.",
+      spdlog::to_hex(session_key.second));
 
   return OramStatus::OK;
 }

@@ -216,7 +216,8 @@ oram_impl::OramStatus YamlParser::Parse(oram_impl::OramConfig& config) {
                     default_config_path);
 
       return oram_impl::OramStatus(oram_impl::StatusCode::kFileNotFound,
-                                   "No configuration file provided.");
+                                   "No configuration file provided",
+                                   __func__);
     }
   }
 
@@ -234,7 +235,7 @@ oram_impl::OramStatus YamlParser::Parse(oram_impl::OramConfig& config) {
         config_path.string());
 
     return oram_impl::OramStatus(oram_impl::StatusCode::kFileIOError,
-                                 "Not a yaml file.");
+                                 "Not a yaml file", __func__);
   }
 
   // Read the file.
@@ -244,9 +245,9 @@ oram_impl::OramStatus YamlParser::Parse(oram_impl::OramConfig& config) {
   for (YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
     status = DoParse(it, config);
     if (!status.ok()) {
-      logger_->error(status.ErrorMessage());
+      logger_->error(status.EmitString());
 
-      abort();
+      exit(1);
     }
   }
 
@@ -260,8 +261,9 @@ oram_impl::OramStatus YamlParser::FromCommandLine(
     logger_->warn(
         "[!] Detected configuration file, so command line arguments will be "
         "IGNORED!");
-    oram_impl::OramStatus(oram_impl::StatusCode::kAlreadyUsed,
-                          "Command line arguments are overriden.");
+    return oram_impl::OramStatus(oram_impl::StatusCode::kAlreadyUsed,
+                                 "Command line arguments are overriden",
+                                 __func__);
   }
 
   absl::ParseCommandLine(argc, argv);

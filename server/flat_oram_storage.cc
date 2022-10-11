@@ -16,4 +16,11 @@
  */
 #include "flat_oram_storage.h"
 
-namespace oram_impl {}
+#include <spdlog/spdlog.h>
+
+#include "base/oram_utils.h"
+
+extern std::shared_ptr<spdlog::logger> logger;
+
+namespace oram_impl {
+}  // namespace oram_impl

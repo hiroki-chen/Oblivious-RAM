@@ -79,9 +79,7 @@ OramClient::OramClient(const OramConfig& config) : config_(config) {
       break;
     }
     default: {
-      logger->error("[-] This type is currently fully implemented.");
-
-      abort();
+      PANIC("This type is not yet fully implemented.");
     }
   }
 
@@ -91,10 +89,10 @@ OramClient::OramClient(const OramConfig& config) : config_(config) {
   // Initialize this oram controller.
   OramStatus status = OramStatus::OK;
   if (!(status = oram_controller_->InitOram()).ok()) {
-    logger->error("[-] Unable to initialize {} because {}.",
-                  oram_controller_->GetName(), status.ErrorMessage());
+    ERRS(logger, "[-] Unable to initialize {}.\n{}",
+         oram_controller_->GetName(), status.EmitString());
 
-    abort();
+    exit(1);
   }
 }
 
@@ -132,9 +130,11 @@ OramStatus OramClient::FillWithData(void) {
       const size_t level = path_oram_controller->GetTreeLevel();
       const size_t tree_size = (POW2(level + 1) - 1) * config_.bucket_size;
 
-      blocks = std::move(oram_utils::SampleRandomBucket(block_num, tree_size, 0ul));
+      blocks =
+          std::move(oram_utils::SampleRandomBucket(block_num, tree_size, 0ul));
     } else {
-      blocks = std::move(oram_utils::SampleRandomBucket(block_num, block_num, 0ul));
+      blocks =
+          std::move(oram_utils::SampleRandomBucket(block_num, block_num, 0ul));
     }
 
     return oram_controller_->FillWithData(blocks);

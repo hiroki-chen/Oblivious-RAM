@@ -29,8 +29,6 @@
 
 extern std::shared_ptr<spdlog::logger> logger;
 
-// TODO: Refine error handling. Do not simply PANIC.
-
 using std::chrono_literals::operator""us;
 
 namespace oram_impl {
@@ -56,7 +54,7 @@ PathOramController::PathOramController(uint32_t id, uint32_t block_num,
   tree_level_ = std::ceil(LOG_BASE(bucket_num + 1, 2)) - 1;
   number_of_leafs_ = POW2(tree_level_);
 
-  logger->debug(
+  DBG(logger,
       "PathORAM Config:\n"
       "id: {}, number_of_leafs: {}, bucket_size: {}, tree_height: {}\n",
       id_, number_of_leafs_, bucket_size_, tree_level_);
@@ -82,9 +80,8 @@ OramStatus PathOramController::PrintOramTree(void) {
   grpc::Status status = stub_->PrintOramTree(&context, request, &empty);
 
   if (!status.ok()) {
-    return OramStatus(
-        StatusCode::kServerError,
-        oram_utils::StrCat("PrintOramTree: ", status.error_message()));
+    return OramStatus(StatusCode::kServerError, status.error_message(),
+                      __func__);
   }
 
   return OramStatus::OK;
@@ -113,9 +110,8 @@ OramStatus PathOramController::AccurateWriteBucket(
   grpc::Status status = stub_->WritePath(&context, request, &response);
 
   if (!status.ok()) {
-    return OramStatus(
-        StatusCode::kServerError,
-        oram_utils::StrCat("AccurateWriteBucket: ", status.error_message()));
+    return OramStatus(StatusCode::kServerError, status.error_message(),
+                      __func__);
   }
 
   return OramStatus::OK;
@@ -133,8 +129,8 @@ OramStatus PathOramController::InitOram(void) {
 
   grpc::Status status = stub_->InitTreeOram(&context, request, &empty);
   if (!status.ok()) {
-    return OramStatus(StatusCode::kServerError,
-                      oram_utils::StrCat("InitOram: ", status.error_message()));
+    return OramStatus(StatusCode::kServerError, status.error_message(),
+                      __func__);
   }
 
   return OramStatus::OK;
@@ -221,7 +217,7 @@ OramStatus PathOramController::ReadBucket(uint32_t path, uint32_t level,
                                           p_oram_bucket_t* const bucket) {
   if (path >= number_of_leafs_ || level > tree_level_) {
     return OramStatus(StatusCode::kInvalidArgument,
-                      "The path or the level given is not correct");
+                      "The path or the level given is not correct", __func__);
   }
 
   grpc::ClientContext context;
@@ -242,9 +238,8 @@ OramStatus PathOramController::ReadBucket(uint32_t path, uint32_t level,
       std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
 
   if (!status.ok()) {
-    return OramStatus(
-        StatusCode::kServerError,
-        oram_utils::StrCat("ReadBucket: ", status.error_message()));
+    return OramStatus(StatusCode::kServerError, status.error_message(),
+                      __func__);
   }
 
   const size_t bucket_size = response.bucket_size();
@@ -266,7 +261,7 @@ OramStatus PathOramController::ReadBucket(uint32_t path, uint32_t level,
 
 OramStatus PathOramController::WriteBucket(uint32_t path, uint32_t level,
                                            const p_oram_bucket_t& bucket) {
-  logger->debug("[+] Writing bucket at path {}, level {}", path, level);
+  DBG(logger, "[+] Writing bucket at path {}, level {}", path, level);
 
   grpc::ClientContext context;
   WritePathRequest request;
@@ -297,9 +292,8 @@ OramStatus PathOramController::WriteBucket(uint32_t path, uint32_t level,
       std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
 
   if (!status.ok()) {
-    return OramStatus(
-        StatusCode::kServerError,
-        oram_utils::StrCat("WriteBucket: ", status.error_message()));
+    return OramStatus(StatusCode::kServerError, status.error_message(),
+                      __func__);
   }
 
   return OramStatus::OK;
@@ -341,11 +335,12 @@ OramStatus PathOramController::InternalAccess(Operation op_type,
     return OramStatus(StatusCode::kInvalidOperation,
                       "Cannot access ORAM before it is initialized."
                       " You may need to call `InitOram()` and `FillWithData()` "
-                      "method first.");
+                      "method first.",
+                      __func__);
   }
 
-  logger->debug("ORAM ID: {}, Accessing address {}, op_type {}, dummy {} ", id_,
-                address, (int)op_type, dummy);
+  DBG(logger, "ORAM ID: {}, Accessing address {}, op_type {}, dummy {} ", id_,
+      address, (int)op_type, dummy);
   // First we do a sanity check.
   PANIC_IF(op_type == Operation::kInvalid, "Invalid operation.");
 
@@ -377,8 +372,16 @@ OramStatus PathOramController::InternalAccessDirect(Operation op_type,
   for (size_t i = 0; i <= tree_level_; i++) {
     p_oram_bucket_t bucket_this_level;
     OramStatus status = ReadBucket(x, i, &bucket_this_level);
-    oram_utils::CheckStatus(status,
-                            oram_utils::StrCat("Failed to read bucket: ", x));
+
+    if (!status.ok()) {
+      OramStatus ret = OramStatus(
+          StatusCode::kInvalidOperation,
+          oram_utils::StrCat("Failed to write bucket ", x), __func__);
+      ret.Append(status);
+
+      return ret;
+    }
+
     bucket_this_path.emplace_back(bucket_this_level);
   }
 
@@ -407,14 +410,15 @@ OramStatus PathOramController::InternalAccessDirect(Operation op_type,
   // Step 6-9: Update block, if any.
   // If the access is a write, update the data stored for block a.
   auto iter = std::find_if(stash_.begin(), stash_.end(), BlockEqual(address));
-  logger->debug("------------------------------------------------------");
+  DBG(logger, "------------------------------------------------------");
   oram_utils::PrintStash(stash_);
-  logger->debug("------------------------------------------------------");
+  DBG(logger, "------------------------------------------------------");
 
   if (iter == stash_.end()) {
     return OramStatus(StatusCode::kObjectNotFound,
                       oram_utils::StrCat("Failed to find the block ", address,
-                                         " in the stash!"));
+                                         " in the stash!"),
+                      __func__);
   }
 
   // HACK: This may be incorrect.
@@ -454,7 +458,14 @@ OramStatus PathOramController::InternalAccessDirect(Operation op_type,
     // them back.
     p_oram_stash_t subset = std::move(FindSubsetOf(x));
     OramStatus status = WriteBucket(x, i - 1, subset);
-    oram_utils::CheckStatus(status, "Failed to write bucket.");
+
+    if (!status.ok()) {
+      OramStatus ret = OramStatus(StatusCode::kInvalidOperation,
+                                  "Failed to write bucket", __func__);
+      ret.Append(status);
+
+      return ret;
+    }
   }
 
   return OramStatus::OK;

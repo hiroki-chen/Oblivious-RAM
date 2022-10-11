@@ -20,6 +20,8 @@
 #include <string>
 #include <unordered_map>
 #include <stdexcept>
+#include <ostream>
+#include <vector>
 
 namespace oram_impl {
 enum class StatusCode : int {
@@ -123,37 +125,52 @@ enum class StatusCode : int {
   //
   // kUnimplemented indicates an unimplemented interface.
   kUnimplemented = 12,
+
+  // StatusCode::kExternalError
+  //
+  // kExternalError is usually related to errors caused by some 3rd-party
+  // dependencies.
+  // These issues are not 100% the internal flaws of those libraries. This error
+  // can be triggered if the input data is corrupted, or the operation is valid.
+  kExternalError = 13,
 };
 
 static const std::unordered_map<StatusCode, std::string> kErrorList = {
     {StatusCode::kOK, "OK"},
-    {StatusCode::kInvalidArgument, "Invalid argument"},
-    {StatusCode::kInvalidOperation, "Invalid operation"},
-    {StatusCode::kOutOfMemory, "Out of memory"},
-    {StatusCode::kFileNotFound, "File not found"},
-    {StatusCode::kFileIOError, "File IO error"},
-    {StatusCode::kOutOfRange, "Out of range"},
-    {StatusCode::kServerError, "Server error"},
-    {StatusCode::kObjectNotFound, "The object is not found"},
-    {StatusCode::kUnknownError, "Unknown error"},
-    {StatusCode::kVersionMismatch, "Version mismatch"},
+    {StatusCode::kInvalidArgument, "InvalidArgument"},
+    {StatusCode::kInvalidOperation, "InvalidOperation"},
+    {StatusCode::kOutOfMemory, "OutOfMemory"},
+    {StatusCode::kFileNotFound, "FileNotFound"},
+    {StatusCode::kFileIOError, "FileIOError"},
+    {StatusCode::kOutOfRange, "OutOfRange"},
+    {StatusCode::kServerError, "ServerError"},
+    {StatusCode::kObjectNotFound, "ObjectNotFound"},
+    {StatusCode::kUnknownError, "UnknownError"},
+    {StatusCode::kVersionMismatch, "VersionMismatch"},
+    {StatusCode::kExternalError, "ExternalError"},
 };
 
 class OramStatus final {
-  StatusCode code_;
-  std::string message_;
+  StatusCode error_code_;
+  std::string error_message_;
+  std::string location_;
+
+  // A nested status stack.
+  std::vector<OramStatus> nested_status_;
 
  public:
   // Constructors
 
   // This default constructor creates an OK status with no message or payload.
   // Avoid this constructor and prefer explicit construction of an OK status.
-  OramStatus() : code_(StatusCode::kOK), message_("") {}
+  OramStatus()
+      : error_code_(StatusCode::kOK), error_message_(""), location_("") {}
 
   // Creates a status in the canonical error space with the specified
   // `oram_impl::StatusCode` and an error message for error details.
-  OramStatus(StatusCode code, const std::string& msg)
-      : code_(code), message_(msg) {}
+  OramStatus(StatusCode code, const std::string& msg,
+             const std::string& location = "")
+      : error_code_(code), error_message_(msg), location_(location) {}
 
   // Pre-defined constants for convenience.
   static const OramStatus& OK;
@@ -163,22 +180,34 @@ class OramStatus final {
   // effect and preserves the current data.
   void Update(const StatusCode& new_status);
 
+  // Append the status from the callee; if the status returns ok, then we
+  // discard it.
+  void Append(const OramStatus& new_status);
+
   // Returns true if the current status matches `OramStatus::OK`.
   // If the functions returns false, then the user may need to check the error
   // message.
-  bool ok(void) const { return code_ == StatusCode::kOK; }
+  bool ok(void) const { return error_code_ == StatusCode::kOK; }
 
-  StatusCode ErrorCode(void) const { return code_; }
+  StatusCode error_code(void) const { return error_code_; }
 
-  std::string ErrorMessage(void) const { return message_; }
+  std::string const& error_message(void) const { return error_message_; }
 
-  std::string ToString(void) const { return kErrorList.at(code_); }
+  std::string EmitString(void) const;
+
+  friend std::ostream& operator<<(std::ostream& os, const OramStatus& s);
 };
 
 inline void OramStatus::Update(const StatusCode& new_status) {
   // Only OK status is allowed to transmute.
-  if (code_ == StatusCode::kOK) {
-    code_ = new_status;
+  if (error_code_ == StatusCode::kOK) {
+    error_code_ = new_status;
+  }
+}
+
+inline void OramStatus::Append(const OramStatus& new_status) {
+  if (!new_status.ok()) {
+    nested_status_.emplace_back(new_status);
   }
 }
 }  // namespace oram_impl
