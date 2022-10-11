@@ -24,7 +24,7 @@
 extern std::shared_ptr<spdlog::logger> logger;
 
 namespace oram_impl {
-grpc::Status LinearOramController::ReadFromServer(std::string* const out) {
+OramStatus LinearOramController::ReadFromServer(std::string* const out) {
   grpc::ClientContext context;
   ReadFlatRequest request;
   FlatVectorMessage response;
@@ -36,12 +36,14 @@ grpc::Status LinearOramController::ReadFromServer(std::string* const out) {
 
   if (status.ok()) {
     *out = response.content();
+
+    return OramStatus::OK;
   }
 
-  return status;
+  return OramStatus(StatusCode::kServerError, status.error_message(), __func__);
 }
 
-grpc::Status LinearOramController::WriteToServer(const std::string& input) {
+OramStatus LinearOramController::WriteToServer(const std::string& input) {
   grpc::ClientContext context;
   FlatVectorMessage request;
   google::protobuf::Empty empty;
@@ -49,7 +51,14 @@ grpc::Status LinearOramController::WriteToServer(const std::string& input) {
   ASSEMBLE_HEADER(request, id_, instance_hash_, GetVersion());
   request.set_content(input);
 
-  return stub_->WriteFlatMemory(&context, request, &empty);
+  grpc::Status status = stub_->WriteFlatMemory(&context, request, &empty);
+
+  if (!status.ok()) {
+    return OramStatus(StatusCode::kServerError, status.error_message(),
+                      __func__);
+  }
+
+  return OramStatus::OK;
 }
 
 OramStatus LinearOramController::InternalAccess(Operation op_type,
@@ -64,9 +73,13 @@ OramStatus LinearOramController::InternalAccess(Operation op_type,
   //    – Writes the item back to remote storage.
   // O(n) overhead per each R/W operation.
   std::string storage;
-  grpc::Status status = grpc::Status::OK;
+  OramStatus status = OramStatus::OK;
   if (!(status = ReadFromServer(&storage)).ok()) {
-    return OramStatus(StatusCode::kServerError, status.error_message());
+    OramStatus ret = OramStatus(StatusCode::kInvalidOperation,
+                                "Cannot read from the server", __func__);
+    ret.Append(status);
+
+    return ret;
   }
 
   // Reinterpret the storage as an array of oram_block_t.
@@ -92,12 +105,11 @@ OramStatus LinearOramController::InternalAccess(Operation op_type,
     block_ptr += 1;
   }
 
-  // FIXME: May need to permute before writing to the server.
-
   return WriteToServer(storage).ok()
              ? OramStatus::OK
              : OramStatus(StatusCode::kServerError,
-                          "Cannot invoke WriteToServer on the server side");
+                          "Cannot invoke WriteToServer on the server side",
+                          __func__);
 }
 
 OramStatus LinearOramController::InitOram(void) {
@@ -112,7 +124,8 @@ OramStatus LinearOramController::InitOram(void) {
   return stub_->InitFlatOram(&context, request, &empty).ok()
              ? OramStatus::OK
              : OramStatus(StatusCode::kServerError,
-                          "Cannot invoke InitOram on the server side");
+                          "Cannot invoke InitOram on the server side",
+                          __func__);
 }
 
 OramStatus LinearOramController::FillWithData(
@@ -139,6 +152,7 @@ OramStatus LinearOramController::FillWithData(
   return stub_->WriteFlatMemory(&context, request, &empty).ok()
              ? OramStatus::OK
              : OramStatus(StatusCode::kServerError,
-                          "Cannot invoke WriteFlatMemory on the server side");
+                          "Cannot invoke WriteFlatMemory on the server side",
+                          __func__);
 }
 }  // namespace oram_impl

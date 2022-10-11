@@ -26,8 +26,8 @@ namespace oram_impl {
 // in any productive environment.
 class LinearOramController : public OramController {
  private:
-  grpc::Status ReadFromServer(std::string* const out);
-  grpc::Status WriteToServer(const std::string& input);
+  OramStatus ReadFromServer(std::string* const out);
+  OramStatus WriteToServer(const std::string& input);
 
  protected:
   virtual OramStatus InternalAccess(Operation op_type, uint32_t address,

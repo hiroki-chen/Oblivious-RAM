@@ -28,14 +28,12 @@ extern std::shared_ptr<spdlog::logger> logger;
 
 namespace oram_crypto {
 Cryptor::Cryptor() {
-  if (sodium_init() == -1) {
-    logger->error("Failed to initialize sodium.");
-    abort();
-  }
+  PANIC_IF(sodium_init() == -1, "Failed to initialize sodium.");
+
   // Initialize the random number.
   randombytes_buf(random_val_, sizeof(ORAM_CRYPTO_RANDOM_SIZE));
   is_initialized = true;
-  logger->info("Cryptor initialized.");
+  INFO(logger, "Cryptor initialized.");
 }
 
 Cryptor::~Cryptor() {
@@ -50,11 +48,8 @@ std::shared_ptr<Cryptor> Cryptor::GetInstance(void) {
 
 void Cryptor::CryptoPrelogue(void) {
   PANIC_IF(!is_initialized, "Cryptor is not initialized.");
-
-  if (crypto_aead_aes256gcm_is_available() == 0) {
-    logger->error("AES-256-GCM is not available on this CPU.");
-    abort();
-  }
+  PANIC_IF(crypto_aead_aes256gcm_is_available() == 0,
+           "AES-256-GCM is not available on this CPU.");
 }
 
 oram_impl::OramStatus RandomPermutation(std::vector<uint32_t>& array) {
@@ -67,7 +62,7 @@ oram_impl::OramStatus RandomPermutation(std::vector<uint32_t>& array) {
   const size_t size = array.size();
   if (size == 0) {
     return oram_impl::OramStatus(oram_impl::StatusCode::kInvalidArgument,
-                                 "The input array cannot be empty!");
+                                 "The input array cannot be empty", __func__);
   }
 
   // Calculate the highest order.
@@ -136,7 +131,8 @@ oram_impl::OramStatus Cryptor::Decrypt(const uint8_t* message, size_t length,
 
   if (length < crypto_aead_aes256gcm_ABYTES) {
     return oram_impl::OramStatus(oram_impl::StatusCode::kInvalidArgument,
-                                 "The length of the message is too short.");
+                                 "The length of the message is too short",
+                                 __func__);
   }
 
   // The message consists of the GCM MAC tag, the nonce, ant the
@@ -284,7 +280,8 @@ oram_impl::OramStatus UniformRandom(uint32_t min, uint32_t max,
 oram_impl::OramStatus RandomBytes(uint8_t* const out, size_t length) {
   if (length == 0) {
     return oram_impl::OramStatus(oram_impl::StatusCode::kInvalidArgument,
-                                 "The length of the output buffer is zero.");
+                                 "The length of the output buffer is zero",
+                                 __func__);
   }
 
   randombytes_buf(out, length);

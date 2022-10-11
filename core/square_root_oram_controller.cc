@@ -74,8 +74,8 @@ OramStatus SquareRootOramController::InitOram(void) {
 
   grpc::Status status = stub_->InitSqrtOram(&context, request, &empty);
   if (!status.ok()) {
-    return OramStatus(StatusCode::kServerError,
-                      oram_utils::StrCat("InitOram: ", status.error_message()));
+    return OramStatus(StatusCode::kServerError, status.error_message(),
+                      __func__);
   }
 
   return OramStatus::OK;
@@ -114,8 +114,8 @@ OramStatus SquareRootOramController::FillWithData(
     // Load the Square Root ORAM with permutation.
     oram_block_t block = padded_data[i];
 
-    logger->debug("Perm: {}, {}; visiting block {}", i, perm[i],
-                  block.header.block_id);
+    DBG(logger, "Perm: {}, {}; visiting block {}", i, perm[i],
+        block.header.block_id);
 
     std::string block_str;
     oram_utils::EncryptBlock(&block, cryptor_.get());
@@ -127,8 +127,8 @@ OramStatus SquareRootOramController::FillWithData(
 
   grpc::Status status = stub_->LoadSqrtOram(&context, request, &response);
   if (!status.ok()) {
-    return OramStatus(StatusCode::kServerError,
-                      oram_utils::StrCat(status.error_message()));
+    return OramStatus(StatusCode::kServerError, status.error_message(),
+                      __func__);
   }
 
   is_initialized_ = true;
@@ -151,7 +151,8 @@ OramStatus SquareRootOramController::ReadShelter(oram_block_t* const data) {
 
     grpc::Status status = stub_->ReadSqrtMemory(&context, request, &response);
     if (!status.ok()) {
-      return OramStatus(StatusCode::kServerError, status.error_message());
+      return OramStatus(StatusCode::kServerError, status.error_message(),
+                        __func__);
     }
 
     // Need to check if the block is empty.
@@ -198,7 +199,8 @@ OramStatus SquareRootOramController::ReadBlock(uint32_t from, uint32_t pos,
 
   grpc::Status status = stub_->ReadSqrtMemory(&context, request, &response);
   if (!status.ok()) {
-    return OramStatus(StatusCode::kServerError, status.error_message());
+    return OramStatus(StatusCode::kServerError, status.error_message(),
+                      __func__);
   }
 
   // Not a dummy read.
@@ -239,7 +241,8 @@ OramStatus SquareRootOramController::WriteBlock(uint32_t position,
 
   grpc::Status status = stub_->WriteSqrtMemory(&context, request, &response);
   if (!status.ok()) {
-    return OramStatus(StatusCode::kServerError, status.error_message());
+    return OramStatus(StatusCode::kServerError, status.error_message(),
+                      __func__);
   }
 
   return OramStatus::OK;
@@ -264,8 +267,8 @@ OramStatus SquareRootOramController::PermuteOnFull(void) {
   // The permutation is done on the server side; we just need to update the
   // position map.
   if (++counter_ == sqrt_m_) {
-    logger->debug("Performing Permutation!");
-    
+    DBG(logger, "Performing Permutation!");
+
     // First let us clear the counter.
     counter_ = 0ul;
     // Also clear next_dummy_.
@@ -275,9 +278,10 @@ OramStatus SquareRootOramController::PermuteOnFull(void) {
     std::vector<uint32_t> perm = std::move(CreateVec(block_num_ + sqrt_m_));
     status = oram_crypto::RandomPermutation(perm);
     if (!status.ok()) {
-      return OramStatus(status.ErrorCode(),
-                        oram_utils::StrCat("Permutation failed due to ",
-                                           status.ErrorMessage()));
+      status.Append(OramStatus(
+          StatusCode::kInvalidOperation,
+          "Sqaure Root Oram Controller cannot permute the memory", __func__));
+      return status;
     } else {
       // Send the whole vector to the server.
       return DoPermute(perm);
@@ -302,7 +306,8 @@ OramStatus SquareRootOramController::DoPermute(
 
   grpc::Status status = stub_->SqrtPermute(&context, request, &response);
   if (!status.ok()) {
-    return OramStatus(StatusCode::kServerError, status.error_message());
+    return OramStatus(StatusCode::kServerError, status.error_message(),
+                      __func__);
   }
 
   // Flush position map.
@@ -322,7 +327,8 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
     return OramStatus(StatusCode::kInvalidOperation,
                       "Cannot access ORAM before it is initialized."
                       " You may need to call `InitOram()` and `FillWithData()` "
-                      "method first.");
+                      "method first.",
+                      __func__);
   }
 
   PANIC_IF(op_type == Operation::kInvalid, "Invalid ORAM operation!");
@@ -357,12 +363,12 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
   // Check the position map.
   if (position_map_.find(address) == position_map_.end()) {
     return OramStatus(StatusCode::kInvalidArgument,
-                      "The requested block does not exist!");
+                      "The requested block does not exist!", __func__);
   }
 
   const uint32_t position = position_map_[address];
 
-  logger->debug("The position for {} is {}", address, position);
+  DBG(logger, "The position for {} is {}", address, position);
 
   oram_block_t block;
   block.header.block_id = address;
@@ -374,7 +380,12 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
   OramStatus status = ReadBlock(kShelter, position, &block);
   if (!status.ok()) {
     // Check if the error is NOT FOUND; if not, we return the error.
-    if (StatusCode::kObjectNotFound != status.ErrorCode()) {
+    if (StatusCode::kObjectNotFound != status.error_code()) {
+      status.Append(OramStatus(
+          StatusCode::kInvalidOperation,
+          "Square Root Oram Controller cannot read the block from the shelter",
+          __func__));
+
       return status;
     }
 
@@ -388,6 +399,10 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
     // dummy. If there is any error, we return it.
     status = ReadBlock(kDummy, next_dummy_++, nullptr);
     if (!status.ok()) {
+      status.Append(OramStatus(StatusCode::kInvalidOperation,
+                               "Square Root Oram Controller cannot read the "
+                               "block from the dummy area",
+                               __func__));
       return status;
     }
 
@@ -397,7 +412,10 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
     // index it.
     status = ReadBlock(kMainMemory, position, &block);
     if (!status.ok()) {
-      return status;
+      status.Append(OramStatus(StatusCode::kInvalidOperation,
+                               "Square Root Oram Controller cannot read the "
+                               "block from the main memory",
+                               __func__));
     }
   }
 
@@ -406,9 +424,10 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
       block.header.block_id != address) {
     return OramStatus(
         StatusCode::kUnknownError,
-        oram_utils::StrCat("[InternalAccess] The requested id ", address,
+        oram_utils::StrCat("The requested id ", address,
                            " does not match with the fetched block ",
-                           block.header.block_id, "!"));
+                           block.header.block_id),
+        __func__);
   }
 
   // Update the block, if it needs.
@@ -423,18 +442,22 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
     status = WriteBlock(position, data);
     // Propagate the error.
     if (!status.ok()) {
-      return OramStatus(
-          status.ErrorCode(),
-          oram_utils::StrCat("[InternalAccess] Write back failed on ", address,
-                             ". Error: ", status.ErrorMessage()));
+      OramStatus ret = OramStatus(StatusCode::kInvalidOperation,
+                                  "Cannot write back the block", __func__);
+      ret.Append(status);
+
+      return ret;
     }
   }
 
   // Check if we need to permute the oram storage.
   if (!(status = PermuteOnFull()).ok()) {
-    return OramStatus(
-        status.ErrorCode(),
-        oram_utils::StrCat("[InternalAccess] ", status.ErrorMessage()));
+    OramStatus ret =
+        OramStatus(StatusCode::kUnknownError,
+                   "Permutation failed or internal logic error!", __func__);
+    ret.Append(status);
+
+    return ret;
   }
 
   return OramStatus::OK;

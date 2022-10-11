@@ -31,7 +31,7 @@ static inline uint32_t ComputePadVal(uint32_t x) {
 }
 
 TreeNode* OdictController::Balance(TreeNode* const root) {
-  logger->debug("Balancing...");
+  DBG(logger, "Balancing...");
 
   const uint32_t root_id = root->id_;
   const uint32_t left_height = root->left_height_;
@@ -75,7 +75,7 @@ TreeNode* OdictController::Balance(TreeNode* const root) {
 }
 
 TreeNode* OdictController::LeftRotate(uint32_t root_id) {
-  logger->debug("Doing left rotation.");
+  DBG(logger, "Doing left rotation.");
 
   // Read the root node and the right node.
   TreeNode* const root = new TreeNode(root_id);
@@ -101,7 +101,7 @@ TreeNode* OdictController::LeftRotate(uint32_t root_id) {
 }
 
 TreeNode* OdictController::RightRotate(uint32_t root_id) {
-  logger->debug("Doing right rotation.");
+  DBG(logger, "Doing right rotation.");
 
   // Read the root node and the right node.
   TreeNode* const root = new TreeNode(root_id);
@@ -127,7 +127,7 @@ TreeNode* OdictController::RightRotate(uint32_t root_id) {
 }
 
 TreeNode* OdictController::LeftRightRotate(uint32_t root_id) {
-  logger->debug("Doing left right rotation.");
+  DBG(logger, "Doing left right rotation.");
 
   TreeNode* const root = new TreeNode(root_id);
   oram_utils::CheckStatus(OdsAccess(OdsOperation::kRead, root),
@@ -145,7 +145,7 @@ TreeNode* OdictController::LeftRightRotate(uint32_t root_id) {
 }
 
 TreeNode* OdictController::RightLeftRotate(uint32_t root_id) {
-  logger->debug("Doing right left rotation.");
+  DBG(logger, "Doing right left rotation.");
 
   TreeNode* const root = new TreeNode(root_id);
   oram_utils::CheckStatus(OdsAccess(OdsOperation::kRead, root),
@@ -189,7 +189,7 @@ OramStatus OdictController::CacheHelper(uint32_t id, TreeNode* const node) {
 
 OramStatus OdictController::OdsAccessRead(TreeNode* const node) {
   const uint32_t block_address = node->id_;
-  logger->debug("Read node {} from the oblivious dictionary.", block_address);
+  DBG(logger, "Read node {} from the oblivious dictionary.", block_address);
 
   read_count_++;
   // Try get the tree node from the cache.
@@ -197,14 +197,14 @@ OramStatus OdictController::OdsAccessRead(TreeNode* const node) {
   if (cache_node == nullptr) {
     // Not found.
     // Read the node from the oblivious ram.
-    logger->debug("[-] Cache miss. Read from ORAM.");
+    DBG(logger, "[-] Cache miss. Read from ORAM.");
 
     oram_utils::CheckStatus(CacheHelper(block_address, node),
                             oram_utils::StrCat("OdsAccessRead", oram_read_err));
 
     ods_cache_->Put(block_address, node);
   } else {
-    logger->debug("[+] Cache hit.");
+    DBG(logger, "[+] Cache hit.");
     memcpy((void*)(node), (void*)(cache_node), sizeof(TreeNode));
   }
 
@@ -213,7 +213,7 @@ OramStatus OdictController::OdsAccessRead(TreeNode* const node) {
 
 OramStatus OdictController::OdsAccessWrite(TreeNode* const node) {
   const uint32_t block_address = node->id_;
-  logger->debug("Write node {} to the oblivious dictionary.", block_address);
+  DBG(logger, "Write node {} to the oblivious dictionary.", block_address);
 
   write_count_++;
   // Try get the tree node from the cache.
@@ -232,7 +232,7 @@ OramStatus OdictController::OdsAccessWrite(TreeNode* const node) {
 
 OramStatus OdictController::OdsAccessRemove(TreeNode* const node) {
   const uint32_t block_address = node->id_;
-  logger->debug("Remove node {} from the oblivious dictionary.", block_address);
+  DBG(logger, "Remove node {} from the oblivious dictionary.", block_address);
 
   TreeNode* const cache_node = ods_cache_->Get(block_address);
   if (cache_node == nullptr) {
@@ -252,7 +252,7 @@ OramStatus OdictController::OdsAccessRemove(TreeNode* const node) {
 
 OramStatus OdictController::OdsAccessInsert(TreeNode* const node) {
   const uint32_t block_address = node->id_;
-  logger->info("Insert node {} to the oblivious dictionary.", block_address);
+  INFO(logger, "Insert node {} to the oblivious dictionary.", block_address);
 
   ods_cache_->Put(block_address, node);
 
@@ -272,7 +272,7 @@ OramStatus OdictController::OdsAccess(OdsOperation op_type,
       return OdsAccessInsert(node);
     default:
       return OramStatus(StatusCode::kInvalidOperation,
-                        "Invalid Operation to oblivious dictionary!");
+                        "Invalid Operation to oblivious dictionary!", __func__);
   }
 }
 
@@ -293,7 +293,7 @@ OramStatus OdictController::DoPad(Operation op_type, size_t num) {
 }
 
 OramStatus OdictController::OdsFinalize(size_t pad_val) {
-  logger->debug("pad val: {}", pad_val);
+  DBG(logger, "pad val: {}", pad_val);
 
   // Pad the read operation. This is simple because we can read arbitrary
   // blocks based on our preference.
@@ -329,7 +329,7 @@ OramStatus OdictController::OdsFinalize(size_t pad_val) {
   }
 
   write_count_ = read_count_ = 0ul;
-  logger->debug("[-] OdsFinalize finished.");
+  DBG(logger, "[-] OdsFinalize finished.");
 
   return OramStatus::OK;
 }
@@ -346,24 +346,24 @@ OdictController::OdictController(
       read_count_(0ul),
       write_count_(0ul) {
   // Initialize the cache.
-  logger->info("[+] Using {} as backbone ORAM for Odict controller.",
-               oram_controller->GetName());
+  INFO(logger, "[+] Using {} as backbone ORAM for Odict controller.",
+       oram_controller->GetName());
   ods_cache_ =
       std::make_unique<OdsCache>(client_cache_max_size, oram_controller);
 
   // Abort if it is not initialized.
   if (!oram_controller->IsInitialized()) {
-    logger->error(
-        "[-] You cannot use oblivious dictionary when the backbone ORAM "
-        "controller is not properly initialized!");
-    abort();
+    ERRS(logger,
+         "[-] You cannot use oblivious dictionary when the backbone ORAM "
+         "controller is not properly initialized!");
+    exit(1);
   }
 
   OramStatus status = InitOds();
   if (!status.ok()) {
-    logger->error("[-] Initialize ODS controller failed: {}",
-                  status.ErrorMessage());
-    abort();
+    ERRS(logger, "[-] Initialize ODS controller failed: {}",
+         status.EmitString());
+    exit(1);
   }
 }
 
@@ -416,7 +416,7 @@ OramStatus OdictController::InternalRemove(uint32_t key, uint32_t root_id) {
 }
 
 TreeNode* OdictController::Find(uint32_t key) {
-  logger->info("Finding key {}...", key);
+  INFO(logger, "Finding key {}...", key);
   // Each operation on the ODS consists of three phase:
   // start, access,and finalize.
   OdsStart();

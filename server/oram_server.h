@@ -26,6 +26,7 @@
 #include <unordered_map>
 
 #include "base/oram_crypto.h"
+#include "base/oram_utils.h"
 #include "oram_storage.h"
 #include "protos/messages.grpc.pb.h"
 #include "protos/messages.pb.h"
@@ -135,13 +136,19 @@ class ServerRunner {
 template <typename T>
 grpc::Status CheckStorage(BaseOramServerStorage* const storage,
                           const std::string& instance_hash,
-                          OramStorageType type) {
-  T* const store = dynamic_cast<T* const>(storage);
+                          OramStorageType type, T*& dst) {
+  // Try cast.
+  dst = dynamic_cast<T*>(storage);
 
-  if (store == nullptr || type != store->GetStorageType()) {
+  // Nullptr means that this target type of T is not a derived class.
+  // In this case, we need to directly panic because this is triggered by
+  // programming error rather than runtime error.
+  PANIC_IF(dst == nullptr,
+           "Trying to cast to a non-derived class of `BaseOramServerStorage`.");
+
+  if (type != dst->GetOramStorageType()) {
     return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_type_mismatch_err);
-
-  } else if (store->GetInstanceHash() != instance_hash) {
+  } else if (dst->GetInstanceHash() != instance_hash) {
     return grpc::Status(grpc::StatusCode::UNAVAILABLE, oram_hash_mismatch_err);
   }
 
