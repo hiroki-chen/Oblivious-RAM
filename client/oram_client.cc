@@ -89,11 +89,35 @@ OramClient::OramClient(const OramConfig& config) : config_(config) {
   // Initialize this oram controller.
   OramStatus status = OramStatus::OK;
   if (!(status = oram_controller_->InitOram()).ok()) {
-    ERRS(logger, "[-] Unable to initialize {}.\n{}",
+    ERRS(logger, "[-] Unable to initialize {}.{}",
          oram_controller_->GetName(), status.EmitString());
 
     exit(1);
   }
+}
+
+OramStatus OramClient::Read(uint32_t address, oram_block_t* const block) {
+  OramStatus status =
+      oram_controller_->Access(Operation::kRead, address, block);
+  if (!status.ok()) {
+    return status.Append(OramStatus(StatusCode::kInvalidOperation,
+                                    "The client cannot read the block!",
+                                    __func__));
+  }
+
+  return status;
+}
+
+OramStatus OramClient::Write(uint32_t address, oram_block_t* const block) {
+  OramStatus status =
+      oram_controller_->Access(Operation::kWrite, address, block);
+  if (!status.ok()) {
+    return status.Append(OramStatus(StatusCode::kInvalidOperation,
+                                    "The client cannot write the block!",
+                                    __func__));
+  }
+
+  return status;
 }
 
 OramStatus OramClient::Ready(void) {

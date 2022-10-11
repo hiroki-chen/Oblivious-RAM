@@ -278,10 +278,9 @@ OramStatus SquareRootOramController::PermuteOnFull(void) {
     std::vector<uint32_t> perm = std::move(CreateVec(block_num_ + sqrt_m_));
     status = oram_crypto::RandomPermutation(perm);
     if (!status.ok()) {
-      status.Append(OramStatus(
+      return status.Append(OramStatus(
           StatusCode::kInvalidOperation,
           "Sqaure Root Oram Controller cannot permute the memory", __func__));
-      return status;
     } else {
       // Send the whole vector to the server.
       return DoPermute(perm);
@@ -381,12 +380,10 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
   if (!status.ok()) {
     // Check if the error is NOT FOUND; if not, we return the error.
     if (StatusCode::kObjectNotFound != status.error_code()) {
-      status.Append(OramStatus(
+      return status.Append(OramStatus(
           StatusCode::kInvalidOperation,
           "Square Root Oram Controller cannot read the block from the shelter",
           __func__));
-
-      return status;
     }
 
   } else {
@@ -399,11 +396,11 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
     // dummy. If there is any error, we return it.
     status = ReadBlock(kDummy, next_dummy_++, nullptr);
     if (!status.ok()) {
-      status.Append(OramStatus(StatusCode::kInvalidOperation,
-                               "Square Root Oram Controller cannot read the "
-                               "block from the dummy area",
-                               __func__));
-      return status;
+      return status.Append(
+          OramStatus(StatusCode::kInvalidOperation,
+                     "Square Root Oram Controller cannot read the "
+                     "block from the dummy area",
+                     __func__));
     }
 
   } else {
@@ -412,10 +409,11 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
     // index it.
     status = ReadBlock(kMainMemory, position, &block);
     if (!status.ok()) {
-      status.Append(OramStatus(StatusCode::kInvalidOperation,
-                               "Square Root Oram Controller cannot read the "
-                               "block from the main memory",
-                               __func__));
+      return status.Append(
+          OramStatus(StatusCode::kInvalidOperation,
+                     "Square Root Oram Controller cannot read the "
+                     "block from the main memory",
+                     __func__));
     }
   }
 
@@ -442,22 +440,16 @@ OramStatus SquareRootOramController::InternalAccess(Operation op_type,
     status = WriteBlock(position, data);
     // Propagate the error.
     if (!status.ok()) {
-      OramStatus ret = OramStatus(StatusCode::kInvalidOperation,
-                                  "Cannot write back the block", __func__);
-      ret.Append(status);
-
-      return ret;
+      return status.Append(OramStatus(StatusCode::kInvalidOperation,
+                                      "Cannot write back the block", __func__));
     }
   }
 
   // Check if we need to permute the oram storage.
   if (!(status = PermuteOnFull()).ok()) {
-    OramStatus ret =
+    return status.Append(
         OramStatus(StatusCode::kUnknownError,
-                   "Permutation failed or internal logic error!", __func__);
-    ret.Append(status);
-
-    return ret;
+                   "Permutation failed or internal logic error!", __func__));
   }
 
   return OramStatus::OK;

@@ -75,11 +75,8 @@ OramStatus LinearOramController::InternalAccess(Operation op_type,
   std::string storage;
   OramStatus status = OramStatus::OK;
   if (!(status = ReadFromServer(&storage)).ok()) {
-    OramStatus ret = OramStatus(StatusCode::kInvalidOperation,
-                                "Cannot read from the server", __func__);
-    ret.Append(status);
-
-    return ret;
+    return status.Append(OramStatus(StatusCode::kInvalidOperation,
+                                    "Cannot read from the server", __func__));
   }
 
   // Reinterpret the storage as an array of oram_block_t.
