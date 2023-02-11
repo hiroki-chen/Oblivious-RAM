@@ -57,4 +57,4 @@ In fact, there is no need to negotiate a session key with the server, here the p
 
 ## Claim
 
-This project was intiated as a personal research project and has nothing to do with the authors that originally proposed the ORAM constructions. Furthermore, the code quality and robustness are not guaranteed. Please refer to the licence for further information.
+This project was launched as a personal research project and has nothing to do with the authors that originally proposed the ORAM constructions. Furthermore, the code quality and robustness are not guaranteed. Please refer to the licence for further information.
